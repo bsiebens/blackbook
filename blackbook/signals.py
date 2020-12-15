@@ -6,7 +6,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
 from datetime import timedelta
-from guardian.shortcuts import assign_perm
 
 from .models import UserProfile, Budget, BudgetPeriod, Account, Category, TransactionJournalEntry
 from .utilities import calculate_period
