@@ -1,3 +1,153 @@
 from django.contrib import admin
 
-# Register your models here.
+from taggit_helpers.admin import TaggitListFilter
+from guardian.admin import GuardedModelAdmin
+from guardian.shortcuts import get_objects_for_user
+
+from . import models
+from .utilities import format_iban
+
+
+class BudgetPeriodInline(admin.TabularInline):
+    model = models.BudgetPeriod
+    extra = 0
+    fields = ("start_date", "end_date", "amount", "created", "modified")
+    readonly_fields = ("start_date", "end_date", "amount", "created", "modified")
+
+
+class TransactionInline(admin.TabularInline):
+    model = models.Transaction
+    extra = 0
+    fields = ("account", "amount", "reconciled", "created", "modified")
+    readonly_fields = ("amount", "reconciled", "created", "modified")
+
+
+@admin.register(models.AccountType)
+class AccountTypeAdmin(admin.ModelAdmin):
+    ordering = ["name"]
+    list_display = ["name", "icon", "created", "modified"]
+    search_fields = ["name"]
+
+
+@admin.register(models.Account)
+class AccountAdmin(GuardedModelAdmin):
+    def display_iban(self, obj):
+        return format_iban(obj.iban)
+
+    display_iban.short_description = "IBAN"
+
+    ordering = ["name"]
+    list_display = [
+        "name",
+        "account_type",
+        "currency",
+        "display_iban",
+        "active",
+        "include_in_net_worth",
+        "virtual_balance",
+        "balance",
+        "created",
+        "modified",
+    ]
+    list_filter = ["account_type", "user", "active", "include_in_net_worth", "currency"]
+    search_fields = ["name", "iban"]
+    fieldsets = (
+        (
+            "General information",
+            {
+                "fields": ("name", "user", "account_type", "iban", "currency"),
+            },
+        ),
+        ("Options", {"fields": ("active", "include_in_net_worth", "virtual_balance")}),
+    )
+    raw_id_fields = ["user"]
+    user_can_access_owned_objects_only = True
+
+
+@admin.register(models.Category)
+class CategoryAdmin(GuardedModelAdmin):
+    ordering = ["name"]
+    list_display = ["name", "user", "created", "modified"]
+    search_fields = ["name"]
+    raw_id_fields = ["user"]
+    user_can_access_owned_objects_only = True
+
+
+@admin.register(models.Budget)
+class BudgetAdmin(GuardedModelAdmin):
+    ordering = ["name"]
+    list_display = ["name", "user", "active", "amount", "auto_budget", "auto_budget_period", "created", "modified"]
+    search_fields = ["name"]
+    list_filter = ["active", "auto_budget", "auto_budget_period"]
+    fieldsets = (
+        (
+            "General information",
+            {
+                "fields": ("name", "user"),
+            },
+        ),
+        ("Options", {"fields": ("active", "amount", "auto_budget", "auto_budget_period")}),
+    )
+    inlines = [BudgetPeriodInline]
+    raw_id_fields = ["user"]
+    user_can_access_owned_objects_only = True
+
+
+@admin.register(models.TransactionJournalEntry)
+class TransactionJournalEntryAdmin(GuardedModelAdmin):
+    def show_tags(self, obj):
+        return ", ".join([tag.name.lower() for tag in obj.tags.all()])
+
+    show_tags.short_description = "tags"
+
+    ordering = ["-date"]
+    date_hierarchy = "date"
+    list_display = [
+        "description",
+        "user",
+        "date",
+        "transaction_type",
+        "amount",
+        "category",
+        "show_tags",
+        "budget",
+        "from_account",
+        "to_account",
+        "created",
+        "modified",
+    ]
+    list_filter = ["transaction_type", "category", "budget", TaggitListFilter]
+    search_fields = ["description"]
+    fieldsets = (
+        ("General information", {"fields": ("description", "user", "date", "transaction_type", "amount")}),
+        ("Options", {"fields": ("budget", "category", "tags")}),
+    )
+    inlines = [TransactionInline]
+    raw_id_fields = ["user"]
+    user_can_access_owned_objects_only = True
+
+
+@admin.register(models.Transaction)
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ["account", "amount", "negative", "reconciled", "created", "modified"]
+    list_filter = ["account", "reconciled"]
+    raw_id_fields = ["journal_entry"]
+    fieldsets = (
+        ("General information", {"fields": ("account", "amount", "journal_entry")}),
+        ("Options", {"fields": ("negative", "reconciled")}),
+    )
+
+
+@admin.register(models.UserProfile)
+class UserProfileAdmin(GuardedModelAdmin):
+    def get_name(self, obj):
+        return obj.user.get_full_name()
+
+    get_name.short_description = "Full name"
+
+    list_display = ["user", "get_name", "default_currency", "default_period", "created", "modified"]
+    ordering = ["user"]
+    search_fields = ["user"]
+    raw_id_fields = ["user"]
+    fieldsets = (("General information", {"fields": ("user", "default_currency", "default_period")}),)
+    user_can_access_owned_objects_only = True
