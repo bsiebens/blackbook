@@ -1,8 +1,6 @@
 from django.contrib import admin
 
 from taggit_helpers.admin import TaggitListFilter
-from guardian.admin import GuardedModelAdmin
-from guardian.shortcuts import get_objects_for_user
 
 from . import models
 from .utilities import format_iban
@@ -30,7 +28,7 @@ class AccountTypeAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.Account)
-class AccountAdmin(GuardedModelAdmin):
+class AccountAdmin(admin.ModelAdmin):
     def display_iban(self, obj):
         return format_iban(obj.iban)
 
@@ -61,20 +59,18 @@ class AccountAdmin(GuardedModelAdmin):
         ("Options", {"fields": ("active", "include_in_net_worth", "virtual_balance")}),
     )
     raw_id_fields = ["user"]
-    user_can_access_owned_objects_only = True
 
 
 @admin.register(models.Category)
-class CategoryAdmin(GuardedModelAdmin):
+class CategoryAdmin(admin.ModelAdmin):
     ordering = ["name"]
     list_display = ["name", "user", "created", "modified"]
     search_fields = ["name"]
     raw_id_fields = ["user"]
-    user_can_access_owned_objects_only = True
 
 
 @admin.register(models.Budget)
-class BudgetAdmin(GuardedModelAdmin):
+class BudgetAdmin(admin.ModelAdmin):
     ordering = ["name"]
     list_display = ["name", "user", "active", "amount", "auto_budget", "auto_budget_period", "created", "modified"]
     search_fields = ["name"]
@@ -90,11 +86,10 @@ class BudgetAdmin(GuardedModelAdmin):
     )
     inlines = [BudgetPeriodInline]
     raw_id_fields = ["user"]
-    user_can_access_owned_objects_only = True
 
 
 @admin.register(models.TransactionJournalEntry)
-class TransactionJournalEntryAdmin(GuardedModelAdmin):
+class TransactionJournalEntryAdmin(admin.ModelAdmin):
     def show_tags(self, obj):
         return ", ".join([tag.name.lower() for tag in obj.tags.all()])
 
@@ -124,7 +119,6 @@ class TransactionJournalEntryAdmin(GuardedModelAdmin):
     )
     inlines = [TransactionInline]
     raw_id_fields = ["user"]
-    user_can_access_owned_objects_only = True
 
 
 @admin.register(models.Transaction)
@@ -139,7 +133,7 @@ class TransactionAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.UserProfile)
-class UserProfileAdmin(GuardedModelAdmin):
+class UserProfileAdmin(admin.ModelAdmin):
     def get_name(self, obj):
         return obj.user.get_full_name()
 
@@ -150,4 +144,3 @@ class UserProfileAdmin(GuardedModelAdmin):
     search_fields = ["user"]
     raw_id_fields = ["user"]
     fieldsets = (("General information", {"fields": ("user", "default_currency", "default_period")}),)
-    user_can_access_owned_objects_only = True
