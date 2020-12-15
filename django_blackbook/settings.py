@@ -33,6 +33,7 @@ INTERNAL_IPS = ["127.0.0.1", "192.168.60.25"]
 # Application definition
 
 INSTALLED_APPS = [
+    "blackbook.apps.BlackbookConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
