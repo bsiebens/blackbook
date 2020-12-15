@@ -17,10 +17,6 @@ class Category(models.Model):
     class Meta:
         verbose_name_plural = "categories"
         ordering = ["name"]
-        permissions = [
-            ("category_owner", "Category owner"),
-            ("category_viewer", "Category viewer"),
-        ]
 
     def __str__(self):
         return self.name

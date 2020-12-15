@@ -39,10 +39,6 @@ class TransactionJournalEntry(models.Model):
         ordering = ["date", "created"]
         verbose_name_plural = "transaction journal entries"
         get_latest_by = "date"
-        permissions = [
-            ("transaction_owner", "Transaction owner"),
-            ("transaction_viewer", "Transaction viewer"),
-        ]
 
     def __str__(self):
         return self.description

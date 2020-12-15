@@ -45,10 +45,6 @@ class Account(models.Model):
 
     class Meta:
         ordering = ["name"]
-        permissions = [
-            ("account_owner", "Account owner"),
-            ("account_viewer", "Account viewer"),
-        ]
 
     def __str__(self):
         return self.name

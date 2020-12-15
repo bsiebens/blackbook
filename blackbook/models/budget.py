@@ -39,10 +39,6 @@ class Budget(models.Model):
 
     class Meta:
         ordering = ["name"]
-        permissions = [
-            ("budget_owner", "Budget owner"),
-            ("budget_viewer", "Budget viewer"),
-        ]
 
     def __str__(self):
         return self.name
