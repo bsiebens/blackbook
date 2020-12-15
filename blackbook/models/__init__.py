@@ -3,3 +3,4 @@ from .userprofile import UserProfile
 from .category import Category
 from .account import Account, AccountType
 from .budget import Budget, BudgetPeriod
+from .transaction import TransactionJournalEntry, Transaction
