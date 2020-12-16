@@ -23,6 +23,7 @@ graphene-django = "==2.13.0"
 django-localflavor = "*"
 djangorestframework = "*"
 django-taggit-serializer = "*"
+djangorestframework-simplejwt = "*"
 
 [requires]
 python_version = "3.8"
