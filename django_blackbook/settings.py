@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
+
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -49,6 +51,7 @@ INSTALLED_APPS = [
     "django_filters",
     "corsheaders",
     "graphene_django",
+    "graphql_jwt.refresh_token.apps.RefreshTokenConfig",
 ]
 
 if DEBUG:
@@ -200,4 +203,11 @@ GRAPHENE = {
     "MIDDLEWARE": [
         "graphql_jwt.middleware.JSONWebTokenMiddleware",
     ],
+}
+
+GRAPHQL_JWT = {
+    "JWT_VERIFY_EXPIRATION": True,
+    "JWT_LONG_RUNNING_REFRESH_TOKEN": True,
+    "JWT_EXPIRATION_DELTA": timedelta(minutes=5),
+    "JWT_REFRESH_EXPIRATION_DELTA": timedelta(days=30),
 }

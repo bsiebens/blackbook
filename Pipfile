@@ -21,6 +21,7 @@ django-cors-headers = "*"
 django-graphql-jwt = "*"
 graphene-django = "==2.13.0"
 django-localflavor = "*"
+pyjwt = "<2"
 
 [requires]
 python_version = "3.8"
