@@ -1,7 +1,11 @@
 from django.contrib.auth import get_user_model
 
-import graphene
 from graphene_django import DjangoObjectType
+from graphene_django.forms.mutation import DjangoFormMutation
+
+import graphene
+
+from ..forms import ProfileForm
 
 
 class UserType(DjangoObjectType):
@@ -18,54 +22,37 @@ class UserType(DjangoObjectType):
         return self.userprofile.default_period
 
 
-class UpdateProfile(graphene.Mutation):
+class ProfileMutation(DjangoFormMutation):
     user = graphene.Field(UserType)
 
-    class Arguments:
-        default_period = graphene.String(required=False)
-        default_currency = graphene.String(required=False)
+    class Meta:
+        form_class = ProfileForm
 
-    def mutate(self, info, default_period=None, default_currency=None):
+    def perform_mutate(form, info):
         user = info.context.user
 
         if user.is_anonymous:
-            raise Exception("Not logged in")
+            return Exception("Not logged in")
 
-        if default_currency is not None:
-            user.userprofile.default_currency = default_currency
-
-        if default_period is not None:
-            user.userprofile.default_period = default_period
-
-        user.userprofile.save()
-        return UpdateProfile(user=user)
-
-
-class CreateUser(graphene.Mutation):
-    user = graphene.Field(UserType)
-
-    class Arguments:
-        username = graphene.String(required=True)
-        password = graphene.String(required=True)
-
-    def mutate(self, info, username, password):
-        user = get_user_model()(username=username)
-
-        user.set_password(password)
+        user.first_name = form.cleaned_data["first_name"]
+        user.last_name = form.cleaned_data["last_name"]
         user.save()
 
-        return CreateUser(user=user)
+        user.userprofile.default_currency = form.cleaned_data["currency"]
+        user.userprofile.default_period = form.cleaned_data["period"]
+        user.userprofile.save()
+
+        return ProfileMutation(user=user)
 
 
 class Mutation(graphene.ObjectType):
-    create_user = CreateUser.Field()
-    update_profile = UpdateProfile.Field()
+    update_user = ProfileMutation.Field()
 
 
 class Query(graphene.ObjectType):
-    me = graphene.Field(UserType)
+    profile = graphene.Field(UserType)
 
-    def resolve_me(self, info):
+    def resolve_profile(self, info):
         user = info.context.user
         if user.is_anonymous:
             raise Exception("Not logged in")
