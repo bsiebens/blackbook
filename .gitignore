@@ -3,6 +3,9 @@
 .vscode/
 .env
 
+frontend/node_modules/
+frontend/public/build/
+
 # Created by https://www.gitignore.io/api/django
 # Edit at https://www.gitignore.io/?templates=django
 
