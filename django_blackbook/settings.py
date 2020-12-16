@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "django_filters",
     "corsheaders",
     "graphene_django",
+    "rest_framework",
 ]
 
 if DEBUG:
@@ -200,4 +201,12 @@ GRAPHENE = {
     "MIDDLEWARE": [
         "graphql_jwt.middleware.JSONWebTokenMiddleware",
     ],
+}
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
