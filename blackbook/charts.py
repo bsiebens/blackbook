@@ -93,7 +93,9 @@ class AccountChart(Chart):
         }
 
         if abs((self.end_date - self.start_date).days) > 150:
-            options["scales"]["xAxes"]["time"]["unit"]["week"]
+            options["scales"]["xAxes"][0]["time"]["unit"] = "week"
+
+        return options
 
     def _generate_chart_data(self):
         dates = []
@@ -124,6 +126,9 @@ class AccountChart(Chart):
                 "pointRadius": 4,
                 "data": [],
             }
+
+            if abs((self.end_date - self.start_date).days) > 150:
+                account_data["pointRadius"] = 0
 
             counter += 1
 
