@@ -199,5 +199,59 @@
         </div>
     </aside>
 
-    {% block content %}{% endblock content %}
+    <section class="section is-title-bar">
+        <div class="level">
+            <div class="level-left">
+                <div class="level-item">
+                    <ul>
+                        <li>BlackBook</li>
+                        {% block breadcrumbs %}
+                            <li>Dashboard</li>
+                        {% endblock %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="hero is-hero-bar is-main-hero">
+        {% block hero-section %}{% endblock %}
+    </section>
+
+    <section class="section is-main-section">
+        {% if messages %}
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </section>
+
+    <footer class="footer">
+        <div class="container-fluid">
+            <div class="level">
+                <div class="level-left">
+                    <div class="level-item">
+                        &copy; {% now "Y" %} 
+                    </div>
+                    <div class="level-item">
+                        Bernard Siebens
+                    </div>
+                    <div class="level-item">
+                        {{ version }}
+                    </div>
+                </div>
+                <div class="level-right">
+                    <div class="level-item">
+                        <div class="logo">
+                            <a href="https://github.com/bsiebens/blackbook">
+                                <span class="icon"><i class="fa fa-github"></i></span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
 {% endblock body %}
