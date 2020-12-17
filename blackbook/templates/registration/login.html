@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% block html-class %}{% endblock %}
+
 {% block title %}
     login
 {% endblock title  %}
@@ -9,12 +11,12 @@
         <div class="hero-body">
             <div class="container">
                 <div class="columns is-centered">
-                    <div class="column is-two-fifths">
+                    <div class="column is-three-fifths">
                         <div class="card has-card-header-background">
                             <header class="card-header">    
                                 <p class="card-header-title">
                                     <span class="icon"><i class="fas fa-lock"></i></span>
-                                    <span>Blackbook - Login</span>
+                                    <span>BlackBook - Login</span>
                                 </p>
                             </header>
                             <div class="card-content">
@@ -56,7 +58,7 @@
                                     {% if next %}
                                         <input type="hidden" name="next" value="{{ next }}">
                                     {% else %}
-                                        <input type="hidden" name="next" value="{% url "blackbook:index" %}">
+                                        <input type="hidden" name="next" value="{% url "blackbook:dashboard" %}">
                                     {% endif %}
                                     
                                     <div class="field">
