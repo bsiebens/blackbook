@@ -1,8 +1,7 @@
 from django.db import models
 from django.conf import settings
 
-from babel.numbers import get_currency_name
-from babel import Locale
+from ..utilities import get_currency
 
 
 def get_default_value(key, default_value=None, user=None):
@@ -22,7 +21,5 @@ def get_default_currency(user=None):
 
 def get_currency_choices(user=None):
     currencies = get_default_value("currencies", [])
-    locale = get_default_value("language_code", "en-us", user).split("-")
-    locale = Locale(locale[0], locale[1])
 
-    return [(currency, get_currency_name(currency, locale=locale)) for currency in currencies]
+    return [(currency, get_currency(currency=currency, user=user)) for currency in currencies]

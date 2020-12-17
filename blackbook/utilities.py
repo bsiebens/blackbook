@@ -2,6 +2,8 @@ from django.utils import timezone
 
 from dateutil.relativedelta import relativedelta, MO
 from datetime import datetime, date
+from babel.numbers import get_currency_name
+from babel import Locale
 
 
 def calculate_period(periodicity, start_date=timezone.now(), as_tuple=False):
@@ -47,6 +49,31 @@ def calculate_period(periodicity, start_date=timezone.now(), as_tuple=False):
     return {"start_date": start_date, "end_date": end_date}
 
 
+def display_period(periodicty, start_date=timezone.now().date()):
+    if periodicty == "day":
+        return start_date.strftime("%d %b %Y")
+    elif periodicty == "week":
+        return "Week of {date}".format(date=(start_date + relativedelta(weekday=MO(-1))).strftime("%d %b %Y"))
+    elif periodicty == "month":
+        return start_date.strftime("%b %Y")
+    elif periodicty == "quarter":
+        if start_date.month <= 3:
+            return "Quarter 1 {year}".format(year=start_date.year)
+        elif start_date.month <= 6:
+            return "Quarter 2 {year}".format(year=start_date.year)
+        elif start_date.month <= 9:
+            return "Quarter 3 {year}".format(year=start_date.year)
+        else:
+            return "Quarter 4 {year}".format(year=start_date.year)
+    elif periodicty == "half_year":
+        if start_date.month <= 6:
+            return "First half {year}".format(year=start_date.year)
+        else:
+            return "Second half {year}".format(year=start_date.year)
+    else:
+        return start_date.year
+
+
 def format_iban(value, grouping=4):
     if value is None:
         return None
@@ -54,3 +81,12 @@ def format_iban(value, grouping=4):
     value = value.upper().replace(" ", "").replace("-", "")
 
     return " ".join(value[i : i + grouping] for i in range(0, len(value), grouping))
+
+
+def get_currency(currency, user=None):
+    from .models import get_default_value
+
+    locale = get_default_value("language_code", "en-us", user).split("-")
+    locale = Locale(locale[0], locale[1])
+
+    return get_currency_name(currency, locale=locale)
