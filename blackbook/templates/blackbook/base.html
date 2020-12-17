@@ -87,6 +87,12 @@
                             <span class="icon"><i class="fas fa-user"></i></span>
                             <span>Profile</span>
                         </a>
+                        {% if request.user.is_superuser or request.user.is_staff %}
+                            <a href="/admin" class="navbar-item">
+                                <span class="icon"><i class="fas fa-cog"></i></span>
+                                <span>Admin</span>
+                            </a>
+                        {% endif %}
                         <hr class="navbar-divider">
                         <a class="navbar-item" href="{% url "logout" %}">
                             <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
