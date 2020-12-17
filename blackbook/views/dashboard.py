@@ -28,7 +28,7 @@ def dashboard(request):
             "net_worth": Money(0, currency),
         },
         "period": display_period(periodicty=period),
-        "budget": {"available": Money(0, currency), "used": Money(0, currency)},
+        "budget": {"available": Money(0, currency), "used": Money(0, currency), "per_day": None},
         "budgets": budgets,
         "categories": Money(sum([category.total.amount for category.total in Category.objects.filter(user=request.user)]), currency),
         "charts": {
@@ -51,7 +51,14 @@ def dashboard(request):
         data["totals"]["period"]["out"] += convert_money(account.total_out_for_period(), currency)
 
     for account in accounts.filter(include_in_net_worth=True):
-        data["totals"]["period"]["net_worth"] += convert_money(account.balance(), currency)
+        data["totals"]["net_worth"] += convert_money(account.balance, currency)
+
+    for budget in budgets:
+        data["budget"]["available"] += convert_money(budget.available(), currency)
+        data["budget"]["used"] += convert_money(budget.used(), currency)
+    data["budget"]["per_day"] = (
+        data["budget"]["used"] / (calculate_period(periodicity=period)["end_date"] - calculate_period(periodicity=period)["start_date"]).days * -1
+    )
 
     data["totals"]["period"]["total"] = data["totals"]["period"]["in"] + data["totals"]["period"]["out"]
 
