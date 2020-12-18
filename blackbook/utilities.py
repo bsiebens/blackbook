@@ -87,6 +87,6 @@ def get_currency(currency, user=None):
     from .models import get_default_value
 
     locale = get_default_value("language_code", "en-us", user).split("-")
-    locale = Locale(locale[0], locale[1])
+    locale = Locale(locale[0], locale[1].upper())
 
     return get_currency_name(currency, locale=locale)
