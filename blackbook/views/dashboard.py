@@ -4,11 +4,20 @@ from django.urls import reverse
 from django.utils import timezone
 
 from djmoney.money import Money
+from djmoney.contrib.exchange.backends import OpenExchangeRatesBackend
 from djmoney.contrib.exchange.models import convert_money
 
 from ..models import get_default_currency, Account, BudgetPeriod, Category, TransactionJournalEntry
-from ..utilities import display_period, calculate_period
+from ..utilities import display_period, calculate_period, set_message_and_redirect
 from ..charts import AccountChart
+
+
+def update_exchange_rates(request):
+    OpenExchangeRatesBackend().update_rates()
+
+    return set_message_and_redirect(
+        request, "s|Exchange rates have been updated from Open Exchange Rates.", request.GET.get("next", reverse("blackbook:dashboard"))
+    )
 
 
 @login_required
