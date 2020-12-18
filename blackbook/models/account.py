@@ -9,18 +9,23 @@ from djmoney.models.fields import CurrencyField
 from djmoney.money import Money
 
 from .base import get_default_currency, get_default_value, get_currency_choices
-from ..utilities import calculate_period
+from ..utilities import calculate_period, unique_slugify
 
 
 class AccountType(models.Model):
     name = models.CharField(max_length=250)
     icon = models.CharField(max_length=250, default="fa-coins")
+    slug = models.SlugField()
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        unique_slugify(self, self.name)
+        super(AccountType, self).save(*args, **kwargs)
 
 
 class Account(models.Model):
