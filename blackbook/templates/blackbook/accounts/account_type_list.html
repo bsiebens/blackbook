@@ -137,7 +137,7 @@
                 </section>
                 <footer class="modal-card-foot">
                     <button class="button jb-modal-close">Cancel</button>
-                    <form method="post" action="">
+                    <form method="post" action="{% url "blackbook:accounts_delete" %}">
                         {% csrf_token %}
                         <input type="hidden" name="account_id" value="{{ account.id }}">
                         <button class="button is-danger" type="submit">Delete</button>

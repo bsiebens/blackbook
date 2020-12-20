@@ -9,5 +9,6 @@ urlpatterns = [
     path("update_exchange_rates/", dashboard.update_exchange_rates, name="update_exchange_rates"),
     #
     # Account Types
+    path("accounts/delete/", accounts.delete, name="accounts_delete"),
     path("accounts/<str:account_type>/", accounts.accounts, name="accounts"),
 ]
