@@ -65,9 +65,9 @@
                 <div class="card-content">
                     <div class="is-user-avatar image has-max-width is-aligned-center">
                         {% if request.user.get_full_name != "" %}
-                            <img src="https://avatars.dicebear.com/v2/initials/{{ request.user.get_full_name|slugify }}.svg">
+                            <img src="https://avatars.dicebear.com/api/initials/{{ request.user.get_full_name|slugify }}.svg">
                         {% else %}
-                            <img src="https://avatars.dicebear.com/v2/initials/{{ request.user.get_username }}.svg">
+                            <img src="https://avatars.dicebear.com/api/initials/{{ request.user.get_username }}.svg">
                         {% endif %}
                     </div>
 

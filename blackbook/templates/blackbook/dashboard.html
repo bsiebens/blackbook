@@ -19,9 +19,9 @@
                 <div class="level-item is-hero-avatar-item">
                     <div class="image is-user-avatar">
                         {% if request.user.get_full_name != "" %}
-                            <img src="https://avatars.dicebear.com/v2/initials/{{ request.user.get_full_name|slugify }}.svg">
+                            <img src="https://avatars.dicebear.com/api/initials/{{ request.user.get_full_name|slugify }}.svg">
                         {% else %}
-                            <img src="https://avatars.dicebear.com/v2/initials/{{ request.user.username }}.svg">
+                            <img src="https://avatars.dicebear.com/api/initials/{{ request.user.username }}.svg">
                         {% endif %}
                     </div>
                 </div>

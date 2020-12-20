@@ -67,9 +67,9 @@
                     <a class="navbar-link is-arrowless">
                         <div class="is-user-avatar">
                             {% if request.user.get_full_name != "" %}
-                                <img src="https://avatars.dicebear.com/v2/initials/{{ request.user.get_full_name|slugify }}.svg" alt="{{ request.user.get_full_name }}">
+                                <img src="https://avatars.dicebear.com/api/initials/{{ request.user.get_full_name|slugify }}.svg" alt="{{ request.user.get_full_name }}">
                             {% else %}
-                                <img src="https://avatars.dicebear.com/v2/initials/{{ request.user.get_username|slugify }}.svg" alt="{{ request.user.get_username }}">
+                                <img src="https://avatars.dicebear.com/api/initials/{{ request.user.get_username|slugify }}.svg" alt="{{ request.user.get_username }}">
                             {% endif %}
                         </div>
                         <div class="is-user-name">
