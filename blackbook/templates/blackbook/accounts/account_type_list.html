@@ -93,7 +93,25 @@
                                     </td>
                                     <td data-label="Virtual balance">{{ account.virtual_balance }}</td>
                                     <td data-label="Current balance">{% money_localize account.balance %}</td>
-                                    <td></td>
+                                    <td>
+                                        <div class="buttons is-right">
+                                            <a class="button is-info is-small" href="" type="button">
+                                                <span class="icon">
+                                                    <i class="fas fa-eye"></i>
+                                                </span>
+                                            </a>
+                                            <a class="button is-primary is-small" href="" type="button">
+                                                <span class="icon">
+                                                    <i class="fas fa-edit"></i>
+                                                </span>
+                                            </a>
+                                            <a class="button is-danger is-small jb-modal" data-target="modal-account-delete-{{ account.id }}" type="button">
+                                                <span class="icon">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </span>
+                                            </a>
+                                        </div>                                            
+                                    </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -103,3 +121,30 @@
         </div>
     </div>
 {% endblock content %}
+
+{% block modals %}
+    {% for account in accounts %}
+        <div id="modal-account-delete-{{ account.id }}" class="modal">
+            <div class="modal-background jb-modal-close"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Confirm action</p>
+                    <button class="delete jb-modal-close" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <p>This will permanently delete account <b>{{ account.name }}</b>.</p>
+                    <p>Are you sure?</p>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button jb-modal-close">Cancel</button>
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        <input type="hidden" name="account_id" value="{{ account.id }}">
+                        <button class="button is-danger" type="submit">Delete</button>
+                    </form>
+                </footer>
+            </div>
+            <button class="modal-close is-large jb-modal-close" aria-label="close"></button>
+        </div>
+    {% endfor %}
+{% endblock modals %}
