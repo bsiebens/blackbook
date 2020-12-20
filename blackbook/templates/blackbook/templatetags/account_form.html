@@ -1,0 +1,30 @@
+{% load formtags %}
+
+<div id="modal-account-add" class="modal">
+    <div class="modal-background jb-modal-close"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Add account</p>
+            <button class="delete jb-modal-close" aria-label="close"></button>
+        </header>
+        <form method="post" action="{% url "blackbook:accounts_add" %}">
+            <section class="modal-card-body">
+                {% csrf_token %}
+
+                {% form_field account_form.name %}
+                {% form_field account_form.account_type %}
+                {% form_field account_form.currency %}
+                {% form_field account_form.iban %}
+                <hr />
+                {% form_field account_form.active %}
+                {% form_field account_form.include_in_net_worth %}
+                {% form_field account_form.virtual_balance %}
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button jb-modal-close">Cancel</button>
+                <button class="button is-primary" type="submit">Submit</button>
+            </footer>
+        </form>
+    </div>
+    <button class="modal-close is-large jb-modal-close" aria-label="close"></button>
+</div>

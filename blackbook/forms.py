@@ -1,6 +1,12 @@
 from django import forms
 
-from .models import get_currency_choices, Budget
+from .models import get_currency_choices, Budget, Account
+
+
+class AccountForm(forms.ModelForm):
+    class Meta:
+        model = Account
+        fields = ["name", "account_type", "active", "include_in_net_worth", "iban", "currency", "virtual_balance"]
 
 
 class UserProfileForm(forms.Form):

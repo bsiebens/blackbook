@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from django.db.models import Sum
+from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
@@ -64,21 +64,29 @@ class Account(models.Model):
         return self.balance_until_date()
 
     def balance_until_date(self, date=timezone.now()):
-        total = self.transactions.filter(journal_entry__date__lte=date).aggregate(total=Coalesce(Sum("amount"), 0))["total"]
+        total = self.transactions.filter(journal_entry__date__lte=date).aggregate(total=Coalesce(Sum("amount"), Value(0)))["total"] or 0
+
+        print(total)
 
         return Money(total, self.currency)
 
     def total_in_for_period(self, period="month", start_date=timezone.now()):
         period = calculate_period(periodicity=period, start_date=start_date, as_tuple=True)
         total = (
-            self.transactions.filter(journal_entry__date__range=period).filter(negative=False).aggregate(total=Coalesce(Sum("amount"), 0))["total"]
-        )
+            self.transactions.filter(journal_entry__date__range=period)
+            .filter(negative=False)
+            .aggregate(total=Coalesce(Sum("amount"), Value(0)))["total"]
+        ) or 0
 
         return Money(total, self.currency)
 
     def total_out_for_period(self, period="month", start_date=timezone.now()):
         period = calculate_period(periodicity=period, start_date=start_date, as_tuple=True)
-        total = self.transactions.filter(journal_entry__date__range=period).filter(negative=True).aggregate(total=Coalesce(Sum("amount"), 0))["total"]
+        total = (
+            self.transactions.filter(journal_entry__date__range=period)
+            .filter(negative=True)
+            .aggregate(total=Coalesce(Sum("amount"), Value(0)))["total"]
+        ) or 0
 
         return Money(total, self.currency)
 

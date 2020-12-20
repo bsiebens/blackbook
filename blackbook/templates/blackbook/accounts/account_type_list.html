@@ -32,7 +32,7 @@
                         </a>
                     </div>
                     <div class="level-item">
-                        <a class="button is-primary" href="">
+                        <a class="button is-primary" href="{% url "blackbook:accounts_add" %}">
                             Add account
                         </a>
                     </div>
@@ -61,7 +61,7 @@
                                 <tr>
                                     <td class="is-image-cell">
                                         <div class="image">
-                                            <img src="https://avatars.dicebear.com/api/jdenticon/{{ account.name|slugify }}.svg">
+                                            <img src="https://avatars.dicebear.com/api/jdenticon/{{ account.slug }}.svg">
                                         </div>
                                     </td>
                                     <td data-label="Account name">
@@ -70,13 +70,7 @@
                                         </a>
                                     </td>
                                     <td data-label="Currency">{{ account.get_currency_display }}</td>
-                                    <td data-label="IBAN">
-                                        {% if account.iban is None %}
-                                            {{ account.iban|iban }}
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
+                                    <td data-label="IBAN">{{ account.iban|iban|default:"-" }}</td>
                                     <td data-label="Active?">
                                         <span class="icon">
                                             {% if account.active %}
@@ -104,7 +98,7 @@
                                                     <i class="fas fa-eye"></i>
                                                 </span>
                                             </a>
-                                            <a class="button is-primary is-small" href="" type="button">
+                                            <a class="button is-primary is-small" href="{% url "blackbook:accounts_edit" account.slug %}" type="button">
                                                 <span class="icon">
                                                     <i class="fas fa-edit"></i>
                                                 </span>

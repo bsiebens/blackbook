@@ -1,4 +1,5 @@
 {% load static %}
+{% load modalforms %}
 
 <!DOCTYPE html>
 <html lang="en"{% block html-class%} class="has-aside-left has-aside-mobile-transition has-navbar-fixed-top has-aside-expanded"{% endblock %}>
@@ -28,6 +29,7 @@
 
         <div id="ui-overlay" class="ui-overlay is-hidden"></div>
 
+        {% account_form %}
         {% block modals %}{% endblock %}
 
         <script type="text/javascript" src="{% static "js/perfect-scrollbar.min.js" %}"></script>
