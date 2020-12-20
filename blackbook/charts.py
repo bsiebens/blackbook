@@ -44,6 +44,7 @@ class Chart:
             "legend": {
                 "display": False,
             },
+            "animation": {"duration": 0},
             "responsive": True,
             "tooltips": {
                 "backgroundColor": "#f5f5f5",

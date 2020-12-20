@@ -3,8 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 
 from ..models import AccountType, Account
-from ..utilities import set_message_and_redirect
+from ..utilities import set_message_and_redirect, calculate_period
 from ..forms import AccountForm
+from ..charts import AccountChart
 
 
 @login_required
@@ -17,11 +18,21 @@ def accounts(request, account_type, account_name=None):
                 request, "f|You don't have access to this account.", reverse("blackbook:accounts", kwargs={"account_type": account_type})
             )
 
+        period = request.user.userprofile.default_period
+        account_chart = AccountChart(
+            data=[account],
+            start_date=calculate_period(periodicity=period)["start_date"],
+            end_date=calculate_period(periodicity=period)["end_date"],
+            user=request.user,
+        ).generate_json()
+
+        return render(request, "blackbook/accounts/detail.html", {"account": account, "account_chart": account_chart})
+
     else:
         account_type = get_object_or_404(AccountType, slug=account_type)
         accounts = Account.objects.filter(account_type=account_type).filter(user=request.user)
 
-        return render(request, "blackbook/accounts/account_type_list.html", {"account_type": account_type, "accounts": accounts})
+        return render(request, "blackbook/accounts/list.html", {"account_type": account_type, "accounts": accounts})
 
 
 @login_required
@@ -49,7 +60,7 @@ def account_add_edit(request, account_name=None):
             reverse("blackbook:accounts", kwargs={"account_type": account.account_type.slug}),
         )
 
-    return render(request, "blackbook/accounts/account_form.html", {"account_form": account_form, "account": account})
+    return render(request, "blackbook/accounts/form.html", {"account_form": account_form, "account": account})
 
 
 @login_required

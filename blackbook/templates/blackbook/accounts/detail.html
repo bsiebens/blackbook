@@ -1,0 +1,73 @@
+{% extends 'blackbook/base.html' %}
+
+{% load djmoney %}
+{% load iban %}
+
+{% block titles %}
+    Account
+{% endblock titles %}
+
+{% block breadcrumbs %}
+    <li>Accounts</li>
+    <li>{{ account.account_type.name }}s</li>
+{% endblock breadcrumbs %}
+
+{% block hero-section %}
+    <div class="hero-body">
+        <div class="level">
+            <div class="level-left">
+                <div class="level-item is-hero-avatar-item">
+                    <div class="image is-user-avatar">
+                        <img src="https://avatars.dicebear.com/api/jdenticon/{{ account.slug }}.svg" style="width: 4rem; height: 4rem;">
+                    </div>
+                </div>
+                <div class="level-item is-hero-content-item">
+                    <div>
+                        <h1 class="title is-spaced">
+                            {{ account.name }}
+                        </h1>
+                        <h3 class="subtitle">
+                            {{ account.account_type.name }}
+                            {% if account.iban is not None %}
+                             - {{ account.iban|iban }}
+                            {% endif %}
+                        </h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock hero-section %}
+
+{% block content %}
+    <div class="card">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon">
+                    <i class="fas fa-chart-line"></i>
+                </span>
+                <span>Account overview</span>
+            </p>
+        </header>
+        <div class="card-content">
+            <div class="chart-area">
+                <div style="height: 100%;">
+                    <div class="chartjs-size-monitor">
+                        <div class="chartjs-size-monitor-expand">
+                            <div></div>
+                        </div>
+                        <div class="chartjs-size-monitor-shrink">
+                            <div></div>
+                        </div>
+                    </div>
+                    <canvas id="account-line-chart" width="2992" height="1000" class="chartjs-render-monitor" style="display: block; height: 400px; width: 1197px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block javascript %}
+    let accountChartLineCTX = document.getElementById("account-line-chart").getContext("2d");
+    new Chart(accountChartLineCTX, {{ account_chart|safe }});
+{% endblock javascript %}
