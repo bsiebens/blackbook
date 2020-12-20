@@ -64,7 +64,11 @@
                                             <img src="https://avatars.dicebear.com/api/jdenticon/{{ account.name|slugify }}.svg">
                                         </div>
                                     </td>
-                                    <td data-label="Account name">{{ account.name }}</td>
+                                    <td data-label="Account name">
+                                        <a href="{% url "blackbook:accounts" account_type.slug account.slug %}">
+                                            {{ account.name }}
+                                        </a>
+                                    </td>
                                     <td data-label="Currency">{{ account.get_currency_display }}</td>
                                     <td data-label="IBAN">
                                         {% if account.iban is None %}
@@ -95,7 +99,7 @@
                                     <td data-label="Current balance">{% money_localize account.balance %}</td>
                                     <td>
                                         <div class="buttons is-right">
-                                            <a class="button is-info is-small" href="" type="button">
+                                            <a class="button is-info is-small" href="{% url "blackbook:accounts" account_type.slug account.slug %}" type="button">
                                                 <span class="icon">
                                                     <i class="fas fa-eye"></i>
                                                 </span>

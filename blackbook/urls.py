@@ -11,4 +11,5 @@ urlpatterns = [
     # Account Types
     path("accounts/delete/", accounts.delete, name="accounts_delete"),
     path("accounts/<str:account_type>/", accounts.accounts, name="accounts"),
+    path("accounts/<str:account_type>/<str:account>/", accounts.accounts, name="accounts"),
 ]

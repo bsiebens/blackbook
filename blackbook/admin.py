@@ -38,6 +38,7 @@ class AccountAdmin(admin.ModelAdmin):
     ordering = ["name"]
     list_display = [
         "name",
+        "slug",
         "account_type",
         "currency",
         "display_iban",
@@ -54,12 +55,13 @@ class AccountAdmin(admin.ModelAdmin):
         (
             "General information",
             {
-                "fields": ("name", "user", "account_type", "iban", "currency"),
+                "fields": ("name", "slug", "user", "account_type", "iban", "currency"),
             },
         ),
         ("Options", {"fields": ("active", "include_in_net_worth", "virtual_balance")}),
     )
     raw_id_fields = ["user"]
+    readonly_fields = ["slug"]
 
 
 @admin.register(models.Category)

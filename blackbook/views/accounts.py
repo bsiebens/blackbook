@@ -7,11 +7,20 @@ from ..utilities import set_message_and_redirect
 
 
 @login_required
-def accounts(request, account_type):
-    account_type = get_object_or_404(AccountType, slug=account_type)
-    accounts = Account.objects.filter(account_type=account_type).filter(user=request.user)
+def accounts(request, account_type, account=None):
+    if account is not None:
+        account = get_object_or_404(Account, slug=account)
 
-    return render(request, "blackbook/accounts/account_type_list.html", {"account_type": account_type, "accounts": accounts})
+        if account.user != request.user:
+            return set_message_and_redirect(
+                request, "f|You don't have access to this account.", reverse("blackbook:accounts", kwargs={"account_type": account_type})
+            )
+
+    else:
+        account_type = get_object_or_404(AccountType, slug=account_type)
+        accounts = Account.objects.filter(account_type=account_type).filter(user=request.user)
+
+        return render(request, "blackbook/accounts/account_type_list.html", {"account_type": account_type, "accounts": accounts})
 
 
 @login_required
