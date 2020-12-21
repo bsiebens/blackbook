@@ -6,7 +6,7 @@ from datetime import timedelta
 
 import json
 
-from .models import get_default_currency
+from .models import get_default_currency, TransactionJournalEntry
 from .utilities import get_currency
 
 
@@ -75,6 +75,70 @@ class Chart:
                 ],
             },
         }
+
+
+class TransactionChart(Chart):
+    def __init__(self, data, user=None, income=False, expenses_budget=False, expenses_category=False, *args, **kwargs):
+        self.income = income
+        self.expenses_budget = expenses_budget
+        self.expenses_category = expenses_category
+        self.user = user
+
+        super().__init__(data=data, *args, **kwargs)
+
+    def _generate_chart_options(self):
+        options = self._get_default_options()
+
+        options["scales"] = {}
+        options["legend"] = {"position": "right"}
+
+        return options
+
+    def _generate_chart_data(self):
+        data = {"type": "pie", "data": {"labels": [], "datasets": [{"data": [], "borderWidth": [], "backgroundColor": [], "borderColor": []}]}}
+
+        if self.income:
+            self.data = self.data.filter(negative=False)
+
+        if not self.income:
+            self.data = self.data.filter(negative=True)
+
+        sources_amounts = {}
+
+        for transaction in self.data:
+            if self.income:
+                if transaction.journal_entry.transaction_type == TransactionJournalEntry.TransactionType.START:
+                    amount = sources_amounts.get("Initial deposit", Money(0, get_default_currency(user=self.user)))
+                    amount += convert_money(transaction.amount, get_default_currency(user=self.user))
+                    sources_amounts["Initial deposit"] = amount
+
+                else:
+                    amount = sources_amounts.get(transaction.journal_entry.from_account.name, Money(0, get_default_currency(user=self.user)))
+                    amount += convert_money(transaction.amount, get_default_currency(user=self.user))
+                    sources_amounts[transaction.journal_entry.from_account.name] = amount
+
+            else:
+                if self.expenses_budget:
+                    amount = sources_amounts.get(transaction.journal_entry.budget.name, Money(0, get_default_currency(user=self.user)))
+                    amount += convert_money(transaction.amount, get_default_currency(user=self.user))
+                    sources_amounts[transaction.journal_entry.budget.name] = amount
+
+                if self.expenses_category:
+                    amount = sources_amounts.get(transaction.journal_entry.category.name, Money(0, get_default_currency(user=self.user)))
+                    amount += convert_money(transaction.amount, get_default_currency(user=self.user))
+                    sources_amounts[transaction.journal_entry.category.name] = amount
+
+        counter = 1
+        for account, amount in sources_amounts.items():
+            color = get_color_code(counter)
+
+            data["data"]["labels"].append(account)
+            data["data"]["datasets"][0]["data"].append(float(amount.amount))
+            data["data"]["datasets"][0]["borderWidth"].append(2)
+            data["data"]["datasets"][0]["backgroundColor"].append("rgba({color}, 1.0)".format(color=color))
+            data["data"]["datasets"][0]["borderColor"].append("rgba({color}, 1.0)".format(color=color))
+
+        return data
 
 
 class AccountChart(Chart):

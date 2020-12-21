@@ -5,7 +5,7 @@ from django.urls import reverse
 from ..models import AccountType, Account
 from ..utilities import set_message_and_redirect, calculate_period
 from ..forms import AccountForm
-from ..charts import AccountChart
+from ..charts import AccountChart, TransactionChart
 
 
 @login_required
@@ -25,8 +25,21 @@ def accounts(request, account_type, account_name=None):
             end_date=calculate_period(periodicity=period)["end_date"],
             user=request.user,
         ).generate_json()
+        income_chart = TransactionChart(data=account.transactions, user=request.user, income=True).generate_json()
+        expense_budget_chart = TransactionChart(data=account.transactions, user=request.user, expenses_budget=True).generate_json()
+        expense_category_chart = TransactionChart(data=account.transactions, user=request.user, expenses_category=True).generate_json()
 
-        return render(request, "blackbook/accounts/detail.html", {"account": account, "account_chart": account_chart})
+        return render(
+            request,
+            "blackbook/accounts/detail.html",
+            {
+                "account": account,
+                "account_chart": account_chart,
+                "income_chart": income_chart,
+                "expense_budget_chart": expense_budget_chart,
+                "expense_category_chart": expense_category_chart,
+            },
+        )
 
     else:
         account_type = get_object_or_404(AccountType, slug=account_type)
