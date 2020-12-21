@@ -28,6 +28,9 @@ def accounts(request, account_type, account_name=None):
         income_chart = TransactionChart(data=account.transactions, user=request.user, income=True).generate_json()
         expense_budget_chart = TransactionChart(data=account.transactions, user=request.user, expenses_budget=True).generate_json()
         expense_category_chart = TransactionChart(data=account.transactions, user=request.user, expenses_category=True).generate_json()
+        income_chart_count = account.transactions.filter(negative=False).count()
+        expense_budget_chart_count = account.transactions.filter(negative=True).exclude(journal_entry__budget=None).count()
+        expense_category_chart_count = account.transactions.filter(negative=True).exclude(journal_entry__category=None).count()
 
         return render(
             request,
@@ -38,6 +41,9 @@ def accounts(request, account_type, account_name=None):
                 "income_chart": income_chart,
                 "expense_budget_chart": expense_budget_chart,
                 "expense_category_chart": expense_category_chart,
+                "income_chart_count": income_chart_count,
+                "expense_budget_chart_count": expense_budget_chart_count,
+                "expense_category_chart_count": expense_category_chart_count,
             },
         )
 
