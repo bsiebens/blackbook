@@ -284,64 +284,89 @@
                                 <tr>
                                     <td>
                                         <span class="icon">
-                                            <i class="fas fa-exchange-alt"></i>
-                                        </span>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-
-                            {% for account in accounts %}
-                                <tr>
-                                    <td class="is-image-cell">
-                                        <div class="image">
-                                            <img src="https://avatars.dicebear.com/api/jdenticon/{{ account.slug }}.svg" class="is-rounded">
-                                        </div>
-                                    </td>
-                                    <td data-label="Account name">
-                                        <a href="{% url "blackbook:accounts" account_type.slug account.slug %}">
-                                            {{ account.name }}
-                                        </a>
-                                    </td>
-                                    <td data-label="Currency">{{ account.get_currency_display }}</td>
-                                    <td data-label="IBAN">{{ account.iban|iban|default:"-" }}</td>
-                                    <td data-label="Active?">
-                                        <span class="icon">
-                                            {% if account.active %}
-                                                <i class="fas fa-check"></i>
+                                            {% if transaction.journal_entry.transaction_type == "transfer" %}
+                                                <i class="fas fa-exchange-alt"></i>
+                                            {% elif transaction.journal_entry.transaction_type == "withdrawal" %}
+                                                <i class="fas fa-long-arrow-alt-left"></i>
                                             {% else %}
-                                                <i class="fas fa-times"></i>
+                                                <i class="fas fa-long-arrow-alt-right"></i>
                                             {% endif %}
                                         </span>
                                     </td>
-                                    <td data-label="Include in net worth?">
-                                        <span class="icon">
-                                            {% if account.include_in_net_worth %}
+                                    <td data-label="Reconciled?">
+                                        {% if transaction.reconciled %}
+                                            <span class="icon">
                                                 <i class="fas fa-check"></i>
+                                            </span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td data-label="Transaction">{{ transaction.journal_entry.description }}</td>
+                                    <td data-label="Amount">
+                                        <span class="has-text-{% if transaction.negative %}danger{% else %}success{% endif %}">
+                                            {% if not transaction.negative %}+{% endif %}{% money_localize transaction.amount %}
+                                        </span>
+                                    </td>
+                                    <td data-label="Date">{{ transaction.journal_entry.date|date:"d b Y" }}</td>
+                                    <td data-label="Category">
+                                        {% if transaction.journal_entry.category is not None %}
+                                            <span class="tag is-success">
+                                                <span class="icon">
+                                                    <i class="fas fa-hashtag"></i>
+                                                </span>
+                                                <span>{{ transaction.journal_entry.category.name }}</span>
+                                            </span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td data-label="Budget">
+                                        {% if transaction.journal_entry.budget is not None %}
+                                            <span class="tag is-warning">
+                                                <span class="icon">
+                                                    <i class="fas fa-chart-pie"></i>
+                                                </span>
+                                                <span>{{ transaction.journal_entry.budget.name }}</span>
+                                            </span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td data-label="Tags">
+                                        <span class="tags">
+                                            {% if transaction.journal_entry.tags.count == 0 %}
+                                                -
                                             {% else %}
-                                                <i class="fas fa-times"></i>
+                                                {% for tag in transaction.journal_entry.tags.all %}
+                                                    <span class="tag is-info">
+                                                        <span class="icon">
+                                                            <i class="fas fa-tag"></i>
+                                                        </span>
+                                                        <span>{{ tag.name }}</span>
+                                                    </span>
+                                                {% endfor %}
                                             {% endif %}
                                         </span>
                                     </td>
-                                    <td data-label="Virtual balance">{{ account.virtual_balance }}</td>
-                                    <td data-label="Current balance">{% money_localize account.balance %}</td>
                                     <td>
                                         <div class="buttons is-right">
-                                            <a class="button is-info is-small" href="{% url "blackbook:accounts" account_type.slug account.slug %}" type="button">
+                                            <a class="button is-info is-small" href="" type="button">
                                                 <span class="icon">
                                                     <i class="fas fa-eye"></i>
                                                 </span>
                                             </a>
-                                            <a class="button is-primary is-small" href="{% url "blackbook:accounts_edit" account.slug %}" type="button">
+                                            <a class="button is-primary is-small" href="" type="button">
                                                 <span class="icon">
                                                     <i class="fas fa-edit"></i>
                                                 </span>
                                             </a>
-                                            <a class="button is-danger is-small jb-modal" data-target="modal-account-delete-{{ account.id }}" type="button">
+                                            <a class="button is-danger is-small jb-modal" data-target="modal-transaction-delete-{{ transaction.journal_entry.id }}" type="button">
                                                 <span class="icon">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </span>
                                             </a>
-                                        </div>                                            
+                                        </div>                    
                                     </td>
                                 </tr>
                             {% endfor %}

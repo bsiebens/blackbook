@@ -136,7 +136,7 @@ class TransactionChart(Chart):
             data["data"]["datasets"][0]["data"].append(float(amount.amount))
             data["data"]["datasets"][0]["borderWidth"].append(2)
             data["data"]["datasets"][0]["backgroundColor"].append("rgba({color}, 1.0)".format(color=color))
-            data["data"]["datasets"][0]["borderColor"].append("rgba({color}, 1.0)".format(color=color))
+            data["data"]["datasets"][0]["borderColor"].append("rgba(255, 255, 255, 1.0)".format(color=color))
 
         return data
 
