@@ -118,12 +118,12 @@ class TransactionChart(Chart):
                     sources_amounts[transaction.journal_entry.from_account.name] = amount
 
             else:
-                if self.expenses_budget:
+                if self.expenses_budget and transaction.journal_entry.budget is not None:
                     amount = sources_amounts.get(transaction.journal_entry.budget.name, Money(0, get_default_currency(user=self.user)))
                     amount += convert_money(transaction.amount, get_default_currency(user=self.user))
                     sources_amounts[transaction.journal_entry.budget.name] = amount
 
-                if self.expenses_category:
+                if self.expenses_category and transaction.journal_entry.category is not None:
                     amount = sources_amounts.get(transaction.journal_entry.category.name, Money(0, get_default_currency(user=self.user)))
                     amount += convert_money(transaction.amount, get_default_currency(user=self.user))
                     sources_amounts[transaction.journal_entry.category.name] = amount

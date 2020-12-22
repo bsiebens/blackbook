@@ -361,7 +361,7 @@
                                                     <i class="fas fa-edit"></i>
                                                 </span>
                                             </a>
-                                            <a class="button is-danger is-small jb-modal" data-target="modal-transaction-delete-{{ transaction.journal_entry.id }}" type="button">
+                                            <a class="button is-danger is-small jb-modal" data-target="modal-transaction-delete-{{ transaction.id }}" type="button">
                                                 <span class="icon">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </span>
@@ -377,6 +377,33 @@
         </div>
     </div>
 {% endblock content %}
+
+{% block modals %}
+    {% for transaction in account.transactions.all %}
+        <div id="modal-transaction-delete-{{ transaction.id }}" class="modal">
+            <div class="modal-background jb-modal-close"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Confirm action</p>
+                    <button class="delete jb-modal-close" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <p>This will permanently delete transaction <b>{{ transaction.journal_entry.description }}</b>.</p>
+                    <p>Are you sure?</p>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button jb-modal-close">Cancel</button>
+                    <form method="post" action="{% url "blackbook:transactions_delete" %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="transaction_id" value="{{ transaction.id }}">
+                        <button class="button is-danger" type="submit">Delete</button>
+                    </form>
+                </footer>
+            </div>
+            <button class="modal-close is-large jb-modal-close" aria-label="close"></button>
+        </div>
+    {% endfor %}
+{% endblock modals %}
 
 {% block javascript %}
     let accountChartLineCTX = document.getElementById("account-line-chart").getContext("2d");
