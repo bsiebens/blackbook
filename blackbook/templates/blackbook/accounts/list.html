@@ -103,7 +103,7 @@
                                                     <i class="fas fa-edit"></i>
                                                 </span>
                                             </a>
-                                            <a class="button is-danger is-small jb-modal" data-target="modal-account-delete-{{ account.id }}" type="button">
+                                            <a class="button is-danger is-small jb-modal" data-target="modal-account-delete-{{ account.uuid }}" type="button">
                                                 <span class="icon">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </span>
@@ -122,7 +122,7 @@
 
 {% block modals %}
     {% for account in accounts %}
-        <div id="modal-account-delete-{{ account.id }}" class="modal">
+        <div id="modal-account-delete-{{ account.uuid }}" class="modal">
             <div class="modal-background jb-modal-close"></div>
             <div class="modal-card">
                 <header class="modal-card-head">
@@ -137,7 +137,7 @@
                     <button class="button jb-modal-close">Cancel</button>
                     <form method="post" action="{% url "blackbook:accounts_delete" %}">
                         {% csrf_token %}
-                        <input type="hidden" name="account_id" value="{{ account.id }}">
+                        <input type="hidden" name="account_uuid" value="{{ account.uuid }}">
                         <button class="button is-danger" type="submit">Delete</button>
                     </form>
                 </footer>

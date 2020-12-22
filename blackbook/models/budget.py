@@ -10,6 +10,8 @@ from model_utils import FieldTracker
 
 from .base import get_default_currency
 
+import uuid
+
 
 class Budget(models.Model):
     class Period(models.TextChoices):
@@ -31,6 +33,7 @@ class Budget(models.Model):
     auto_budget = models.CharField("auto-budget", max_length=30, choices=AutoBudget.choices, default=AutoBudget.NO)
     auto_budget_period = models.CharField("auto-budget period", max_length=30, choices=Period.choices, default=Period.WEEK, blank=True, null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="budgets")
+    uuid = models.UUIDField("UUID", default=uuid.uuid4, editable=False, db_index=True, unique=True)
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)

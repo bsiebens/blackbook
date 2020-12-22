@@ -11,6 +11,8 @@ from djmoney.money import Money
 from .base import get_default_currency, get_default_value, get_currency_choices
 from ..utilities import calculate_period, unique_slugify
 
+import uuid
+
 
 class AccountType(models.Model):
     name = models.CharField(max_length=250)
@@ -45,6 +47,7 @@ class Account(models.Model):
     )
     slug = models.SlugField()
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="accounts")
+    uuid = models.UUIDField("UUID", default=uuid.uuid4, editable=False, db_index=True, unique=True)
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)

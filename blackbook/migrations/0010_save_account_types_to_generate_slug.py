@@ -2,12 +2,15 @@
 
 from django.db import migrations
 
+from ..utilities import unique_slugify
+
 
 def create_default_values(apps, schema_editor):
     AccountType = apps.get_model("blackbook", "AccountType")
 
     for account_type in AccountType.objects.all():
-        account_type.save()
+        unique_slugify(account, account.name)
+        account.save()
 
 
 class Migration(migrations.Migration):

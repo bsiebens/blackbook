@@ -10,7 +10,7 @@ from ..utilities import set_message_and_redirect
 def delete(request):
     if request.method == "POST":
         transaction = (
-            Transaction.objects.select_related("journal_entry").select_related("account__account_type").get(pk=request.POST.get("transaction_id"))
+            Transaction.objects.select_related("journal_entry").select_related("account__account_type").get(uuid=request.POST.get("transaction_uuid"))
         )
 
         if transaction.journal_entry.user != request.user:

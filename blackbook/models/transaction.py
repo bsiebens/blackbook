@@ -12,6 +12,8 @@ from .category import Category
 from .budget import Budget
 from .account import Account
 
+import uuid
+
 
 class TransactionJournalEntry(models.Model):
     class TransactionType(models.TextChoices):
@@ -29,6 +31,7 @@ class TransactionJournalEntry(models.Model):
     budget = models.ForeignKey(Budget, on_delete=models.SET_NULL, blank=True, null=True, related_name="transactions")
     tags = TaggableManager(blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="transactions")
+    uuid = models.UUIDField("UUID", default=uuid.uuid4, editable=False, db_index=True, unique=True)
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -142,6 +145,7 @@ class Transaction(models.Model):
     reconciled = models.BooleanField(default=False)
     amount = MoneyField(max_digits=15, decimal_places=2)
     negative = models.BooleanField(default=True)
+    uuid = models.UUIDField("UUID", default=uuid.uuid4, editable=False, db_index=True, unique=True)
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)

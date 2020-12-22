@@ -85,7 +85,7 @@ def account_add_edit(request, account_name=None):
 @login_required
 def delete(request):
     if request.method == "POST":
-        account = Account.objects.select_related("account_type").get(pk=request.POST.get("account_id"))
+        account = Account.objects.select_related("account_type").get(uuid=request.POST.get("account_uuid"))
 
         if account.user != request.user:
             return set_message_and_redirect(
