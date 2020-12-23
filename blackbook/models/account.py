@@ -84,6 +84,7 @@ class Account(models.Model):
 
     def balance_until_date(self, date=timezone.now()):
         total = self.transactions.filter(journal_entry__date__lte=date).aggregate(total=Coalesce(Sum("amount"), Value(0)))["total"] or 0
+        total = total - self.virtual_balance
 
         return Money(total, self.currency)
 
