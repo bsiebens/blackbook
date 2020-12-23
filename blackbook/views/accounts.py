@@ -122,6 +122,11 @@ def delete(request):
             )
 
         account.delete()
+
+        # Delete all "hanging" journal entries (no transactions linked)
+        hanging_journal_entries = TransactionJournalEntry.objects.filter(transactions=None)
+        hanging_journal_entries.delete()
+
         return set_message_and_redirect(
             request,
             's|Account "{account.name}" was succesfully deleted.'.format(account=account),
