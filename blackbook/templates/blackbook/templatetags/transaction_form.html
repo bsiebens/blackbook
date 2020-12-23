@@ -29,15 +29,14 @@
                 </div>
 
                 <hr />
-
                 {% form_field transaction_form.category %}
                 {% form_field transaction_form.budget %}
                 {% form_field transaction_form.tags %}
-
                 <hr />
-
                 {% form_field transaction_form.from_account %}
                 {% form_field transaction_form.to_account %}
+                <hr />
+                {% form_field transaction_form.add_new "Return after save" %}
             </section>
             <footer class="modal-card-foot">    
                 <button class="button jb-modal-close">Cancel</button>

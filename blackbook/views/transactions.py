@@ -39,6 +39,11 @@ def add_edit(request, transaction_uuid=None):
     transaction_form = TransactionForm(request.user, request.POST or None, initial=initial_data)
 
     if request.POST and transaction_form.is_valid():
+        return_url = reverse("blackbook:dashboard")
+
+        if transaction_form.cleaned_data["add_new"]:
+            return_url = reverse("blackbook:transactions_add")
+
         if transaction_uuid is not None:
             transaction.journal_entry.update(
                 amount=transaction_form.cleaned_data["amount"],
@@ -57,7 +62,7 @@ def add_edit(request, transaction_uuid=None):
             return set_message_and_redirect(
                 request,
                 's|Transaction "{description}" saved succesfully.'.format(description=transaction_form.cleaned_data["description"]),
-                reverse("blackbook:transactions_edit", kwargs={"transaction_uuid": transaction.uuid}),
+                return_url,
             )
 
         else:
@@ -79,7 +84,7 @@ def add_edit(request, transaction_uuid=None):
             return set_message_and_redirect(
                 request,
                 's|Transaction "{description}" saved succesfully.'.format(description=transaction_form.cleaned_data["description"]),
-                reverse("blackbook:transactions_add"),
+                return_url,
             )
 
     return render(request, "blackbook/transactions/form.html", {"transaction_form": transaction_form, "transaction": transaction})

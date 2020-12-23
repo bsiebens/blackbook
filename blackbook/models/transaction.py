@@ -108,7 +108,7 @@ class TransactionJournalEntry(models.Model):
         journal_entry._create_transactions(to_account=to_account, from_account=from_account)
 
         if tags is not None:
-            if isinstance(tags, str):
+            if isinstance(tags, str) and tags != "":
                 tags = tags.split(", ")
             journal_entry.tags.set(*tags)
 
@@ -134,7 +134,7 @@ class TransactionJournalEntry(models.Model):
         self.save()
 
         if tags is not None:
-            if isinstance(tags, str):
+            if isinstance(tags, str) and tags != "":
                 tags = tags.split(",")
             self.tags.set(*tags)
 

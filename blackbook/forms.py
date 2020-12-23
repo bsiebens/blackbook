@@ -38,6 +38,7 @@ class TransactionForm(forms.Form):
     tags = forms.CharField(required=False, help_text="A list of comma separated tags.")
     from_account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, blank=True)
     to_account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, blank=True)
+    add_new = forms.BooleanField(required=False, initial=False, help_text="After saving, display this form again to add an additional transaction.")
 
     def __init__(self, user, *args, **kwargs):
         super(TransactionForm, self).__init__(*args, **kwargs)
