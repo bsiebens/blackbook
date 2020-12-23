@@ -9,7 +9,7 @@ from model_utils import FieldTracker
 
 from .base import get_default_currency
 from .category import Category
-from .budget import Budget
+from .budget import BudgetPeriod
 from .account import Account
 
 import uuid
@@ -28,7 +28,7 @@ class TransactionJournalEntry(models.Model):
     transaction_type = models.CharField(max_length=30, choices=TransactionType.choices, default=TransactionType.WITHDRAWAL)
     amount = MoneyField(max_digits=15, decimal_places=2, default_currency=get_default_currency(), default=0)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, blank=True, null=True, related_name="transactions")
-    budget = models.ForeignKey(Budget, on_delete=models.SET_NULL, blank=True, null=True, related_name="transactions")
+    budget = models.ForeignKey(BudgetPeriod, on_delete=models.SET_NULL, blank=True, null=True, related_name="transactions")
     tags = TaggableManager(blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="transactions")
     uuid = models.UUIDField("UUID", default=uuid.uuid4, editable=False, db_index=True, unique=True)
@@ -135,7 +135,7 @@ class TransactionJournalEntry(models.Model):
 
         if tags is not None:
             if isinstance(tags, str):
-                tags = tags.split(", ")
+                tags = tags.split(",")
             self.tags.set(*tags)
 
 

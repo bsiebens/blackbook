@@ -59,7 +59,7 @@ class Budget(models.Model):
 
         total = Money(0, self.amount.currency)
 
-        for transaction in self.transactions.filter(
+        for transaction in TransactionJournalEntry.objects.filter(budget__budget=self).filter(
             transaction_type__in=[TransactionJournalEntry.TransactionType.WITHDRAWAL, TransactionJournalEntry.TransactionType.TRANSFER]
         ):
             total += convert_money(transaction.amount, self.amount.currency)
@@ -103,7 +103,7 @@ class BudgetPeriod(models.Model):
         currency = self.amount.currency
         total = Money(0, currency)
 
-        for transaction in self.budget.transactions.filter(date__range=(self.start_date, self.end_date)).filter(
+        for transaction in self.transactions.filter(
             transaction_type__in=[TransactionJournalEntry.TransactionType.WITHDRAWAL, TransactionJournalEntry.TransactionType.TRANSFER]
         ):
             total += convert_money(transaction.amount, currency)

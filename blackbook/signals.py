@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
-from datetime import timedelta
+from datetime import timedelta, date
 
 from .models import UserProfile, Budget, BudgetPeriod, Account, Category, TransactionJournalEntry
 from .utilities import calculate_period
@@ -23,25 +23,27 @@ def create_userprofile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Budget)
 def create_budget_period(sender, instance, created, **kwargs):
+    current_date = timezone.now().date()
+    period = {"start_date": current_date, "end_date": date(9999, 12, 31)}
+
     if instance.auto_budget != Budget.AutoBudget.NO:
-        current_date = timezone.now().date()
         period = calculate_period(periodicity=instance.auto_budget_period, start_date=current_date)
 
-        if created:
+    if created:
+        instance.periods.create(start_date=period["start_date"], end_date=period["end_date"], amount=instance.amount)
+
+    else:
+        current_period = instance.current_period
+
+        if current_period is not None:
+            if current_period.start_date == period["start_date"] and current_period.end_date == period["end_date"]:
+                if instance.tracker.has_changed("amount"):
+                    current_period.amount = instance.amount
+                    current_period.save(update_fields=["amount"])
+
+            else:
+                current_period.end_date = current_date - timedelta(days=1)
+                current_period.save()
+
+        if instance.current_period is None:
             instance.periods.create(start_date=period["start_date"], end_date=period["end_date"], amount=instance.amount)
-
-        else:
-            current_period = instance.current_period
-
-            if current_period is not None:
-                if current_period.start_date == period["start_date"] and current_period.end_date == period["end_date"]:
-                    if instance.tracker.has_changed("amount"):
-                        current_period.amount = instance.amount
-                        current_period.save(update_fields=["amount"])
-
-                else:
-                    current_period.end_date = current_date - timedelta(days=1)
-                    current_period.save()
-
-            if instance.current_period is None:
-                instance.periods.create(start_date=period["start_date"], end_date=period["end_date"], amount=instance.amount)

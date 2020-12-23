@@ -55,7 +55,7 @@ def accounts(request, account_type, account_name=None):
 
 
 @login_required
-def account_add_edit(request, account_name=None):
+def add_edit(request, account_name=None):
     account = Account()
 
     if account_name is not None:

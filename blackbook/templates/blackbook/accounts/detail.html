@@ -327,7 +327,7 @@
                                                 <span class="icon">
                                                     <i class="fas fa-chart-pie"></i>
                                                 </span>
-                                                <span>{{ transaction.journal_entry.budget.name }}</span>
+                                                <span>{{ transaction.journal_entry.budget.budget.name }}</span>
                                             </span>
                                         {% else %}
                                             -
@@ -351,12 +351,7 @@
                                     </td>
                                     <td>
                                         <div class="buttons is-right">
-                                            <a class="button is-info is-small" href="" type="button">
-                                                <span class="icon">
-                                                    <i class="fas fa-eye"></i>
-                                                </span>
-                                            </a>
-                                            <a class="button is-primary is-small" href="" type="button">
+                                            <a class="button is-primary is-small" href="{% url "blackbook:transactions_edit" transaction.uuid %}" type="button">
                                                 <span class="icon">
                                                     <i class="fas fa-edit"></i>
                                                 </span>

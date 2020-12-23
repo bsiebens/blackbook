@@ -18,6 +18,7 @@ def form_field(field, alt_label=None):
 @register.filter
 def add_class(field):
     css_class = []
+    data_type = []
 
     if field.errors:
         css_class.append("is-danger")
@@ -25,4 +26,7 @@ def add_class(field):
     if field.widget_type in ("tag", "text", "email", "password", "number", "date"):
         css_class.append("input")
 
-    return field.as_widget(attrs={"class": " ".join(css_class)})
+        if field.name == "tags":
+            data_type.append("tags")
+
+    return field.as_widget(attrs={"class": " ".join(css_class), "data-type": " ".join(data_type)})

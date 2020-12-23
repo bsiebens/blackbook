@@ -9,8 +9,8 @@ def create_default_values(apps, schema_editor):
     AccountType = apps.get_model("blackbook", "AccountType")
 
     for account_type in AccountType.objects.all():
-        unique_slugify(account, account.name)
-        account.save()
+        unique_slugify(account_type, account_type.name)
+        account_type.save()
 
 
 class Migration(migrations.Migration):
