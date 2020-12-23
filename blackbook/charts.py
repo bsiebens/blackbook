@@ -113,9 +113,13 @@ class TransactionChart(Chart):
                     sources_amounts["Initial deposit"] = amount
 
                 else:
-                    amount = sources_amounts.get(transaction.journal_entry.from_account.name, Money(0, get_default_currency(user=self.user)))
+                    from_account_name = "External account (untracked)"
+                    if transaction.journal_entry.from_account is not None:
+                        from_account_name = transaction.journal_entry.from_account.name
+
+                    amount = sources_amounts.get(from_account_name, Money(0, get_default_currency(user=self.user)))
                     amount += convert_money(transaction.amount, get_default_currency(user=self.user))
-                    sources_amounts[transaction.journal_entry.from_account.name] = amount
+                    sources_amounts[from_account_name] = amount
 
             else:
                 if self.expenses_budget and transaction.journal_entry.budget is not None:
@@ -131,6 +135,7 @@ class TransactionChart(Chart):
         counter = 1
         for account, amount in sources_amounts.items():
             color = get_color_code(counter)
+            counter += 1
 
             data["data"]["labels"].append(account)
             data["data"]["datasets"][0]["data"].append(float(amount.amount))
