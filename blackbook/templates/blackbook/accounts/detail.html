@@ -27,11 +27,30 @@
                             {{ account.name }}
                         </h1>
                         <h3 class="subtitle">
-                            {{ account.account_type.name }}
+                            <span class="tag is-info">
+                                <span class="icon">
+                                    <i class="fas {{ account.account_type.icon }}"></i>
+                                </span>
+                                <span>{{ account.account_type.name }}</span>
+                            </span>
+                            
                             {% if account.iban is not None %}
-                             - {{ account.iban|iban }}
+                                <span class="tag is-info">
+                                    <span class="icon">
+                                        <i class="fas {{ account.account_type.icon }}"></i>
+                                    </span>
+                                    <span>{{ account.iban|iban }}</span>
+                                </span>
                             {% endif %}
-                             - <span class="{% if account.balance.amount > 0 %}has-text-success{% elif account.balance.amount < 0 %}has-text-danger{% endif %}">{% if account.balance.amount > 0 %}+{% endif %}{% money_localize account.balance %}</span>
+                            
+                            <span class="tag {% if account.balance.amount > 0 %}is-success{% elif account.balance.amount < 0 %}is-danger{% else %}is-light{% endif %}">
+                                <span class="icon">
+                                    <i class="fas fa-coins"></i>
+                                </span>
+                                <span>
+                                    {% if account.balance.amount > 0 %}+{% endif %}{% money_localize account.balance %}
+                                </span>
+                            </span>
                         </h3>
                     </div>
                 </div>
