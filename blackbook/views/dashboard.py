@@ -22,7 +22,7 @@ def update_exchange_rates(request):
 
 @login_required
 def dashboard(request):
-    accounts = Account.objects.filter(user=request.user).filter(active=True).prefetch_related("transactions")
+    accounts = Account.objects.filter(user=request.user).filter(active=True).filter(include_in_net_worth=True).prefetch_related("transactions")
     budgets = BudgetPeriod.objects.filter(budget__user=request.user).filter(start_date__lte=timezone.now()).filter(end_date__gte=timezone.now())
     period = request.user.userprofile.default_period
     currency = get_default_currency(user=request.user)
