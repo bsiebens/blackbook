@@ -2,7 +2,9 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 
-from ..models import AccountType, Account
+from djmoney.money import Money
+
+from ..models import AccountType, Account, TransactionJournalEntry, Transaction
 from ..utilities import set_message_and_redirect, calculate_period
 from ..forms import AccountForm
 from ..charts import AccountChart, TransactionChart
@@ -66,12 +68,37 @@ def add_edit(request, account_name=None):
                 request, "f|You don't have access to this account.", reverse("blackbook:accounts", kwargs={"account_type": account_type})
             )
 
-    account_form = AccountForm(request.POST or None, instance=account)
+    account_form = AccountForm(request.POST or None, instance=account, initial={"starting_balance": account.starting_balance.amount})
 
     if request.POST and account_form.is_valid():
         account = account_form.save(commit=False)
         account.user = request.user
         account.save()
+
+        if account_form.cleaned_data["starting_balance"] > 0:
+            try:
+                opening_balance_transaction = account.transactions.filter(
+                    journal_entry__transaction_type=TransactionJournalEntry.TransactionType.START
+                ).get(journal_entry__date=account.created.date())
+
+                if opening_balance_transaction.amount != Money(account_form.cleaned_data["starting_balance"], account_form.cleaned_data["currency"]):
+                    opening_balance_transaction.journal_entry.update(
+                        amount=Money(account_form.cleaned_data["starting_balance"], account_form.cleaned_data["currency"]),
+                        description="Starting balance",
+                        transaction_type=TransactionJournalEntry.TransactionType.START,
+                        date=account.created.date(),
+                        to_account=account,
+                    )
+
+            except Transaction.DoesNotExist:
+                TransactionJournalEntry.create_transaction(
+                    amount=Money(account_form.cleaned_data["starting_balance"], account_form.cleaned_data["currency"]),
+                    description="Starting balance",
+                    transaction_type=TransactionJournalEntry.TransactionType.START,
+                    user=request.user,
+                    date=account.created.date(),
+                    to_account=account,
+                )
 
         return set_message_and_redirect(
             request,

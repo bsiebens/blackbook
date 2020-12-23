@@ -351,11 +351,13 @@
                                     </td>
                                     <td>
                                         <div class="buttons is-right">
-                                            <a class="button is-primary is-small" href="{% url "blackbook:transactions_edit" transaction.uuid %}" type="button">
-                                                <span class="icon">
-                                                    <i class="fas fa-edit"></i>
-                                                </span>
-                                            </a>
+                                            {% if transaction.journal_entry.transaction_type != "start" %}
+                                                <a class="button is-primary is-small" href="{% url "blackbook:transactions_edit" transaction.uuid %}" type="button">
+                                                    <span class="icon">
+                                                        <i class="fas fa-edit"></i>
+                                                    </span>
+                                                </a>
+                                            {% endif %}
                                             <a class="button is-danger is-small jb-modal" data-target="modal-transaction-delete-{{ transaction.uuid }}" type="button">
                                                 <span class="icon">
                                                     <i class="fas fa-trash-alt"></i>

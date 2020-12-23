@@ -30,13 +30,11 @@ def add_edit(request, transaction_uuid=None):
             "transaction_type": transaction.journal_entry.transaction_type,
             "date": transaction.journal_entry.date,
             "category": transaction.journal_entry.category,
-            "budget": transaction.journal_entry.budget.budget,
+            "budget": transaction.journal_entry.budget.budget if transaction.journal_entry.budget else None,
             "tags": ", ".join([tag.name for tag in transaction.journal_entry.tags.all()]),
             "from_account": transaction.journal_entry.from_account,
             "to_account": transaction.journal_entry.to_account,
         }
-
-        print(initial_data)
 
     transaction_form = TransactionForm(request.user, request.POST or None, initial=initial_data)
 

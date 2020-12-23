@@ -13,6 +13,8 @@ class BulmaMoneyWidget(MoneyWidget):
 
 
 class AccountForm(forms.ModelForm):
+    starting_balance = forms.DecimalField(max_digits=15, decimal_places=2, required=False, initial=0.0)
+
     class Meta:
         model = Account
         fields = ["name", "account_type", "active", "include_in_net_worth", "iban", "currency", "virtual_balance"]
@@ -45,6 +47,10 @@ class TransactionForm(forms.Form):
         self.fields["to_account"].queryset = Account.objects.filter(user=user).filter(active=True)
         self.fields["from_account"].queryset = Account.objects.filter(user=user).filter(active=True)
         self.fields["amount"].initial = ["0", get_default_currency(user=user)]
+
+        self.fields["transaction_type"].choices = [
+            (k, v) for k, v in TransactionJournalEntry.TransactionType.choices if k != TransactionJournalEntry.TransactionType.START
+        ]
 
     def clean(self):
         cleaned_data = super().clean()

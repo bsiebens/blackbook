@@ -63,6 +63,22 @@ class Account(models.Model):
         super(Account, self).save(*args, **kwargs)
 
     @property
+    def starting_balance(self):
+        try:
+            from .transaction import TransactionJournalEntry, Transaction
+
+            opening_balance = (
+                self.transactions.select_related("journal_entry")
+                .filter(journal_entry__transaction_type=TransactionJournalEntry.TransactionType.START)
+                .get(journal_entry__date=self.created)
+            )
+
+            return opening_balance.journal_entry.amount
+
+        except Transaction.DoesNotExist:
+            return Money(0, self.currency)
+
+    @property
     def balance(self):
         return self.balance_until_date()
 
