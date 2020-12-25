@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
+from django.utils.functional import cached_property
 
 from djmoney.models.fields import MoneyField
 from djmoney.contrib.exchange.models import convert_money
@@ -72,7 +73,7 @@ class TransactionJournalEntry(models.Model):
             self.transactions.create(account=to_account, amount=self.amount, negative=False)
             self.transactions.create(account=from_account, amount=self.amount, negative=True)
 
-    @property
+    @cached_property
     def to_account(self):
         try:
             return self.transactions.get(amount__gte=0.0).account
@@ -80,7 +81,7 @@ class TransactionJournalEntry(models.Model):
         except Transaction.DoesNotExist:
             return None
 
-    @property
+    @cached_property
     def from_account(self):
         try:
             return self.transactions.get(amount__lte=0.0).account

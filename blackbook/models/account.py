@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone
+from django.utils.functional import cached_property
 
 from localflavor.generic.models import IBANField
 from djmoney.models.fields import CurrencyField
@@ -62,7 +63,7 @@ class Account(models.Model):
         unique_slugify(self, self.name)
         super(Account, self).save(*args, **kwargs)
 
-    @property
+    @cached_property
     def starting_balance(self):
         try:
             from .transaction import TransactionJournalEntry, Transaction
@@ -78,7 +79,7 @@ class Account(models.Model):
         except Transaction.DoesNotExist:
             return Money(0, self.currency)
 
-    @property
+    @cached_property
     def balance(self):
         return self.balance_until_date()
 

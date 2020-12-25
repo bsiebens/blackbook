@@ -43,10 +43,12 @@ class TransactionForm(forms.Form):
     def __init__(self, user, *args, **kwargs):
         super(TransactionForm, self).__init__(*args, **kwargs)
 
+        accounts = Account.objects.filter(user=user).filter(active=True)
+
         self.fields["category"].queryset = Category.objects.filter(user=user)
         self.fields["budget"].queryset = Budget.objects.filter(user=user)
-        self.fields["to_account"].queryset = Account.objects.filter(user=user).filter(active=True)
-        self.fields["from_account"].queryset = Account.objects.filter(user=user).filter(active=True)
+        self.fields["to_account"].queryset = accounts
+        self.fields["from_account"].queryset = accounts
         self.fields["amount"].initial = ["0", get_default_currency(user=user)]
 
         self.fields["transaction_type"].choices = [

@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Sum
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.conf import settings
 
 from djmoney.models.fields import MoneyField
@@ -46,11 +47,11 @@ class Budget(models.Model):
     def __str__(self):
         return self.name
 
-    @property
+    @cached_property
     def current_period(self):
         return self.get_period_for_date(date=timezone.now())
 
-    @property
+    @cached_property
     def used(self):
         if self.auto_budget != self.AutoBudget.NO:
             return self.current_period.used
@@ -66,7 +67,7 @@ class Budget(models.Model):
 
         return total
 
-    @property
+    @cached_property
     def available(self):
         return self.amount - self.used
 
@@ -96,7 +97,7 @@ class BudgetPeriod(models.Model):
     def __str__(self):
         return "{i.budget.name}: {i.start_date} <> {i.end_date} ({i.amount})".format(i=self)
 
-    @property
+    @cached_property
     def used(self):
         from .transaction import TransactionJournalEntry
 
@@ -110,6 +111,6 @@ class BudgetPeriod(models.Model):
 
         return total
 
-    @property
+    @cached_property
     def available(self):
         return self.amount - self.used
