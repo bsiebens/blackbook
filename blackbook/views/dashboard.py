@@ -38,8 +38,11 @@ def dashboard(request):
         Transaction.objects.filter(account__user=request.user)
         .filter(account__active=True)
         .filter(account__include_in_net_worth=True)
-        .values("amount_currency")
+        .select_related("journal_entry")
+        .select_related("account")
+        .values("amount_currency", "journal_entry__date", "account__name")
         .annotate(total=Sum("amount"))
+        .order_by("journal_entry__date")
     )
 
     budgets = (
@@ -79,7 +82,7 @@ def dashboard(request):
         "budget": {"total": Money(0, currency), "available": Money(0, currency), "used": Money(0, currency), "per_day": None},
         "charts": {
             "account_chart": AccountChart(
-                data=accounts,
+                data=net_worth,
                 start_date=calculate_period(periodicity=period)["start_date"],
                 end_date=calculate_period(periodicity=period)["end_date"],
                 user=request.user,

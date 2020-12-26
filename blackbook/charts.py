@@ -151,6 +151,7 @@ class AccountChart(Chart):
         self.start_date = start_date
         self.end_date = end_date
         self.user = user
+        self.currency = get_default_currency(user=self.user)
 
         super().__init__(data=data, *args, **kwargs)
 
@@ -159,7 +160,7 @@ class AccountChart(Chart):
 
         options["tooltips"]["callbacks"] = {
             "label": "<<function(tooltipItems, data) { return data.datasets[tooltipItems.datasetIndex].label +': ' + tooltipItems.yLabel + ' (%s)'; }>>"
-            % get_currency(get_default_currency(self.user), self.user)
+            % get_currency(self.currency, self.user)
         }
 
         if abs((self.end_date - self.start_date).days) > 150:
@@ -176,12 +177,25 @@ class AccountChart(Chart):
 
         data = {"type": "line", "data": {"labels": [date.strftime("%d %b %Y") for date in dates], "datasets": []}}
 
+        accounts = {}
+        for item in self.data:
+            if item["account__name"] in accounts.keys():
+                date_entry = accounts[item["account__name"]].get(item["journal_entry__date"], Money(0, self.currency))
+                date_entry += convert_money(Money(item["total"], item["amount_currency"]), self.currency)
+
+                accounts[item["account__name"]][item["journal_entry__date"]] = date_entry
+
+            else:
+                accounts[item["account__name"]] = {
+                    item["journal_entry__date"]: convert_money(Money(item["total"], item["amount_currency"]), self.currency)
+                }
+
         counter = 1
-        for account in self.data:
+        for account, date_entries in accounts.items():
             color = get_color_code(counter)
 
             account_data = {
-                "label": account.name,
+                "label": account,
                 "fill": "!1",
                 "borderColor": "rgba({color}, 1.0)".format(color=color),
                 "borderWidth": 2,
@@ -202,28 +216,21 @@ class AccountChart(Chart):
 
             counter += 1
 
-            start_balance = account.balance_until_date(date=dates[0] - timedelta(days=1))
-            amounts_per_day = (
-                account.transactions.filter(journal_entry__date__range=(dates[0], dates[-1]))
-                .values("journal_entry__date", "amount_currency")
-                .annotate(amount=Sum("amount"))
-            )
-            amounts_for_chart = []
+            for date_index in range(len(dates)):
+                date = dates[date_index]
 
-            for day in range(len(dates)):
-                date = dates[day]
+                value = 0
+                if date_index == 0:
+                    amounts = dict(filter(lambda elem: elem[0] <= date, date_entries.items()))
+                    value = float(sum([item.amount for item in amounts.values()]))
 
-                value = (
-                    account_data["data"][day - 1]
-                    if day > 0
-                    else round(float(convert_money(start_balance, get_default_currency(user=self.user)).amount), 2)
-                )
-                for amount in amounts_per_day:
-                    if amount["journal_entry__date"] == date:
-                        value += float(convert_money(Money(amount["amount"], amount["amount_currency"]), get_default_currency(user=self.user)).amount)
-                        break
+                else:
+                    value = account_data["data"][date_index - 1]
 
-                account_data["data"].append(round(float(value), 2))
+                    if date in date_entries.keys():
+                        value += float(date_entries[date].amount)
+
+                account_data["data"].append(round(value, 2))
             data["data"]["datasets"].append(account_data)
 
         return data
