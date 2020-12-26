@@ -1,6 +1,7 @@
 {% spaceless %}
+    <div class="control is-expanded">
         <input class="input" type="number" step=".01" name="{{ widget.subwidgets.0.name }}"{% if widget.subwidgets.0.value != None %} value="{{ widget.subwidgets.0.value|stringformat:'s' }}"{% else %} value="0"{% endif %}{% for name, value in widget.subwidgets.0.attrs.items %}{% if value is not False %} {{ name }}{% if value is not True %}="{{ value|stringformat:'s' }}"{% endif %}{% endif %}{% endfor %}>
-    
+        
         <p class="help">Required.</p>
     </div>
     <div class="control">
@@ -28,4 +29,5 @@
                 {% endfor %}
             </select>
         </div>
+    </div>
 {% endspaceless %}
