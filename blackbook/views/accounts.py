@@ -44,6 +44,7 @@ def accounts(request, account_type, account_name=None):
                 "amount_currency",
                 "negative",
                 "account__name",
+                "account__virtual_balance",
                 "journal_entry",
                 "journal_entry__date",
                 "journal_entry__transaction_type",
