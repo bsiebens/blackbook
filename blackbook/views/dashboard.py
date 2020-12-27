@@ -40,7 +40,7 @@ def dashboard(request):
         .filter(account__include_in_net_worth=True)
         .select_related("journal_entry")
         .select_related("account")
-        .values("amount_currency", "journal_entry__date", "account__name")
+        .values("amount_currency", "journal_entry__date", "account__name", "account__include_on_dashboard")
         .annotate(total=Sum("amount"))
         .order_by("journal_entry__date")
     )
@@ -82,7 +82,7 @@ def dashboard(request):
         "budget": {"total": Money(0, currency), "available": Money(0, currency), "used": Money(0, currency), "per_day": None},
         "charts": {
             "account_chart": AccountChart(
-                data=net_worth,
+                data=[item for item in net_worth if item["account__include_on_dashboard"]],
                 start_date=calculate_period(periodicity=period)["start_date"],
                 end_date=calculate_period(periodicity=period)["end_date"],
                 user=request.user,

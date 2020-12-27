@@ -44,17 +44,18 @@ class AccountAdmin(admin.ModelAdmin):
         "display_iban",
         "active",
         "include_in_net_worth",
+        "include_on_dashboard",
         "virtual_balance",
         "balance",
         "uuid",
         "created",
         "modified",
     ]
-    list_filter = ["account_type", "user", "active", "include_in_net_worth", "currency"]
+    list_filter = ["account_type", "user", "active", "include_in_net_worth", "include_on_dashboard", "currency"]
     search_fields = ["name", "iban", "uuid"]
     fieldsets = (
         ("General information", {"fields": ("name", "slug", "user", "account_type", "iban", "currency")}),
-        ("Options", {"fields": ("active", "include_in_net_worth", "virtual_balance", "uuid")}),
+        ("Options", {"fields": ("active", "include_in_net_worth", "include_on_dashboard", "virtual_balance", "uuid")}),
     )
     raw_id_fields = ["user"]
     readonly_fields = ["slug", "uuid"]

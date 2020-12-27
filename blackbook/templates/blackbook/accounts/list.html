@@ -51,6 +51,7 @@
                                 <th>IBAN</th>
                                 <th>Active?</th>
                                 <th>Include in net worth?</th>
+                                <th>Include on dashboard?</th>
                                 <th>Virtual balance</th>
                                 <th>Current balance</th>
                                 <th></th>
@@ -83,6 +84,15 @@
                                     <td data-label="Include in net worth?">
                                         <span class="icon">
                                             {% if account.include_in_net_worth %}
+                                                <i class="fas fa-check"></i>
+                                            {% else %}
+                                                <i class="fas fa-times"></i>
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                     <td data-label="Include on dashboard?">
+                                        <span class="icon">
+                                            {% if account.include_on_dashboard %}
                                                 <i class="fas fa-check"></i>
                                             {% else %}
                                                 <i class="fas fa-times"></i>
