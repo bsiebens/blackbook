@@ -41,11 +41,16 @@ class BulmaMoneyWidget(MoneyWidget):
 
 class AccountForm(forms.ModelForm):
     starting_balance = forms.DecimalField(max_digits=15, decimal_places=2, required=False, initial=0.0)
-    account_type = ListModelChoiceField(model=AccountType, choices=[(account_type.id, account_type) for account_type in AccountType.objects.all()])
+    account_type = ListModelChoiceField(model=AccountType)
 
     class Meta:
         model = Account
         fields = ["name", "account_type", "active", "include_in_net_worth", "include_on_dashboard", "iban", "currency", "virtual_balance"]
+
+    def __init__(self, *args, **kwargs):
+        super(AccountForm, self).__init__(*args, **kwargs)
+
+        self.fields["account_type"].choices = [(account_type.id, account_type) for account_type in AccountType.objects.all()]
 
 
 class CategoryForm(forms.ModelForm):
