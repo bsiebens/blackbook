@@ -1,0 +1,58 @@
+---
+kind: pipeline
+name: build
+type: ssh
+
+server:
+    host: 192.168.60.25
+    user:
+        from_secret: SSH_USERNAME_DEV
+    password:
+        from_secret: SSH_PASSWORD_DEV
+
+trigger:
+    event:
+        - push
+        - pull_request
+    branch:
+        - development
+        - master
+
+steps:
+    - name: git pull
+      commands:
+          - git -C /home/bernard/BlackBook/ pull --all
+
+    - name: fetch current tags
+      commands:
+          - git -C /home/bernard/BlackBook/ fetch --tags
+
+    - name: update version tag
+      commands:
+          - /usr/bin/autotag -v --branch=$DRONE_COMMIT_BRANCH
+          - git -C /home/bernard/BlackBook/ push origin --tags
+      when:
+          branch:
+              - master
+
+    - name: set version in .env
+      commands:
+          - export VERSION=$(git -C /home/bernard/BlackBook/ describe --abbrev=0 --tags)
+          - sed -i "/VERSION=/ c\VERSION=$VERSION" /home/bernard/BlackBook/.env
+
+    - name: stop gunicorn
+      commands:
+          - systemctl stop gunicorn
+
+    - name: update packages
+      commands:
+          - cd /home/bernard/BlackBook/ && pipenv install --dev
+
+    - name: update database, collect static files & clear cache
+      commands:
+          - /home/bernard/.local/share/virtualenvs/blackbook-hsS-3Fy7/bin/python /home/bernard/BlackBook/manage.py migrate --no-input
+          - /home/bernard/.local/share/virtualenvs/blackbook-hsS-3Fy7/bin/python /home/bernard/BlackBook/manage.py collectstatic --no-input
+
+    - name: start gunicorn
+      commands:
+          - systemctl start gunicorn
