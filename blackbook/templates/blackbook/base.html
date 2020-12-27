@@ -2,6 +2,7 @@
 
 {% load humanize %}
 {% load navigationtags %}
+{% load modalforms %}
 
 {% block body %}
     <nav id="navbar-main" class="navbar is-fixed-top">
@@ -262,3 +263,8 @@
         </div>
     </footer>
 {% endblock body %}
+
+{% block forms %}
+    {% account_form %}
+    {% transaction_form %}
+{% endblock forms %}
