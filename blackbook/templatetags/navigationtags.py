@@ -24,6 +24,6 @@ def is_active(context, value):
 
 @register.inclusion_tag("blackbook/templatetags/account.html", takes_context=True)
 def accounts(context):
-    account_types = AccountType.objects.annotate(count=Count("accounts")).filter(count__gt=0)
+    account_types = AccountType.objects.annotate(count=Count("accounts")).filter(count__gt=0).order_by("slug")
 
     return {"account_types": account_types, "request": context.get("request")}

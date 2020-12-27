@@ -45,7 +45,7 @@ class AccountForm(forms.ModelForm):
 
     class Meta:
         model = Account
-        fields = ["name", "account_type", "active", "include_in_net_worth", "iban", "currency", "virtual_balance"]
+        fields = ["name", "account_type", "active", "include_in_net_worth", "include_on_dashboard", "iban", "currency", "virtual_balance"]
 
 
 class CategoryForm(forms.ModelForm):

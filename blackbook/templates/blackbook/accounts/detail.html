@@ -43,12 +43,12 @@
                                 </span>
                             {% endif %}
                             
-                            <span class="tag {% if balance_for_period.amount > 0 %}is-success{% elif balance_for_period.amount < 0 %}is-danger{% else %}is-light{% endif %}">
+                            <span class="tag {% if account.total.amount > 0 %}is-success{% elif account.total.amount < 0 %}is-danger{% else %}is-light{% endif %}">
                                 <span class="icon">
                                     <i class="fas fa-coins"></i>
                                 </span>
                                 <span>
-                                    {% if balance_for_period.amount > 0 %}+{% endif %}{% money_localize balance_for_period %}
+                                    {% if account.total.amount > 0 %}+{% endif %}{% money_localize account.total %}
                                 </span>
                             </span>
                         </h3>

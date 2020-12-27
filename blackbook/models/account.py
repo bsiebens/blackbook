@@ -38,6 +38,7 @@ class Account(models.Model):
     include_in_net_worth = models.BooleanField(
         "include in net worth?", default=True, help_text="Include this account when calculating total net worth?"
     )
+    include_on_dashboard = models.BooleanField("include on dashboard?", default=True, help_text="Include this account on the graph on the frontpage?")
     iban = IBANField("IBAN", null=True, blank=True)
     currency = CurrencyField(default=get_default_currency(), choices=get_currency_choices())
     virtual_balance = models.DecimalField(
