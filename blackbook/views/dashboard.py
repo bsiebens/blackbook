@@ -105,7 +105,7 @@ def dashboard(request):
 
     for budget in budgets_used:
         data["budget"]["used"] += convert_money(Money(budget["total"], budget["amount_currency"]), currency)
-    data["budget"]["available"] = data["budget"]["total"] - data["budget"]["used"]
+    data["budget"]["available"] = data["budget"]["total"] + data["budget"]["used"]
     data["budget"]["per_day"] = (
         data["budget"]["used"] / (calculate_period(periodicity=period)["end_date"] - calculate_period(periodicity=period)["start_date"]).days * -1
     )

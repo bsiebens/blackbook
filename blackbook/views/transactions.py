@@ -13,7 +13,13 @@ def add_edit(request, transaction_uuid=None):
     transaction = Transaction()
 
     if transaction_uuid is not None:
-        transaction = Transaction.objects.select_related("journal_entry").select_related("account__account_type").get(uuid=transaction_uuid)
+        transaction = (
+            Transaction.objects.select_related("journal_entry")
+            .select_related("journal_entry__budget__budget")
+            .select_related("journal_entry__category")
+            .select_related("account__account_type")
+            .get(uuid=transaction_uuid)
+        )
 
         if transaction.journal_entry.user != request.user:
             return set_message_and_redirect(

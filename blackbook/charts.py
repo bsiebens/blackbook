@@ -83,6 +83,7 @@ class TransactionChart(Chart):
         self.expenses_budget = expenses_budget
         self.expenses_category = expenses_category
         self.user = user
+        self.currency = get_default_currency(user=self.user)
 
         super().__init__(data=data, *args, **kwargs)
 
@@ -97,48 +98,49 @@ class TransactionChart(Chart):
     def _generate_chart_data(self):
         data = {"type": "pie", "data": {"labels": [], "datasets": [{"data": [], "borderWidth": [], "backgroundColor": [], "borderColor": []}]}}
 
+        amounts = {}
+        account_names = {}
+
         if self.income:
-            self.data = self.data.filter(negative=False)
-
-        if not self.income:
-            self.data = self.data.filter(negative=True)
-
-        sources_amounts = {}
+            self.data = [item for item in self.data if not item["negative"]]
+        else:
+            self.data = [item for item in self.data if item["negative"]]
 
         for transaction in self.data:
+            account_name = "External account (untracked)"
             if self.income:
-                if transaction.journal_entry.transaction_type == TransactionJournalEntry.TransactionType.START:
-                    amount = sources_amounts.get("Initial deposit", Money(0, get_default_currency(user=self.user)))
-                    amount += convert_money(transaction.amount, get_default_currency(user=self.user))
-                    sources_amounts["Initial deposit"] = amount
+                if transaction["journal_entry__transaction_type"] == TransactionJournalEntry.TransactionType.START:
+                    account_name = "Starting balance"
 
                 else:
-                    from_account_name = "External account (untracked)"
-                    if transaction.journal_entry.from_account is not None:
-                        from_account_name = transaction.journal_entry.from_account.name
+                    from_account_name = account_names.get(
+                        transaction["journal_entry"], TransactionJournalEntry.objects.get(id=transaction["journal_entry"]).from_account
+                    )
 
-                    amount = sources_amounts.get(from_account_name, Money(0, get_default_currency(user=self.user)))
-                    amount += convert_money(transaction.amount, get_default_currency(user=self.user))
-                    sources_amounts[from_account_name] = amount
+                    if from_account_name is not None:
+                        account_name = from_account_name.name
+                        account_names[transaction["journal_entry"]] = from_account_name.name
+                    else:
+                        account_names[transaction["journal_entry"]] = None
 
-            else:
-                if self.expenses_budget and transaction.journal_entry.budget is not None:
-                    amount = sources_amounts.get(transaction.journal_entry.budget.name, Money(0, get_default_currency(user=self.user)))
-                    amount += convert_money(transaction.amount, get_default_currency(user=self.user))
-                    sources_amounts[transaction.journal_entry.budget.name] = amount
+            if not self.income:
+                if self.expenses_budget and transaction["journal_entry__budget__budget__name"] is not None:
+                    account_name = transaction["journal_entry__budget__budget__name"]
 
-                if self.expenses_category and transaction.journal_entry.category is not None:
-                    amount = sources_amounts.get(transaction.journal_entry.category.name, Money(0, get_default_currency(user=self.user)))
-                    amount += convert_money(transaction.amount, get_default_currency(user=self.user))
-                    sources_amounts[transaction.journal_entry.category.name] = amount
+                if self.expenses_category and transaction["journal_entry__category__name"] is not None:
+                    account_name = transaction["journal_entry__category__name"]
+
+            amount = amounts.get(account_name, 0.0)
+            amount += float(transaction["total"]) * -1 if transaction["negative"] else float(transaction["total"])
+            amounts[account_name] = amount
 
         counter = 1
-        for account, amount in sources_amounts.items():
+        for account, amount in amounts.items():
             color = get_color_code(counter)
             counter += 1
 
             data["data"]["labels"].append(account)
-            data["data"]["datasets"][0]["data"].append(float(amount.amount))
+            data["data"]["datasets"][0]["data"].append(round(amount, 2))
             data["data"]["datasets"][0]["borderWidth"].append(2)
             data["data"]["datasets"][0]["backgroundColor"].append("rgba({color}, 1.0)".format(color=color))
             data["data"]["datasets"][0]["borderColor"].append("rgba(255, 255, 255, 1.0)".format(color=color))

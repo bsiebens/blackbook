@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from django.db.models import Sum
 
 from djmoney.money import Money
 
@@ -13,7 +14,15 @@ from ..charts import AccountChart, TransactionChart
 @login_required
 def accounts(request, account_type, account_name=None):
     if account_name is not None:
-        account = get_object_or_404(Account, slug=account_name)
+        account = get_object_or_404(
+            Account.objects.select_related("account_type")
+            .prefetch_related("transactions")
+            .prefetch_related("transactions__journal_entry")
+            .prefetch_related("transactions__journal_entry__tags")
+            .prefetch_related("transactions__journal_entry__budget__budget")
+            .prefetch_related("transactions__journal_entry__category"),
+            slug=account_name,
+        )
 
         if account.user != request.user:
             return set_message_and_redirect(
@@ -21,37 +30,65 @@ def accounts(request, account_type, account_name=None):
             )
 
         period = request.user.userprofile.default_period
-        account_chart = AccountChart(
-            data=[account],
-            start_date=calculate_period(periodicity=period)["start_date"],
-            end_date=calculate_period(periodicity=period)["end_date"],
-            user=request.user,
-        ).generate_json()
-        income_chart = TransactionChart(data=account.transactions, user=request.user, income=True).generate_json()
-        expense_budget_chart = TransactionChart(data=account.transactions, user=request.user, expenses_budget=True).generate_json()
-        expense_category_chart = TransactionChart(data=account.transactions, user=request.user, expenses_category=True).generate_json()
-        income_chart_count = account.transactions.filter(negative=False).count()
-        expense_budget_chart_count = account.transactions.filter(negative=True).exclude(journal_entry__budget=None).count()
-        expense_category_chart_count = account.transactions.filter(negative=True).exclude(journal_entry__category=None).count()
+        transactions = (
+            Transaction.objects.filter(account=account)
+            .select_related("journal_entry")
+            .select_related("account")
+            .select_related("journal_entry__budget__budget")
+            .select_related("journal_entry__category")
+            .filter(journal_entry__date__range=calculate_period(periodicity=period, as_tuple=True))
+            .values(
+                "amount_currency",
+                "negative",
+                "account__name",
+                "journal_entry",
+                "journal_entry__date",
+                "journal_entry__transaction_type",
+                "journal_entry__budget__budget__name",
+                "journal_entry__category__name",
+            )
+            .annotate(total=Sum("amount"))
+            .order_by("journal_entry__date")
+        )
+
+        in_for_period = Money(sum([transaction["total"] for transaction in transactions if not transaction["negative"]]), account.currency)
+        out_for_period = Money(sum([transaction["total"] for transaction in transactions if transaction["negative"]]), account.currency)
+        balance_for_period = in_for_period + out_for_period
+
+        charts = {
+            "account_chart": AccountChart(
+                data=transactions,
+                start_date=calculate_period(periodicity=period)["start_date"],
+                end_date=calculate_period(periodicity=period)["end_date"],
+                user=request.user,
+            ).generate_json(),
+            "income_chart": TransactionChart(data=transactions, user=request.user, income=True).generate_json(),
+            "expense_budget_chart": TransactionChart(data=transactions, user=request.user, expenses_budget=True).generate_json(),
+            "expense_category_chart": TransactionChart(data=transactions, user=request.user, expenses_category=True).generate_json(),
+            "income_chart_count": len([item for item in transactions if not item["negative"]]),
+            "expense_budget_chart_count": len(
+                [item for item in transactions if item["negative"] and item["journal_entry__budget__budget__name"] is not None]
+            ),
+            "expense_category_chart_count": len(
+                [item for item in transactions if item["negative"] and item["journal_entry__category__name"] is not None]
+            ),
+        }
 
         return render(
             request,
             "blackbook/accounts/detail.html",
             {
                 "account": account,
-                "account_chart": account_chart,
-                "income_chart": income_chart,
-                "expense_budget_chart": expense_budget_chart,
-                "expense_category_chart": expense_category_chart,
-                "income_chart_count": income_chart_count,
-                "expense_budget_chart_count": expense_budget_chart_count,
-                "expense_category_chart_count": expense_category_chart_count,
+                "charts": charts,
+                "in_for_period": in_for_period,
+                "out_for_period": out_for_period,
+                "balance_for_period": balance_for_period,
             },
         )
 
     else:
         account_type = get_object_or_404(AccountType, slug=account_type)
-        accounts = Account.objects.filter(account_type=account_type).filter(user=request.user)
+        accounts = Account.objects.filter(account_type=account_type).filter(user=request.user).annotate(total=Sum("transactions__amount"))
 
         return render(request, "blackbook/accounts/list.html", {"account_type": account_type, "accounts": accounts})
 

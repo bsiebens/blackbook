@@ -91,12 +91,12 @@
                                     </td>
                                     <td data-label="Virtual balance">{{ account.virtual_balance }}</td>
                                     <td data-label="Current balance">
-                                        <span class="tag {% if account.balance.amount > 0 %}is-success{% elif account.balance.amount < 0 %}is-danger{% else %}is-light{% endif %}">
+                                        <span class="tag {% if account.total > 0 %}is-success{% elif account.total < 0 %}is-danger{% else %}is-light{% endif %}">
                                             <span class="icon">
                                                 <i class="fas fa-coins"></i>
                                             </span>
                                             <span>
-                                                {% if account.balance.amount > 0 %}+{% endif %}{% money_localize account.balance %}
+                                                {% if account.total > 0 %}+{% endif %}{% money_localize account.total account.currency %}
                                             </span>
                                         </span>
                                     </td>

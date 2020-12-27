@@ -78,8 +78,8 @@ class TransactionForm(forms.Form):
         budget_choices = [(budget.id, budget) for budget in Budget.objects.filter(user=user)]
         budget_choices.insert(0, (None, ""))
 
-        self.fields["category"].queryset = category_choices
-        self.fields["budget"].queryset = budget_choices
+        self.fields["category"].choices = category_choices
+        self.fields["budget"].choices = budget_choices
         self.fields["from_account"].choices = account_choices
         self.fields["to_account"].choices = account_choices
         self.fields["amount"].initial = ["0", get_default_currency(user=user)]

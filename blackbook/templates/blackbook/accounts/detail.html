@@ -43,12 +43,12 @@
                                 </span>
                             {% endif %}
                             
-                            <span class="tag {% if account.balance.amount > 0 %}is-success{% elif account.balance.amount < 0 %}is-danger{% else %}is-light{% endif %}">
+                            <span class="tag {% if balance_for_period.amount > 0 %}is-success{% elif balance_for_period.amount < 0 %}is-danger{% else %}is-light{% endif %}">
                                 <span class="icon">
                                     <i class="fas fa-coins"></i>
                                 </span>
                                 <span>
-                                    {% if account.balance.amount > 0 %}+{% endif %}{% money_localize account.balance %}
+                                    {% if balance_for_period.amount > 0 %}+{% endif %}{% money_localize balance_for_period %}
                                 </span>
                             </span>
                         </h3>
@@ -67,6 +67,7 @@
 {% endblock hero-section %}
 
 {% block content %}
+    {% with transaction_count=account.transactions.count %}
     <div class="card">
         <header class="card-header">
             <p class="card-header-title">
@@ -101,7 +102,7 @@
                         <span class="icon">
                             <i class="fas fa-calendar-alt"></i>
                         </span>
-                        <span>Current period ({{ account.transactions.count }} transaction{{ account.transactions|pluralize }})</span>
+                        <span>Current period ({{ transaction_count }} transaction{{ transaction_count|pluralize }})</span>
                     </p>
                 </header>
                 <div class="card-content">
@@ -110,7 +111,7 @@
                             <div class="is-widget-label">
                                 <h3 class="subtitle is-spaced">Income</h3>
                                 <h1 class="title">
-                                    {% if account.total_in_for_period.amount > 0 %}+{% endif %}{% money_localize account.total_in_for_period %}
+                                    {% if in_for_period.amount > 0 %}+{% endif %}{% money_localize in_for_period %}
                                 </h1>
                             </div>
                         </div>
@@ -130,7 +131,7 @@
                         <span class="icon">
                             <i class="fas fa-calendar-alt"></i>
                         </span>
-                        <span>Current period ({{ account.transactions.count }} transaction{{ account.transactions|pluralize }})</span>
+                        <span>Current period ({{ transaction_count }} transaction{{ transaction_count|pluralize }})</span>
                     </p>
                 </header>
                 <div class="card-content">
@@ -139,7 +140,7 @@
                             <div class="is-widget-label">
                                 <h3 class="subtitle is-spaced">Expenses</h3>
                                 <h1 class="title">
-                                    {% money_localize account.total_out_for_period %}
+                                    {% money_localize out_for_period %}
                                 </h1>
                             </div>
                         </div>
@@ -168,13 +169,13 @@
                             <div class="is-widget-label">
                                 <h3 class="subtitle is-spaced">Balance</h3>
                                 <h1 class="title">
-                                    {% if account.balance_for_period.amount > 0 %}+{% endif %}{% money_localize account.balance_for_period %}
+                                    {% if balance_for_period.amount > 0 %}+{% endif %}{% money_localize balance_for_period %}
                                 </h1>
                             </div>
                         </div>
                         <div class="level-item has-widget-icon">
                             <div class="is-widget-icon">
-                                <span class="icon has-text-{% if account.balance_for_period.amount > 0 %}success{% elif account.balance_for_period.amount < 0 %}danger{% else %}grey{% endif %} is-large"><i class="fas fa-coins fa-3x"></i></span>
+                                <span class="icon has-text-{% if balance_for_period.amount > 0 %}success{% elif balance_for_period.amount < 0 %}danger{% else %}grey{% endif %} is-large"><i class="fas fa-coins fa-3x"></i></span>
                             </div>
                         </div>
                     </div>
@@ -195,7 +196,7 @@
                     </p>
                 </header>
                 <div class="card-content">
-                    {% if income_chart_count == 0 %}
+                    {% if charts.income_chart_count == 0 %}
                         <p>No transaction information available yet.</p>
                     {% else %}
                         <div class="chart-area">
@@ -226,7 +227,7 @@
                     </p>
                 </header>
                 <div class="card-content">
-                    {% if expense_category_chart_count == 0 %}
+                    {% if charts.expense_category_chart_count == 0 %}
                         <p>No transaction information available yet.</p>
                     {% else %}
                         <div class="chart-area">
@@ -257,7 +258,7 @@
                     </p>
                 </header>
                 <div class="card-content">
-                    {% if expense_budget_chart_count == 0 %}
+                    {% if charts.expense_budget_chart_count == 0 %}
                         <p>No transaction information available yet.</p>
                     {% else %}
                         <div class="chart-area">
@@ -399,6 +400,7 @@
             </div>
         </div>
     </div>
+    {% endwith %}
 {% endblock content %}
 
 {% block modals %}
@@ -430,14 +432,14 @@
 
 {% block javascript %}
     let accountChartLineCTX = document.getElementById("account-line-chart").getContext("2d");
-    new Chart(accountChartLineCTX, {{ account_chart|safe }});
+    new Chart(accountChartLineCTX, {{ charts.account_chart|safe }});
 
     let transactionIncomeChartCTX = document.getElementById("transaction-income-chart").getContext("2d");
-    new Chart(transactionIncomeChartCTX, {{ income_chart|safe }});
+    new Chart(transactionIncomeChartCTX, {{ charts.income_chart|safe }});
     
     let expenseCategoryChartCTX = document.getElementById("transaction-expense-category-chart").getContext("2d");
-    new Chart(expenseCategoryChartCTX, {{ expense_category_chart|safe }});
+    new Chart(expenseCategoryChartCTX, {{ charts.expense_category_chart|safe }});
     
     let expenseBudgetChartCTX = document.getElementById("transaction-expense-budget-chart").getContext("2d");
-    new Chart(expenseBudgetChartCTX, {{ expense_budget_chart|safe }});
+    new Chart(expenseBudgetChartCTX, {{ charts.expense_budget_chart|safe }});
 {% endblock javascript %}
