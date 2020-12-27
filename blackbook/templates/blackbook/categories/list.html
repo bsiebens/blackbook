@@ -1,0 +1,56 @@
+{% extends 'blackbook/base.html' %}
+
+{% block title %}
+    Categories
+{% endblock title %}
+
+{% block breadcrumbs %}
+    <li>Categories</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+    <div class="card">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon">
+                    <i class="fas fa-hashtag"></i>
+                </span>
+                <span>Categories</span>
+            </p>
+        </header>
+        <div class="notification is-card-toolbar">
+            <div class="level">
+                <div class="level-left"></div>
+                <div class="level-right">
+                    <a class="button is-primary" href="{% url "blackbook:categories_add" %}">
+                        Add category
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-content">
+            <div class="b-table">
+                <div class="table-wrapper has-mobile-cards">
+                    <table class="table is-fullwidth is-striped is-hoverable is-fullwidth">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Name</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in categories %}
+                                <tr>
+                                    <td>{{ forloop.counter }}.</td>
+                                    <td>{{ category.name }}</td>
+                                    
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import dashboard, profile, accounts, transactions
+from .views import dashboard, profile, accounts, transactions, categories
 
 app_name = "blackbook"
 urlpatterns = [
@@ -19,4 +19,10 @@ urlpatterns = [
     path("transactions/add/", transactions.add_edit, name="transactions_add"),
     path("transactions/edit/<str:transaction_uuid>/", transactions.add_edit, name="transactions_edit"),
     path("transactions/delete/", transactions.delete, name="transactions_delete"),
+    #
+    # Categories
+    path("categories/", categories.categories, name="categories"),
+    path("categories/add/", categories.add_edit, name="categories_add"),
+    path("categories/edit/<str:category_uuid>", categories.add_edit, name="categories_edit"),
+    path("categories/delete/", categories.delete, name="categories_delete"),
 ]

@@ -180,7 +180,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="{% if request.session.menu == "category" %}is-active {% endif %}has-icon">
+                        <a href="{% url "blackbook:categories" %}" class="has-icon {% is_active "categories" %}">
                             <span class="icon"><i class="fas fa-hashtag"></i></span>
                             <span class="menu-item-label">Categories</span>
                         </a>

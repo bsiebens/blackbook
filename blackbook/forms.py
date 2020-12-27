@@ -48,6 +48,12 @@ class AccountForm(forms.ModelForm):
         fields = ["name", "account_type", "active", "include_in_net_worth", "iban", "currency", "virtual_balance"]
 
 
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ["name"]
+
+
 class UserProfileForm(forms.Form):
     first_name = forms.CharField()
     last_name = forms.CharField()
