@@ -10,8 +10,25 @@ from ..utilities import set_message_and_redirect
 @login_required
 def categories(request):
     categories = Category.objects.filter(user=request.user)
+    
+    forms = []
+    for category in categories:
+        forms.append(CategoryForm(None, instance=category))
 
-    return render(request, "blackbook/categories/list.html", {"categories": categories})
+    category_uuid = None
+
+    if request.POST:
+        category = categories.get(uuid=request.POST["category_uuid"])
+        category_form = CategoryForm(request.POST, instance=category)
+
+        if category_form.is_valid():
+            category = category_form.save()
+
+            return set_message_and_redirect(request, 's|Category "{category.name}" was updated succesfully.'.format(category=category), reverse("blackbook:categories"))
+        
+        category_uuid = request.POST["category_uuid"]
+
+    return render(request, "blackbook/categories/list.html", {"categories": categories, "forms": forms, "category_uuid": category_uuid})
 
 
 @login_required

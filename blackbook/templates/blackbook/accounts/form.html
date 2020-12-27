@@ -37,7 +37,7 @@
                     </p>
                 </header>
                 <div class="card-content">
-                    <form method="post" action="">
+                    <form method="post" action="{% url "blackbook:accounts_edit" account.slug %}">
                         {% csrf_token %} 
 
                         {% form_field account_form.name %}

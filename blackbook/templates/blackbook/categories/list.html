@@ -1,5 +1,7 @@
 {% extends 'blackbook/base.html' %}
 
+{% load formtags %}
+
 {% block title %}
     Categories
 {% endblock title %}
@@ -44,7 +46,18 @@
                                 <tr>
                                     <td>{{ forloop.counter }}.</td>
                                     <td>{{ category.name }}</td>
-                                    
+                                    <td>
+                                        <a class="button is-primary is-small jb-modal" data-target="modal-category-edit-{{ category.uuid }}" type="button">
+                                            <span class="icon">
+                                                <i class="fas fa-edit"></i>
+                                            </span>
+                                        </a>
+                                        <a class="button is-danger is-small jb-modal" data-target="modal-category-delete-{{ category.uuid }}" type="button">
+                                            <span class="icon">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </span>
+                                        </a>
+                                    </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -54,3 +67,56 @@
         </div>
     </div>
 {% endblock content %}
+
+{% block modals %}
+    {% for form in forms %}
+        <div id="modal-category-edit-{{ form.instance.uuid }}" class="modal">
+            <div class="modal-background jb-modal-close"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Edit category</p>
+                    <button class="delete jb-modal-close" aria-label="close"></button>
+                </header>
+                <form method="post" action="">
+                    <section class="modal-card-body">
+                        {% csrf_token %}
+                        <input type="hidden" name="category_uuid" value="{{ form.instance.uuid }}">
+
+                        {% form_field form.name %}
+                    </section>
+                    <footer class="modal-card-foot">
+                        <button class="button jb-modal-close">Cancel</button>
+                        <button class="button is-primary" type="submit">Submit</button>
+                    </footer>
+                </form>
+            </div>
+            <button class="modal-close is-large jb-modal-close" aria-label="close"></button>
+        </div>
+    {% endfor %}
+
+
+    {% for category in categories %}
+        <div id="modal-category-delete-{{ category.uuid }}" class="modal">
+            <div class="modal-background jb-modal-close"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Confirm action</p>
+                    <button class="delete jb-modal-close" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <p>This will permanently delete category <b>{{ category.name }}</b>.</p>
+                    <p>Are you sure?</p>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button jb-modal-close">Cancel</button>
+                    <form method="post" action="{% url "blackbook:categories_delete" %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="category_uuid" value="{{ category.uuid }}">
+                        <button class="button is-danger" type="submit">Delete</button>
+                    </form>
+                </footer>
+            </div>
+            <button class="modal-close is-large jb-modal-close" aria-label="close"></button>
+        </div>
+    {% endfor %}
+{% endblock %}

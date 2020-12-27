@@ -23,6 +23,6 @@ urlpatterns = [
     # Categories
     path("categories/", categories.categories, name="categories"),
     path("categories/add/", categories.add_edit, name="categories_add"),
-    path("categories/edit/<str:category_uuid>", categories.add_edit, name="categories_edit"),
+    path("categories/edit/", categories.categories, name="categories_edit"),
     path("categories/delete/", categories.delete, name="categories_delete"),
 ]
