@@ -20,15 +20,5 @@ class Migration(migrations.Migration):
             model_name='transactionjournalentry',
             name='uuid',
             field=models.UUIDField(db_index=True, default=uuid.uuid4, editable=False, unique=True),
-        ),
-        migrations.AlterField(
-            model_name='transaction',
-            name='id',
-            field=models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
-        ),
-        migrations.AlterField(
-            model_name='transactionjournalentry',
-            name='id',
-            field=models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
-        ),
+        )
     ]
