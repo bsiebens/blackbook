@@ -1,0 +1,46 @@
+{% load formtags %}
+
+<div id="modal-transaction-add" class="modal">
+    <div class="modal-background jb-modal-close"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">    
+            <p class="modal-card-title">Add transaction</p>
+            <button class="delete jb-modal-close" aria-label="close"></button>
+        </header>
+        <form method="post" action="{% url "blackbook:transactions_add" %}">
+            <section class="modal-card-body">
+                {% csrf_token %}
+
+                {% form_field transaction_form.description %}
+                {% form_field transaction_form.date %}
+                {% form_field transaction_form.transaction_type %}
+
+                <div class="field is-horizontal">
+                    <div class="field-label is-normal">
+                        <label class="label">Amount</label>
+                    </div>
+                    <div class="field-body">
+                        <div class="field has-addons">
+                            {{ transaction_form.amount }}
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+                {% form_field transaction_form.category %}
+                {% form_field transaction_form.budget %}
+                {% form_field transaction_form.tags %}
+                <hr />
+                {% form_field transaction_form.from_account %}
+                {% form_field transaction_form.to_account %}
+                <hr />
+                {% form_field transaction_form.add_new "Return after save" %}
+            </section>
+            <footer class="modal-card-foot">    
+                <button class="button jb-modal-close">Cancel</button>
+                <button class="button is-primary" type="submit">Submit</button>
+            </footer>
+        </form>
+    </div>
+    <button class="modal-close is-large jb-modal-close" aria-label="close"></button>
+</div>

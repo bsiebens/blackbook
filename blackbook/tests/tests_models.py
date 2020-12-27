@@ -6,7 +6,7 @@ from django.utils import timezone
 from djmoney.money import Money
 from djmoney.contrib.exchange.models import convert_money
 
-from datetime import timedelta
+from datetime import timedelta, date
 
 from .. import models
 from ..utilities import calculate_period
@@ -53,7 +53,10 @@ class BudgetTest(TestCase):
 
     def test_period_created(self):
         budget = models.Budget.objects.create(name="Test Budget", amount=Money(20, "EUR"), user=self.user)
-        self.assertEqual(budget.current_period, None)
+        self.assertIsInstance(budget.current_period, models.BudgetPeriod)
+        self.assertEqual(budget.current_period.end_date, date(9999, 12, 31))
+        self.assertEqual(budget.current_period.start_date, timezone.now().date())
+        self.assertEqual(budget.current_period.amount, budget.amount)
 
         budget = models.Budget.objects.create(
             name="Test Budget With Period", auto_budget=models.Budget.AutoBudget.ADD, auto_budget_period=models.Budget.Period.WEEK, user=self.user
@@ -132,7 +135,7 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             description="Transaction 1",
             transaction_type=models.TransactionJournalEntry.TransactionType.WITHDRAWAL,
             category=cls.category,
-            budget=cls.budget_EUR,
+            budget=cls.budget_EUR.current_period,
             from_account=cls.account,
             user=cls.user,
         )
@@ -141,7 +144,7 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             description="Transaction 2",
             transaction_type=models.TransactionJournalEntry.TransactionType.WITHDRAWAL,
             category=cls.category,
-            budget=cls.budget_DKK,
+            budget=cls.budget_DKK.current_period,
             from_account=cls.account,
             user=cls.user,
         )
@@ -150,7 +153,7 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             description="Transaction 3",
             transaction_type=models.TransactionJournalEntry.TransactionType.WITHDRAWAL,
             category=cls.category,
-            budget=cls.budget_EUR,
+            budget=cls.budget_EUR.current_period,
             from_account=cls.account,
             user=cls.user,
         )
@@ -158,7 +161,7 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             amount=Money(15, "EUR"),
             description="Transaction 4",
             transaction_type=models.TransactionJournalEntry.TransactionType.DEPOSIT,
-            budget=cls.budget_EUR,
+            budget=cls.budget_EUR.current_period,
             to_account=cls.account,
             user=cls.user,
         )
@@ -167,7 +170,7 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             description="Transaction 5",
             transaction_type=models.TransactionJournalEntry.TransactionType.WITHDRAWAL,
             date=timezone.now() - timedelta(days=10),
-            budget=cls.budget_EUR,
+            budget=cls.budget_EUR.get_period_for_date(timezone.now() - timedelta(days=10)),
             from_account=cls.account,
             user=cls.user,
         )
@@ -175,7 +178,7 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             amount=Money(50, "EUR"),
             description="Transaction 6",
             transaction_type=models.TransactionJournalEntry.TransactionType.WITHDRAWAL,
-            budget=cls.budget_no,
+            budget=cls.budget_no.current_period,
             from_account=cls.account,
             tags="tag 1, tag 2",
             user=cls.user,
@@ -184,7 +187,7 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             amount=Money(50, "EUR"),
             description="Transaction 7",
             transaction_type=models.TransactionJournalEntry.TransactionType.DEPOSIT,
-            budget=cls.budget_no,
+            budget=cls.budget_no.current_period,
             to_account=cls.account,
             tags=["tag 1", "tag 2"],
             user=cls.user,

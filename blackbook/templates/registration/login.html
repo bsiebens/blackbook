@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block html-class %}{% endblock %}
+
+{% block title %}
+    login
+{% endblock title  %}
+
+{% block body %}
+    <section class="section hero is-fullheight is-error-section">
+        <div class="hero-body">
+            <div class="container">
+                <div class="columns is-centered">
+                    <div class="column is-three-fifths">
+                        <div class="card has-card-header-background">
+                            <header class="card-header">    
+                                <p class="card-header-title">
+                                    <span class="icon"><i class="fas fa-lock"></i></span>
+                                    <span>BlackBook - Login</span>
+                                </p>
+                            </header>
+                            <div class="card-content">
+                                {% block messages %}
+                                    {% if form.errors %}
+                                        <article class="message is-danger">
+                                            <div class="message-header">
+                                                Error 
+                                            </div>
+                                            <div class="message-body">
+                                                <p>Your username and password did not match.<br />Please try again.</p>
+                                            </div>
+                                        </article>
+                                    {% endif %}
+
+                                    {% if next %}
+                                        {% if user.is_authenticated %}
+                                            <article class="message is-danger">
+                                                <div class="message-header">
+                                                    Error 
+                                                </div>
+                                                <div class="message-body">
+                                                    <p>Your account doesn't have access to this page.<br />
+                                                    To proceed, please login with an account that has access.</p>
+                                                </div>
+                                            </article>
+                                        {% else %}
+                                            <article class="message is-info">
+                                                <div class="message-body">
+                                                    <p>Please login to see this page.</p>
+                                                </div>
+                                            </article>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endblock %}
+
+                                <form method="post" action="{% url "login" %}">
+                                    {% csrf_token %}
+                                    {% if next %}
+                                        <input type="hidden" name="next" value="{{ next }}">
+                                    {% else %}
+                                        <input type="hidden" name="next" value="{% url "blackbook:dashboard" %}">
+                                    {% endif %}
+                                    
+                                    <div class="field">
+                                        <label class="label">Username</label>
+                                        <div class="control">
+                                            <input type="text" autocomplete="on" name="{{ form.username.name }}" class="input" required autofocus>
+                                        </div>
+                                    </div>
+                                    <div class="field">
+                                        <label class="label">Password</label>
+                                        <div class="control">
+                                            <input type="password" autocomplete="on" name="{{ form.password.name }}" class="input" required>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="field is-grouped">
+                                        <div class="control">
+                                            <button type="submit" class="button is-black">
+                                                Login
+                                            </button>
+                                        </div>
+                                        <div class="control">
+                                            <a href="{% url "password_reset" %}" class="button is-outlined is-black">
+                                                Forgot password?
+                                            </a>
+                                        </div>
+                                    </div>
+                                </form> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock body %}

@@ -1,0 +1,156 @@
+{% extends 'blackbook/base.html' %}
+
+{% load formtags %}
+{% load iban %}
+{% load djmoney %}
+{% load humanize %}
+
+{% block title %}
+    Accounts
+{% endblock title %}
+
+{% block breadcrumbs %}
+    <li>Accounts</li>
+    {% if account.id is not None %}
+        <li>Edit account</li>
+    {% else %}
+        <li>Add account</li>
+    {% endif %}
+{% endblock breadcrumbs %}
+
+{% block content %}
+    <div class="tile is-ancestor">
+        <div class="tile is-parent">
+            <div class="card tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon">
+                            <i class="fas fa-landmark"></i>
+                        </span>
+                        <span>
+                            {% if account.id is not None %}
+                                Edit account
+                            {% else %}
+                                Add account
+                            {% endif %}
+                        </span>
+                    </p>
+                </header>
+                <div class="card-content">
+                    <form method="post" action="">
+                        {% csrf_token %} 
+
+                        {% form_field account_form.name %}
+                        {% form_field account_form.account_type %}
+                        {% form_field account_form.currency %}
+                        {% form_field account_form.starting_balance %}
+                        {% form_field account_form.iban %}
+                        <hr />
+                        {% form_field account_form.active %}
+                        {% form_field account_form.include_in_net_worth %}
+                        {% form_field account_form.virtual_balance %}
+                        <hr />
+                        
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                            </div>
+                            <div class="field-body">
+                                <div class="field">
+                                    <div class="control">
+                                        <button type="submit" name="profile_submit" class="button is-primary">
+                                            Submit
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="tile is-parent">
+            <div class="card tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon">
+                            <i class="fas fa-landmark"></i>
+                        </span>
+                        <span>Account information</span>
+                    </p>
+                </header>
+                <div class="card-content">
+                    {% if account.id is not None %}
+                        <div class="is-user-avatar image has-max-width is-aligned-center">
+                            <img src="https://avatars.dicebear.com/api/jdenticon/{{ account.name|slugify }}.svg"> 
+                        </div>
+
+                        <hr />
+                    {% endif %}
+
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Name</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ account.name|default:"-" }}" class="input is-static">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Account Type</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ account.account_type.name|default:"-" }}" class="input is-static">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Currency</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ account.get_currency_display|default:"-" }}" class="input is-static">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">IBAN</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ account.iban|iban|default:"-" }}" class="input is-static">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Virtual balance</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ account.virtual_balance|default:"0.00" }}" class="input is-static">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Created</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ account.created|naturaltime|default:"-" }}" class="input is-static">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Current balance</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{% money_localize account.balance %}" class="input is-static">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Modified</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ account.modified|naturaltime|default:"-" }}" class="input is-static">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

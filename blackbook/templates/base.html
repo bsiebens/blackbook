@@ -1,0 +1,49 @@
+{% load static %}
+{% load modalforms %}
+
+<!DOCTYPE html>
+<html lang="en"{% block html-class%} class="has-aside-left has-aside-mobile-transition has-navbar-fixed-top has-aside-expanded"{% endblock %}>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>BlackBook - {% block title %}dashboard{% endblock %}</title>
+
+        <!-- Bulma is included -->
+        <link rel="stylesheet" href="{% static "css/main.min.css" %}">
+        <link rel="stylesheet" href="{% static "css/bulma-tooltip.min.css" %}">
+        <link rel="stylesheet" href="{% static "css/blackbook.css" %}">
+        <link rel="stylesheet" href="{% static "css/bulma-tagsinput.min.css" %}">
+
+        <!-- Fonts -->
+        <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet" type="text/css">
+        <!-- <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet" type="text/css"> -->
+
+        <!-- Icons -->
+        <script src="https://kit.fontawesome.com/8189f10079.js" crossorigin="anonymous"></script>
+    </head>
+    <body>
+        <div id="app">
+            {% block body %}{% endblock %}
+        </div>
+
+        <div id="ui-overlay" class="ui-overlay is-hidden"></div>
+
+        {% account_form %}
+        {% transaction_form %}
+        {% block modals %}{% endblock %}
+
+        <script type="text/javascript" src="{% static "js/perfect-scrollbar.min.js" %}"></script>
+        <script type="text/javascript" src="{% static "js/main.min.js" %}"></script>
+        <script type="text/javascript" src="{% static "js/bulma-tagsinput.min.js" %}"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
+        <script type="text/javascript">
+            BulmaTagsInput.attach();
+
+            {% block javascript %}{% endblock %}
+        </script>
+    </body>
+</html>

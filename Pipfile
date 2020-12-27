@@ -15,12 +15,12 @@ python-dateutil = "*"
 django-minio-storage = "*"
 django-money = {extras = ["exchange"],version = "*"}
 django-model-utils = "*"
-babel = "*"
 django-filter = "*"
 django-cors-headers = "*"
 django-graphql-jwt = "*"
 graphene-django = "==2.13.0"
 django-localflavor = "*"
+babel = "*"
 
 [requires]
 python_version = "3.8"

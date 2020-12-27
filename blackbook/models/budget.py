@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Sum
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.conf import settings
 
 from djmoney.models.fields import MoneyField
@@ -9,6 +10,8 @@ from djmoney.contrib.exchange.models import convert_money
 from model_utils import FieldTracker
 
 from .base import get_default_currency
+
+import uuid
 
 
 class Budget(models.Model):
@@ -31,6 +34,7 @@ class Budget(models.Model):
     auto_budget = models.CharField("auto-budget", max_length=30, choices=AutoBudget.choices, default=AutoBudget.NO)
     auto_budget_period = models.CharField("auto-budget period", max_length=30, choices=Period.choices, default=Period.WEEK, blank=True, null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="budgets")
+    uuid = models.UUIDField("UUID", default=uuid.uuid4, editable=False, db_index=True, unique=True)
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -43,11 +47,11 @@ class Budget(models.Model):
     def __str__(self):
         return self.name
 
-    @property
+    @cached_property
     def current_period(self):
         return self.get_period_for_date(date=timezone.now())
 
-    @property
+    @cached_property
     def used(self):
         if self.auto_budget != self.AutoBudget.NO:
             return self.current_period.used
@@ -56,14 +60,14 @@ class Budget(models.Model):
 
         total = Money(0, self.amount.currency)
 
-        for transaction in self.transactions.filter(
+        for transaction in TransactionJournalEntry.objects.filter(budget__budget=self).filter(
             transaction_type__in=[TransactionJournalEntry.TransactionType.WITHDRAWAL, TransactionJournalEntry.TransactionType.TRANSFER]
         ):
             total += convert_money(transaction.amount, self.amount.currency)
 
         return total
 
-    @property
+    @cached_property
     def available(self):
         return self.amount - self.used
 
@@ -93,20 +97,20 @@ class BudgetPeriod(models.Model):
     def __str__(self):
         return "{i.budget.name}: {i.start_date} <> {i.end_date} ({i.amount})".format(i=self)
 
-    @property
+    @cached_property
     def used(self):
         from .transaction import TransactionJournalEntry
 
         currency = self.amount.currency
         total = Money(0, currency)
 
-        for transaction in self.budget.transactions.filter(date__range=(self.start_date, self.end_date)).filter(
+        for transaction in self.transactions.filter(
             transaction_type__in=[TransactionJournalEntry.TransactionType.WITHDRAWAL, TransactionJournalEntry.TransactionType.TRANSFER]
         ):
             total += convert_money(transaction.amount, currency)
 
         return total
 
-    @property
+    @cached_property
     def available(self):
         return self.amount - self.used

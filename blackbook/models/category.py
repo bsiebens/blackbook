@@ -1,15 +1,19 @@
 from django.db import models
 from django.conf import settings
+from django.utils.functional import cached_property
 
 from djmoney.contrib.exchange.models import convert_money
 from djmoney.money import Money
 
 from .base import get_default_currency
 
+import uuid
+
 
 class Category(models.Model):
     name = models.CharField(max_length=250)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="categories")
+    uuid = models.UUIDField("UUID", default=uuid.uuid4, editable=False, db_index=True, unique=True)
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -21,7 +25,7 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-    @property
+    @cached_property
     def total(self):
         return self.total_in_currency(currency=get_default_currency())
 

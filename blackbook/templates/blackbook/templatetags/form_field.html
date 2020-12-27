@@ -1,0 +1,37 @@
+{% load formtags %}
+
+<div class="field is-horizontal">
+    <div class="field-label{% if field.widget_type != "checkbox" %} is-normal{% endif %}">
+        <label class="label{% if field.errors %} has-text-danger{% endif %}">{{ field.label|capfirst }}</label>
+    </div>
+    <div class="field-body">
+        <div class="field">
+            <div class="control">
+                {% if field.widget_type == "checkbox" %}
+                    <label class="switch is-rounded">
+                        {{ field }}
+                        <span class="check"></span>
+                    </label>
+                {% else %}
+                    {% if field.widget_type == "select" %}
+                        <div class="select is-fullwidth{% if field.errors %} is-danger{% endif %}">
+                    {% endif %}
+                        {{ field|add_class }}
+                    {% if field.widget_type == "select" %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+            {% if field.help_text or field.field.required or field.errors %}
+                <p class="help{% if field.errors %} is-danger{% endif %}">
+                    {% if field.errors %}
+                        {{ field.errors.as_text|cut:"* " }}&nbsp;
+                    {% endif %}
+
+                    {% if field.field.required and not field.errors %}Required. {% endif %}
+                    {% if field.help_text and field.widget_type != "password" %}{{ field.help_text }}{% endif %}
+                </p>
+            {% endif %}
+        </div>
+    </div>
+</div>

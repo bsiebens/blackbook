@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
+from django.utils.functional import cached_property
 
 from djmoney.models.fields import MoneyField
 from djmoney.contrib.exchange.models import convert_money
@@ -9,8 +10,10 @@ from model_utils import FieldTracker
 
 from .base import get_default_currency
 from .category import Category
-from .budget import Budget
+from .budget import BudgetPeriod
 from .account import Account
+
+import uuid
 
 
 class TransactionJournalEntry(models.Model):
@@ -26,9 +29,10 @@ class TransactionJournalEntry(models.Model):
     transaction_type = models.CharField(max_length=30, choices=TransactionType.choices, default=TransactionType.WITHDRAWAL)
     amount = MoneyField(max_digits=15, decimal_places=2, default_currency=get_default_currency(), default=0)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, blank=True, null=True, related_name="transactions")
-    budget = models.ForeignKey(Budget, on_delete=models.SET_NULL, blank=True, null=True, related_name="transactions")
+    budget = models.ForeignKey(BudgetPeriod, on_delete=models.SET_NULL, blank=True, null=True, related_name="transactions")
     tags = TaggableManager(blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="transactions")
+    uuid = models.UUIDField("UUID", default=uuid.uuid4, editable=False, db_index=True, unique=True)
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -69,7 +73,7 @@ class TransactionJournalEntry(models.Model):
             self.transactions.create(account=to_account, amount=self.amount, negative=False)
             self.transactions.create(account=from_account, amount=self.amount, negative=True)
 
-    @property
+    @cached_property
     def to_account(self):
         try:
             return self.transactions.get(amount__gte=0.0).account
@@ -77,7 +81,7 @@ class TransactionJournalEntry(models.Model):
         except Transaction.DoesNotExist:
             return None
 
-    @property
+    @cached_property
     def from_account(self):
         try:
             return self.transactions.get(amount__lte=0.0).account
@@ -105,7 +109,7 @@ class TransactionJournalEntry(models.Model):
         journal_entry._create_transactions(to_account=to_account, from_account=from_account)
 
         if tags is not None:
-            if isinstance(tags, str):
+            if isinstance(tags, str) and tags != "":
                 tags = tags.split(", ")
             journal_entry.tags.set(*tags)
 
@@ -131,8 +135,8 @@ class TransactionJournalEntry(models.Model):
         self.save()
 
         if tags is not None:
-            if isinstance(tags, str):
-                tags = tags.split(", ")
+            if isinstance(tags, str) and tags != "":
+                tags = tags.split(",")
             self.tags.set(*tags)
 
 
@@ -142,6 +146,7 @@ class Transaction(models.Model):
     reconciled = models.BooleanField(default=False)
     amount = MoneyField(max_digits=15, decimal_places=2)
     negative = models.BooleanField(default=True)
+    uuid = models.UUIDField("UUID", default=uuid.uuid4, editable=False, db_index=True, unique=True)
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)

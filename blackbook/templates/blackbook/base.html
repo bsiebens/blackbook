@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+
+{% load humanize %}
+{% load navigationtags %}
+
+{% block body %}
+    <nav id="navbar-main" class="navbar is-fixed-top">
+        <div class="navbar-brand">
+            <a class="navbar-item is-hidden-desktop jb-aside-mobile-toggle">
+                <span class="icon"><i class="fas fa-bars"></i></span>
+            </a>
+
+            <!-- 
+            <div class="navbar-item has-control no-left-space">
+                <div class="control"><input placeholder="Search everywhere..." class="input"></div>
+            </div>
+            -->
+            
+        </div>
+        <div class="navbar-brand is-right">
+            <!--
+            <a class="navbar-item is-hidden-desktop jb-aside-right-toggle" onclick="document.getElementById('updateIconMobile').classList.remove('has-update-mark')">
+                <span class="icon" id="updateIconMobile"><i class="fas fa-bell"></i></span>
+            </a>
+            -->
+            <a class="navbar-item is-hidden-desktop jb-navbar-menu-toggle" data-target="navbar-menu">
+                <span class="icon"><i class="fas fa-ellipsis-v"></i></span>
+            </a>
+        </div>
+        <div class="navbar-menu fadeIn animated faster" id="navbar-menu">
+            <div class="navbar-end">
+                <div class="navbar-item has-dropdown has-dropdown-with-icons has-divider is-hoverable">
+                    <a class="navbar-link is-arrowless">
+                        <span class="icon"><i class="fas fa-plus"></i></span>
+                        <span class="icon">
+                            <i class="fas fa-chevron-down"></i>
+                        </span>
+                    </a>
+                    <div class="navbar-dropdown">
+                        <a class="navbar-item jb-modal" data-target="modal-account-add">
+                            <span class="icon"><i class="fas fa-landmark"></i></span>
+                            <span>Add account</span>
+                        </a>
+                        <a class="navbar-item jb-modal" data-target="modal-transaction-add">
+                            <span class="icon"><i class="fas fa-exchange-alt"></i></span>
+                            <span>Add transaction</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <a href="https://justboil.me/bulma-admin-template/one" title="About" class="navbar-item has-divider is-desktop-icon-only">
+                    <span class="icon"><i class="fas fa-question"></i></span>
+                    <span>About</span>
+                </a>
+                <a href="{% url "blackbook:update_exchange_rates" %}?next={{ request.path }}" title="Refresh exchange rates" class="navbar-item has-divider is-desktop-icon-only">
+                    <span class="icon"><i class="fas fa-sync-alt"></i></span>
+                    <span>Refresh exchange rates</span>
+                </a>
+                <!--
+                <a title="Updates" class="navbar-item has-divider is-desktop-icon-only jb-aside-right-toggle" onclick="document.getElementById('updateIcon').classList.remove('has-update-mark')">
+                    <span class="icon" id="updateIcon"><i class="fas fa-bell"></i></span>
+                    <span>Updates</span>
+                </a>
+                -->
+                
+                <div class="navbar-item has-dropdown has-dropdown-with-icons has-divider has-user-avatar is-hoverable">
+                    <a class="navbar-link is-arrowless">
+                        <div class="is-user-avatar">
+                            {% if request.user.get_full_name != "" %}
+                                <img src="https://avatars.dicebear.com/api/initials/{{ request.user.get_full_name|slugify }}.svg" alt="{{ request.user.get_full_name }}">
+                            {% else %}
+                                <img src="https://avatars.dicebear.com/api/initials/{{ request.user.get_username|slugify }}.svg" alt="{{ request.user.get_username }}">
+                            {% endif %}
+                        </div>
+                        <div class="is-user-name">
+                            <span>
+                                {% if request.user.get_full_name != "" %}
+                                    {{ request.user.get_full_name }}
+                                {% else %}
+                                    {{ request.user.get_username }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        <span class="icon"><i class="fas fa-chevron-down"></i></span>
+                    </a>
+                    <div class="navbar-dropdown">
+                        <a href="{% url "blackbook:profile" %}" class="navbar-item">
+                            <span class="icon"><i class="fas fa-user"></i></span>
+                            <span>Profile</span>
+                        </a>
+                        {% if request.user.is_superuser or request.user.is_staff %}
+                            <a href="/admin" class="navbar-item">
+                                <span class="icon"><i class="fas fa-cog"></i></span>
+                                <span>Admin</span>
+                            </a>
+                        {% endif %}
+                        <hr class="navbar-divider">
+                        <a class="navbar-item" href="{% url "logout" %}">
+                            <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+                            <span>Log Out</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <aside id="aside-main" class="aside is-placed-left is-expanded">
+        <div class="aside-tools">
+            <div class="aside-tools-label">
+                <span><b id="appName">BlackBook</b></span>
+            </div>
+        </div>
+        <div class="menu-container jb-has-perfect-scrollbar">
+            <div class="menu is-menu-main">
+                <p class="menu-label">General</p>
+                <ul class="menu-list">
+                    <li>
+                        <a href="{% url "blackbook:dashboard" %}" class="has-icon {% is_active "dashboard" %}">
+                            <span class="icon"><i class="fas fa-desktop"></i></span>
+                            <span class="menu-item-label">Dashboard</span>
+                        </a>
+                    </li>
+                </ul>
+                <p class="menu-label">Accounts</p>
+                <ul class="menu-list">
+                    {% accounts %}
+                </ul>
+                <p class="menu-label">Monitoring</p>
+                <ul class="menu-list">
+                    <li>
+                        <a href="#" class="has-icon">
+                            <span class="icon"><i class="fas fa-chart-pie"></i></span>
+                            <span class="menu-item-label">Budgets</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="has-icon">
+                            <span class="icon"><i class="fas fa-receipt"></i></span>
+                            <span class="menu-item-label">Bills</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="has-icon">
+                            <span class="icon"><i class="fas fa-piggy-bank"></i></span>
+                            <span class="menu-item-label">Savings</span>
+                        </a>    
+                    </li>
+                </ul>
+                <p class="menu-label">Automation</p>
+                <ul class="menu-list">
+                    <li>
+                        <a href="#" class="has-icon">
+                            <span class="icon"><i class="fas fa-sync-alt"></i></span>
+                            <span class="menu-item-label">Recurring transactions</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="has-icon">
+                            <span class="icon"><i class="fas fa-sliders-h"></i></span>
+                            <span class="menu-item-label">Rules</span>
+                        </a>
+                    </li>
+                </ul>
+                <p class="menu-label">Reports</p>
+                <ul class="menu-list">
+                    <li>
+                        <a href="#" class="has-icon">
+                            <span class="icon"><i class="fas fa-chart-line"></i></span>
+                            <span class="menu-item-label">Reports</span>
+                        </a>
+                    </li>
+                </ul>
+                <p class="menu-label">Settings</p>
+                <ul class="menu-list">
+                    <li>
+                        <a href="{% url "blackbook:profile" %}" class="has-icon {% is_active "profile" %}">
+                            <span class="icon"><i class="fas fa-cog"></i></span>
+                            <span class="menu-item-label">Settings</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="{% if request.session.menu == "category" %}is-active {% endif %}has-icon">
+                            <span class="icon"><i class="fas fa-hashtag"></i></span>
+                            <span class="menu-item-label">Categories</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="has-icon">
+                            <span class="icon"><i class="fas fa-tags"></i></span>
+                            <span class="menu-item-label">Tags</span>
+                        </a>    
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="menu is-menu-bottom">
+            <ul class="menu-list">
+                <li>
+                    <a href="{% url "logout" %}" title="Log out" class="has-icon is-state-info is-hoverable">
+                        <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+                        <span class="menu-item-label">Log out</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    <section class="section is-title-bar">
+        <div class="level">
+            <div class="level-left">
+                <div class="level-item">
+                    <ul>
+                        <li>BlackBook</li>
+                        {% block breadcrumbs %}
+                            <li>Dashboard</li>
+                        {% endblock %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="hero is-hero-bar is-main-hero">
+        {% block hero-section %}{% endblock %}
+    </section>
+
+    <section class="section is-main-section">
+        {% if messages %}
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </section>
+
+    <footer class="footer">
+        <div class="container-fluid">
+            <div class="level">
+                <div class="level-left">
+                    <div class="level-item">
+                        &copy; {% now "Y" %} 
+                    </div>
+                    <div class="level-item">
+                        Bernard Siebens
+                    </div>
+                    <div class="level-item">
+                        {{ version }}
+                    </div>
+                </div>
+                <div class="level-right">
+                    <div class="level-item">
+                        <div class="logo">
+                            <a href="https://github.com/bsiebens/BlackBook">
+                                <span class="icon"><i class="fab fa-github"></i></span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+{% endblock body %}
