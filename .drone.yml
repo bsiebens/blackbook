@@ -15,7 +15,7 @@ trigger:
         - push
         - pull_request
     branch:
-        - development
+        - develop
         - master
 
 steps:
