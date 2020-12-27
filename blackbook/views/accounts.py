@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.db.models import Sum
+from django.db.models.functions import Coalesce
 
 from djmoney.money import Money
 
@@ -21,7 +22,7 @@ def accounts(request, account_type, account_name=None):
             .prefetch_related("transactions__journal_entry__tags")
             .prefetch_related("transactions__journal_entry__budget__budget")
             .prefetch_related("transactions__journal_entry__category")
-            .annotate(total=Sum("transactions__amount")),
+            .annotate(total=Coalesce(Sum("transactions__amount"), 0)),
             slug=account_name,
         )
 
@@ -92,7 +93,9 @@ def accounts(request, account_type, account_name=None):
 
     else:
         account_type = get_object_or_404(AccountType, slug=account_type)
-        accounts = Account.objects.filter(account_type=account_type).filter(user=request.user).annotate(total=Sum("transactions__amount"))
+        accounts = (
+            Account.objects.filter(account_type=account_type).filter(user=request.user).annotate(total=Coalesce(Sum("transactions__amount"), 0))
+        )
 
         for account in accounts:
             account.total -= account.virtual_balance
