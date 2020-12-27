@@ -21,6 +21,9 @@ django-graphql-jwt = "*"
 graphene-django = "==2.13.0"
 django-localflavor = "*"
 babel = "*"
+psycopg2-binary = "*"
+gunicorn = "*"
+django-debug-toolbar = "*"
 
 [requires]
 python_version = "3.8"

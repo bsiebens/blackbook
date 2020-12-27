@@ -95,8 +95,11 @@ WSGI_APPLICATION = "django_blackbook.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.{backend}".format(backend=os.getenv("DB_BACKEND", "sqlite3")),
+        "NAME": os.getenv("DB_NAME", BASE_DIR / "db.sqlite3"),
+        "HOST": os.getenv("DB_HOST", ""),
+        "USER": os.getenv("DB_USER", ""),
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
     }
 }
 
