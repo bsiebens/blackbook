@@ -40,7 +40,7 @@ def dashboard(request):
         .filter(account__include_in_net_worth=True)
         .select_related("journal_entry")
         .select_related("account")
-        .values("amount_currency", "journal_entry__date", "account__name", "account__include_on_dashboard")
+        .values("amount_currency", "journal_entry__date", "account__name", "account__virtual_balance", "account__include_on_dashboard")
         .annotate(total=Sum("amount"))
         .order_by("journal_entry__date")
     )
@@ -99,6 +99,11 @@ def dashboard(request):
 
     for total in net_worth:
         data["totals"]["net_worth"] += convert_money(Money(total["total"], total["amount_currency"]), currency)
+
+    total_virtual_balance = Money(0, currency)
+    for account in accounts:
+        total_virtual_balance += convert_money(Money(account.virtual_balance, account.currency), currency)
+    data["totals"]["net_worth"] -= total_virtual_balance
 
     for budget in budgets:
         data["budget"]["total"] += convert_money(Money(budget["total"], budget["amount_currency"]), currency)
