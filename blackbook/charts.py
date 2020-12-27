@@ -180,6 +180,7 @@ class AccountChart(Chart):
         data = {"type": "line", "data": {"labels": [date.strftime("%d %b %Y") for date in dates], "datasets": []}}
 
         accounts = {}
+        accounts_virtual_balance = {}
         for item in self.data:
             if item["account__name"] in accounts.keys():
                 date_entry = accounts[item["account__name"]].get(item["journal_entry__date"], Money(0, self.currency))
@@ -191,6 +192,7 @@ class AccountChart(Chart):
                 accounts[item["account__name"]] = {
                     item["journal_entry__date"]: convert_money(Money(item["total"], item["amount_currency"]), self.currency)
                 }
+                accounts_virtual_balance[item["account__name"]] = item["account__virtual_balance"]
 
         counter = 1
         for account, date_entries in accounts.items():
@@ -224,7 +226,7 @@ class AccountChart(Chart):
                 value = 0
                 if date_index == 0:
                     amounts = dict(filter(lambda elem: elem[0] <= date, date_entries.items()))
-                    value = float(sum([item.amount for item in amounts.values()]))
+                    value = float(sum([item.amount for item in amounts.values()])) - float(accounts_virtual_balance[account])
 
                 else:
                     value = account_data["data"][date_index - 1]

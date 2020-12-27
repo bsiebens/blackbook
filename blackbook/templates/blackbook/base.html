@@ -2,6 +2,7 @@
 
 {% load humanize %}
 {% load navigationtags %}
+{% load modalforms %}
 
 {% block body %}
     <nav id="navbar-main" class="navbar is-fixed-top">
@@ -180,7 +181,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="{% if request.session.menu == "category" %}is-active {% endif %}has-icon">
+                        <a href="{% url "blackbook:categories" %}" class="has-icon {% is_active "categories" %}">
                             <span class="icon"><i class="fas fa-hashtag"></i></span>
                             <span class="menu-item-label">Categories</span>
                         </a>
@@ -262,3 +263,8 @@
         </div>
     </footer>
 {% endblock body %}
+
+{% block forms %}
+    {% account_form %}
+    {% transaction_form %}
+{% endblock forms %}

@@ -47,8 +47,8 @@ steps:
 
     - name: update database, collect static files & clear cache
       commands:
-          - /home/bernard/.local/share/virtualenvs/blackbook-hsS-3Fy7/bin/python /home/bernard/BlackBook/manage.py migrate --no-input
-          - /home/bernard/.local/share/virtualenvs/blackbook-hsS-3Fy7/bin/python /home/bernard/BlackBook/manage.py collectstatic --no-input
+          - /home/bernard/.local/share/virtualenvs/BlackBook-vx8qhZ4m/bin/python /home/bernard/BlackBook/manage.py migrate --no-input
+          - /home/bernard/.local/share/virtualenvs/BlackBook-vx8qhZ4m/bin/python /home/bernard/BlackBook/manage.py collectstatic --no-input
 
     - name: start gunicorn
       commands:
