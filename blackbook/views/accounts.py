@@ -20,9 +20,12 @@ def accounts(request, account_type, account_name=None):
             .prefetch_related("transactions__journal_entry")
             .prefetch_related("transactions__journal_entry__tags")
             .prefetch_related("transactions__journal_entry__budget__budget")
-            .prefetch_related("transactions__journal_entry__category"),
+            .prefetch_related("transactions__journal_entry__category")
+            .annotate(total=Sum("transactions__amount")),
             slug=account_name,
         )
+
+        account.total = Money(account.total - account.virtual_balance, account.currency)
 
         if account.user != request.user:
             return set_message_and_redirect(
@@ -89,6 +92,9 @@ def accounts(request, account_type, account_name=None):
     else:
         account_type = get_object_or_404(AccountType, slug=account_type)
         accounts = Account.objects.filter(account_type=account_type).filter(user=request.user).annotate(total=Sum("transactions__amount"))
+
+        for account in accounts:
+            account.total -= account.virtual_balance
 
         return render(request, "blackbook/accounts/list.html", {"account_type": account_type, "accounts": accounts})
 
