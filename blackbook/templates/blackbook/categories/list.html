@@ -24,7 +24,7 @@
             <div class="level">
                 <div class="level-left"></div>
                 <div class="level-right">
-                    <a class="button is-primary" href="{% url "blackbook:categories_add" %}">
+                    <a class="button is-primary jb-modal" data-target="modal-category-add" type="button">
                         Add category
                     </a>
                 </div>
@@ -69,15 +69,36 @@
 {% endblock content %}
 
 {% block modals %}
+    <div id="modal-category-add" class="modal {% if category_uuid == "add" %} is-active{% endif %}">
+        <div class="modal-background jb-modal-close"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Add category</p>
+                <button class="delete jb-modal-close" aria-label="close"></button>
+            </header>
+            <form method="post" action="{% url "blackbook:categories_add" %}">
+                <section class="modal-card-body">
+                    {% csrf_token %}
+
+                    {% form_field category_form.name %}
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button is-primary" type="submit">Submit</button>
+                </footer>
+            </form>
+        </div>
+        <button class="modal-close is-large jb-modal-close" aria-label="close"></button>
+    </div>
+
     {% for form in forms %}
-        <div id="modal-category-edit-{{ form.instance.uuid }}" class="modal">
+        <div id="modal-category-edit-{{ form.instance.uuid }}" class="modal{% if form.instance.uuid == category_uuid %} is-active{% endif %}">
             <div class="modal-background jb-modal-close"></div>
             <div class="modal-card">
                 <header class="modal-card-head">
                     <p class="modal-card-title">Edit category</p>
                     <button class="delete jb-modal-close" aria-label="close"></button>
                 </header>
-                <form method="post" action="">
+                <form method="post" action="{% url "blackbook:categories_edit" %}">
                     <section class="modal-card-body">
                         {% csrf_token %}
                         <input type="hidden" name="category_uuid" value="{{ form.instance.uuid }}">
@@ -85,7 +106,6 @@
                         {% form_field form.name %}
                     </section>
                     <footer class="modal-card-foot">
-                        <button class="button jb-modal-close">Cancel</button>
                         <button class="button is-primary" type="submit">Submit</button>
                     </footer>
                 </form>
