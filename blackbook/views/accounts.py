@@ -22,7 +22,8 @@ def accounts(request, account_type, account_name=None):
             .prefetch_related("transactions__journal_entry__tags")
             .prefetch_related("transactions__journal_entry__budget__budget")
             .prefetch_related("transactions__journal_entry__category")
-            .annotate(total=Coalesce(Sum("transactions__amount"), 0)),
+            .annotate(total=Coalesce(Sum("transactions__amount"), 0))
+            .order_by("transactions__journal_entry__date", "transactions__journal_entry__created"),
             slug=account_name,
         )
 
