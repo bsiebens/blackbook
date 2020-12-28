@@ -134,6 +134,9 @@ class TransactionChart(Chart):
             amount += float(transaction["total"]) * -1 if transaction["negative"] else float(transaction["total"])
             amounts[account_name] = amount
 
+        if not self.income:
+            amounts.pop("External account (untracked)", None)
+
         counter = 1
         for account, amount in amounts.items():
             color = get_color_code(counter)
