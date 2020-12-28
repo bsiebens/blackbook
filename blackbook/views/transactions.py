@@ -16,6 +16,8 @@ def add_edit(request, transaction_uuid=None):
         transaction = (
             Transaction.objects.select_related("journal_entry")
             .select_related("journal_entry__budget__budget")
+            .select_related("journal_entry__from_account")
+            .select_related("journal_entry__to_account")
             .select_related("journal_entry__category")
             .select_related("account__account_type")
             .get(uuid=transaction_uuid)
@@ -38,8 +40,8 @@ def add_edit(request, transaction_uuid=None):
             "category": transaction.journal_entry.category_id if transaction.journal_entry.category is not None else None,
             "budget": transaction.journal_entry.budget.budget_id if transaction.journal_entry.budget is not None else None,
             "tags": ", ".join([tag.name for tag in transaction.journal_entry.tags.all()]),
-            "from_account": transaction.journal_entry.from_account.id if transaction.journal_entry.from_account is not None else None,
-            "to_account": transaction.journal_entry.to_account.id if transaction.journal_entry.to_account is not None else None,
+            "from_account": transaction.journal_entry.from_account_id if transaction.journal_entry.from_account is not None else None,
+            "to_account": transaction.journal_entry.to_account_id if transaction.journal_entry.to_account is not None else None,
         }
 
     transaction_form = TransactionForm(request.user, request.POST or None, initial=initial_data)

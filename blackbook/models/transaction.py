@@ -33,6 +33,8 @@ class TransactionJournalEntry(models.Model):
     tags = TaggableManager(blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="transactions")
     uuid = models.UUIDField("UUID", default=uuid.uuid4, editable=False, db_index=True, unique=True)
+    from_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL, related_name="from_transactions")
+    to_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL, related_name="to_transactions")
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -72,22 +74,6 @@ class TransactionJournalEntry(models.Model):
 
             self.transactions.create(account=to_account, amount=self.amount, negative=False)
             self.transactions.create(account=from_account, amount=self.amount, negative=True)
-
-    @cached_property
-    def to_account(self):
-        try:
-            return self.transactions.get(amount__gte=0.0).account
-
-        except Transaction.DoesNotExist:
-            return None
-
-    @cached_property
-    def from_account(self):
-        try:
-            return self.transactions.get(amount__lte=0.0).account
-
-        except Transaction.DoesNotExist:
-            return None
 
     @classmethod
     def create_transaction(

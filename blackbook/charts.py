@@ -113,15 +113,8 @@ class TransactionChart(Chart):
                     account_name = "Starting balance"
 
                 else:
-                    from_account_name = account_names.get(
-                        transaction["journal_entry"], TransactionJournalEntry.objects.get(id=transaction["journal_entry"]).from_account
-                    )
-
-                    if from_account_name is not None:
-                        account_name = from_account_name.name
-                        account_names[transaction["journal_entry"]] = from_account_name.name
-                    else:
-                        account_names[transaction["journal_entry"]] = None
+                    if transaction["journal_entry__from_account__name"] is not None:
+                        account_name = transaction["journal_entry__from_account__name"]
 
             if not self.income:
                 if self.expenses_budget and transaction["journal_entry__budget__budget__name"] is not None:

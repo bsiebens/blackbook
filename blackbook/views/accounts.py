@@ -22,6 +22,8 @@ def accounts(request, account_type, account_name=None):
             .prefetch_related("transactions__journal_entry__tags")
             .prefetch_related("transactions__journal_entry__budget__budget")
             .prefetch_related("transactions__journal_entry__category")
+            .prefetch_related("transactions__journal_entry__from_account__account_type")
+            .prefetch_related("transactions__journal_entry__to_account__account_type")
             .annotate(total=Coalesce(Sum("transactions__amount"), 0))
             .order_by("transactions__journal_entry__date", "transactions__journal_entry__created"),
             slug=account_name,
@@ -41,6 +43,7 @@ def accounts(request, account_type, account_name=None):
             .select_related("account")
             .select_related("journal_entry__budget__budget")
             .select_related("journal_entry__category")
+            .select_related("journal_entry__from_account")
             .filter(journal_entry__date__range=calculate_period(periodicity=period, as_tuple=True))
             .values(
                 "amount_currency",
@@ -52,6 +55,7 @@ def accounts(request, account_type, account_name=None):
                 "journal_entry__transaction_type",
                 "journal_entry__budget__budget__name",
                 "journal_entry__category__name",
+                "journal_entry__from_account__name",
             )
             .annotate(total=Sum("amount"))
             .order_by("journal_entry__date", "journal_entry__created")

@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group
 
 from datetime import timedelta, date
 
-from .models import UserProfile, Budget, BudgetPeriod, Account, Category, TransactionJournalEntry
+from .models import UserProfile, Budget, BudgetPeriod, Account, Category, Transaction
 from .utilities import calculate_period
 
 
@@ -19,6 +19,25 @@ def create_userprofile(sender, instance, created, **kwargs):
 
     except get_user_model().userprofile.RelatedObjectDoesNotExist:
         userprofile = UserProfile.objects.create(user=instance)
+
+
+@receiver(post_save, sender=Transaction)
+def update_accounts(sender, instance, created, **kwargs):
+    journal_entry = instance.journal_entry
+
+    try:
+        journal_entry.to_account = journal_entry.transactions.get(amount__gte=0.0).account
+
+    except Transaction.DoesNotExist:
+        pass
+
+    try:
+        journal_entry.from_account = journal_entry.transactions.get(amount__lte=0.0).account
+
+    except Transaction.DoesNotExist:
+        pass
+
+    journal_entry.save()
 
 
 @receiver(post_save, sender=Budget)
