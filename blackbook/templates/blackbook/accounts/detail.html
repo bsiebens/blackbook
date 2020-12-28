@@ -381,7 +381,7 @@
                                     <td>
                                         {% if transaction.journal_entry.from_account is not None %}
                                             <a href="{% url "blackbook:accounts" transaction.journal_entry.from_account.account_type.slug transaction.journal_entry.from_account.slug %}">
-                                                <span class="tag is-dark">
+                                                <span class="tag is-info">
                                                     <span class="icon">
                                                         <i class="fas {{ transaction.journal_entry.from_account.account_type.icon }}"></i>
                                                     </span>
@@ -389,7 +389,7 @@
                                                 </span>
                                             </a>
                                         {% else %}
-                                            <span class="tag is-dark">
+                                            <span class="tag is-info">
                                                 <span class="icon">
                                                     <i class="fas fa-coins"></i>
                                                 </span>
@@ -400,7 +400,7 @@
                                     <td>
                                         {% if transaction.journal_entry.to_account is not None %}
                                             <a href="{% url "blackbook:accounts" transaction.journal_entry.to_account.account_type.slug transaction.journal_entry.to_account.slug %}">
-                                                <span class="tag is-dark">
+                                                <span class="tag is-info">
                                                     <span class="icon">
                                                         <i class="fas {{ transaction.journal_entry.to_account.account_type.icon }}"></i>
                                                     </span>
@@ -408,7 +408,7 @@
                                                 </span>
                                             </a>
                                         {% else %}
-                                            <span class="tag is-dark">
+                                            <span class="tag is-info">
                                                 <span class="icon">
                                                     <i class="fas fa-coins"></i>
                                                 </span>
