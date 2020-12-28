@@ -53,7 +53,7 @@ def accounts(request, account_type, account_name=None):
                 "journal_entry__category__name",
             )
             .annotate(total=Sum("amount"))
-            .order_by("journal_entry__date")
+            .order_by("journal_entry__date", "journal_entry__created")
         )
 
         in_for_period = Money(sum([transaction["total"] for transaction in transactions if not transaction["negative"]]), account.currency)
