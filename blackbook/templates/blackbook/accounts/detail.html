@@ -378,7 +378,7 @@
                                             {% endif %}
                                         </span>
                                     </td>
-                                    <td>
+                                    <td data-label="From account">
                                         {% if transaction.journal_entry.from_account is not None %}
                                             <a href="{% url "blackbook:accounts" transaction.journal_entry.from_account.account_type.slug transaction.journal_entry.from_account.slug %}">
                                                 <span class="tag is-info">
@@ -397,7 +397,7 @@
                                             </span>
                                         {% endif %}
                                     </td>
-                                    <td>
+                                    <td data-label="To account">
                                         {% if transaction.journal_entry.to_account is not None %}
                                             <a href="{% url "blackbook:accounts" transaction.journal_entry.to_account.account_type.slug transaction.journal_entry.to_account.slug %}">
                                                 <span class="tag is-info">
