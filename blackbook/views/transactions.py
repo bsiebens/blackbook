@@ -98,6 +98,7 @@ def add_edit(request, transaction_uuid=None):
                 account = (
                     transaction.from_account
                     if transaction.transaction_type == TransactionJournalEntry.TransactionType.WITHDRAWAL
+                    or transaction.transaction_type == TransactionJournalEntry.TransactionType.TRANSFER
                     else transaction.to_account
                 )
 
