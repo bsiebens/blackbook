@@ -96,7 +96,7 @@ class TransactionJournalEntry(models.Model):
 
         if tags is not None:
             if isinstance(tags, str) and tags != "":
-                tags = tags.split(", ")
+                tags = tags.replace(", ", ",").split(",")
             journal_entry.tags.set(*tags)
 
         return journal_entry
@@ -122,7 +122,7 @@ class TransactionJournalEntry(models.Model):
 
         if tags is not None:
             if isinstance(tags, str) and tags != "":
-                tags = tags.split(",")
+                tags = tags.replace(", ", ",").split(",")
             self.tags.set(*tags)
 
 
