@@ -3088,7 +3088,7 @@ button,
 input,
 select,
 textarea {
-    font-family: "Nunito", "Ubuntu", sans-serif;
+    font-family: "Nunito", "Ubuntu", "PT Sans", sans-serif;
 }
 
 code,
@@ -13718,15 +13718,15 @@ a.has-text-danger-dark:focus {
 }
 
 .is-family-primary {
-    font-family: "Nunito", "Ubuntu", sans-serif !important;
+    font-family: "Nunito", "Ubuntu", "PT Sans", sans-serif !important;
 }
 
 .is-family-secondary {
-    font-family: "Nunito", "Ubuntu", sans-serif !important;
+    font-family: "Nunito", "Ubuntu", "PT Sans", sans-serif !important;
 }
 
 .is-family-sans-serif {
-    font-family: "Nunito", "Ubuntu", sans-serif !important;
+    font-family: "Nunito", "Ubuntu", "PT Sans", sans-serif !important;
 }
 
 .is-family-monospace {

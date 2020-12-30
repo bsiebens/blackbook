@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.db.models import Sum
+from django.db.models.functions import Coalesce
 
 from djmoney.money import Money
 
@@ -21,7 +22,10 @@ def accounts(request, account_type, account_name=None):
             .prefetch_related("transactions__journal_entry__tags")
             .prefetch_related("transactions__journal_entry__budget__budget")
             .prefetch_related("transactions__journal_entry__category")
-            .annotate(total=Sum("transactions__amount")),
+            .prefetch_related("transactions__journal_entry__from_account__account_type")
+            .prefetch_related("transactions__journal_entry__to_account__account_type")
+            .annotate(total=Coalesce(Sum("transactions__amount"), 0))
+            .order_by("transactions__journal_entry__date", "transactions__journal_entry__created"),
             slug=account_name,
         )
 
@@ -39,6 +43,7 @@ def accounts(request, account_type, account_name=None):
             .select_related("account")
             .select_related("journal_entry__budget__budget")
             .select_related("journal_entry__category")
+            .select_related("journal_entry__from_account")
             .filter(journal_entry__date__range=calculate_period(periodicity=period, as_tuple=True))
             .values(
                 "amount_currency",
@@ -50,9 +55,10 @@ def accounts(request, account_type, account_name=None):
                 "journal_entry__transaction_type",
                 "journal_entry__budget__budget__name",
                 "journal_entry__category__name",
+                "journal_entry__from_account__name",
             )
             .annotate(total=Sum("amount"))
-            .order_by("journal_entry__date")
+            .order_by("journal_entry__date", "journal_entry__created")
         )
 
         in_for_period = Money(sum([transaction["total"] for transaction in transactions if not transaction["negative"]]), account.currency)
@@ -92,7 +98,9 @@ def accounts(request, account_type, account_name=None):
 
     else:
         account_type = get_object_or_404(AccountType, slug=account_type)
-        accounts = Account.objects.filter(account_type=account_type).filter(user=request.user).annotate(total=Sum("transactions__amount"))
+        accounts = (
+            Account.objects.filter(account_type=account_type).filter(user=request.user).annotate(total=Coalesce(Sum("transactions__amount"), 0))
+        )
 
         for account in accounts:
             account.total -= account.virtual_balance

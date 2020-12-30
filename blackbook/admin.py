@@ -116,12 +116,12 @@ class TransactionJournalEntryAdmin(admin.ModelAdmin):
     list_filter = ["transaction_type", "category", "budget", TaggitListFilter]
     search_fields = ["description", "uuid"]
     fieldsets = (
-        ("General information", {"fields": ("description", "user", "date", "transaction_type", "amount")}),
+        ("General information", {"fields": ("description", "user", "date", "transaction_type", "amount", "from_account", "to_account")}),
         ("Options", {"fields": ("budget", "category", "tags", "uuid")}),
     )
-    readonly_fields = ["uuid"]
+    readonly_fields = ["uuid", "from_account", "to_account"]
     inlines = [TransactionInline]
-    raw_id_fields = ["user"]
+    raw_id_fields = ["user", "from_account", "to_account"]
 
 
 @admin.register(models.Transaction)
