@@ -47,7 +47,7 @@ def add_edit(request, transaction_uuid=None):
     transaction_form = TransactionForm(request.user, request.POST or None, initial=initial_data)
 
     if request.POST and transaction_form.is_valid():
-        return_url = reverse("blackbook:dashboard")
+        return_url = None
 
         if transaction_form.cleaned_data["add_new"]:
             return_url = reverse("blackbook:transactions_add")
@@ -67,6 +67,11 @@ def add_edit(request, transaction_uuid=None):
                 to_account=transaction_form.cleaned_data["to_account"],
             )
 
+            if return_url is None:
+                return_url = reverse(
+                    "blackbook:accounts", kwargs={"account_type": transaction.account.account_type.slug, "account_name": transaction.account.slug}
+                )
+
             return set_message_and_redirect(
                 request,
                 's|Transaction "{description}" saved succesfully.'.format(description=transaction_form.cleaned_data["description"]),
@@ -74,7 +79,7 @@ def add_edit(request, transaction_uuid=None):
             )
 
         else:
-            TransactionJournalEntry.create_transaction(
+            transaction = TransactionJournalEntry.create_transaction(
                 amount=transaction_form.cleaned_data["amount"],
                 description=transaction_form.cleaned_data["description"],
                 transaction_type=transaction_form.cleaned_data["transaction_type"],
@@ -88,6 +93,15 @@ def add_edit(request, transaction_uuid=None):
                 from_account=transaction_form.cleaned_data["from_account"],
                 to_account=transaction_form.cleaned_data["to_account"],
             )
+
+            if return_url is None:
+                account = (
+                    transaction.from_account
+                    if transaction.transaction_type == TransactionJournalEntry.TransactionType.WITHDRAWAL
+                    else transaction.to_account
+                )
+
+                return_url = reverse("blackbook:accounts", kwargs={"account_type": account.account_type.slug, "account_name": account.slug})
 
             return set_message_and_redirect(
                 request,
