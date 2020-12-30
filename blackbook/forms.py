@@ -4,6 +4,7 @@ from django.utils import timezone
 from djmoney.forms.fields import MoneyField
 from djmoney.forms.widgets import MoneyWidget
 from taggit.forms import TagField
+from taggit.models import Tag
 
 from .models import get_currency_choices, get_default_currency, Budget, Account, TransactionJournalEntry, Category, AccountType
 
@@ -56,6 +57,12 @@ class AccountForm(forms.ModelForm):
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
+        fields = ["name"]
+
+
+class TagForm(forms.ModelForm):
+    class Meta:
+        model = Tag
         fields = ["name"]
 
 
