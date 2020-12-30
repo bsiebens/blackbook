@@ -37,7 +37,7 @@
                     </p>
                 </header>
                 <div class="card-content">
-                    <form method="post" action="{% url "blackbook:accounts_edit" account.slug %}">
+                    <form method="post" action="{% if account.id is not None %}{% url "blackbook:accounts_edit" account.slug %}{% else %}{% url "blackbook:accounts_add" %}{% endif %}">
                         {% csrf_token %} 
 
                         {% form_field account_form.name %}

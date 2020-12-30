@@ -44,8 +44,12 @@
                         <tbody>
                             {% for category in categories %}
                                 <tr>
-                                    <td>{{ forloop.counter }}.</td>
-                                    <td>{{ category.name }}</td>
+                                    <td>
+                                        <span class="icon">
+                                            <i class="fas fa-hashtag"></i>
+                                        </span>
+                                    </td>
+                                    <td data-label="Name">{{ category.name }}</td>
                                     <td>
                                         <a class="button is-primary is-small jb-modal" data-target="modal-category-edit-{{ category.uuid }}" type="button">
                                             <span class="icon">

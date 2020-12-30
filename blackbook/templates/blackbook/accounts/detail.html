@@ -302,7 +302,6 @@
                                 <th>Date</th>
                                 <th>Category</th>
                                 <th>Budget</th>
-                                <th>Tags</th>
                                 <th>From account</th>
                                 <th>To account</th>
                                 <th></th>
@@ -361,22 +360,6 @@
                                         {% else %}
                                             -
                                         {% endif %}
-                                    </td>
-                                    <td data-label="Tags">
-                                        <span class="tags">
-                                            {% if transaction.journal_entry.tags.count == 0 %}
-                                                -
-                                            {% else %}
-                                                {% for tag in transaction.journal_entry.tags.all %}
-                                                    <span class="tag is-info">
-                                                        <span class="icon">
-                                                            <i class="fas fa-tag"></i>
-                                                        </span>
-                                                        <span>{{ tag.name }}</span>
-                                                    </span>
-                                                {% endfor %}
-                                            {% endif %}
-                                        </span>
                                     </td>
                                     <td data-label="From account">
                                         {% if transaction.journal_entry.from_account is not None %}
