@@ -6,7 +6,7 @@ from datetime import timedelta
 
 import json
 
-from .models import get_default_currency, TransactionJournalEntry
+from .models import get_default_currency, TransactionJournalEntry, Account
 from .utilities import get_currency
 
 
@@ -135,7 +135,7 @@ class TransactionChart(Chart):
             color = get_color_code(counter)
             counter += 1
 
-            data["data"]["labels"].append(account)
+            data["data"]["labels"].append("{account} ({currency})".format(account=account, currency=get_currency(self.currency, self.user)))
             data["data"]["datasets"][0]["data"].append(round(amount, 2))
             data["data"]["datasets"][0]["borderWidth"].append(2)
             data["data"]["datasets"][0]["backgroundColor"].append("rgba({color}, 1.0)".format(color=color))
@@ -220,9 +220,17 @@ class AccountChart(Chart):
                 date = dates[date_index]
 
                 value = 0
+
                 if date_index == 0:
                     amounts = dict(filter(lambda elem: elem[0] <= date, date_entries.items()))
                     value = float(sum([item.amount for item in amounts.values()])) - float(accounts_virtual_balance[account])
+
+                    if len(accounts.keys()) == 1:
+                        account = Account.objects.get(name=account, user=self.user)
+                        value = float(account.balance_until_date(date - timedelta(days=1)).amount)
+
+                        if date in date_entries.keys():
+                            value += float(date_entries[date].amount)
 
                 else:
                     value = account_data["data"][date_index - 1]
