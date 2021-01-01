@@ -30,7 +30,7 @@
                         <h1 class="title is-spaced">
                             {% now "H" as current_time %}
                             Good 
-                                {% if current_time|add:"0" < 11 %}
+                                {% if current_time|add:"0" < 12 %}
                                     morning,
                                 {% elif current_time|add:"0" < 18 %}
                                     afternoon,
