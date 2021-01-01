@@ -58,7 +58,7 @@ def accounts(request, account_type, account_name=None):
                 "journal_entry__from_account__name",
             )
             .annotate(total=Sum("amount"))
-            .order_by("journal_entry__date", "journal_entry__created")
+            .order_by("-journal_entry__date", "-journal_entry__created")
         )
 
         in_for_period = Money(sum([transaction["total"] for transaction in transactions if not transaction["negative"]]), account.currency)
@@ -155,7 +155,7 @@ def add_edit(request, account_name=None):
         return set_message_and_redirect(
             request,
             's|Account "{account.name}" was saved succesfully.'.format(account=account),
-            reverse("blackbook:accounts", kwargs={"account_type": account.account_type.slug}),
+            reverse("blackbook:accounts", kwargs={"account_type": account.account_type.slug, "account_name": account.slug}),
         )
 
     return render(request, "blackbook/accounts/form.html", {"account_form": account_form, "account": account})

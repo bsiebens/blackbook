@@ -78,13 +78,13 @@ def dashboard(request):
             },
             "net_worth": Money(0, currency),
         },
-        "period": display_period(periodicty=period),
+        "period": display_period(periodicty=period, start_date=timezone.localdate()),
         "budget": {"total": Money(0, currency), "available": Money(0, currency), "used": Money(0, currency), "per_day": None},
         "charts": {
             "account_chart": AccountChart(
                 data=[item for item in net_worth if item["account__include_on_dashboard"]],
-                start_date=calculate_period(periodicity=period)["start_date"],
-                end_date=calculate_period(periodicity=period)["end_date"],
+                start_date=calculate_period(periodicity=period, start_date=timezone.localdate())["start_date"],
+                end_date=calculate_period(periodicity=period, start_date=timezone.localdate())["end_date"],
                 user=request.user,
             ).generate_json()
         },
@@ -112,7 +112,12 @@ def dashboard(request):
         data["budget"]["used"] += convert_money(Money(budget["total"], budget["amount_currency"]), currency)
     data["budget"]["available"] = data["budget"]["total"] + data["budget"]["used"]
     data["budget"]["per_day"] = (
-        data["budget"]["used"] / (calculate_period(periodicity=period)["end_date"] - calculate_period(periodicity=period)["start_date"]).days * -1
+        data["budget"]["used"]
+        / (
+            calculate_period(periodicity=period, start_date=timezone.localdate())["end_date"]
+            - calculate_period(periodicity=period, start_date=timezone.localdate())["start_date"]
+        ).days
+        * -1
     )
 
     return render(request, "blackbook/dashboard.html", {"data": data})

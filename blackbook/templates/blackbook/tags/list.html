@@ -3,11 +3,11 @@
 {% load formtags %}
 
 {% block title %}
-    Categories
+    Tags
 {% endblock title %}
 
 {% block breadcrumbs %}
-    <li>Categories</li>
+    <li>Tags</li>
 {% endblock breadcrumbs %}
 
 {% block content %}
@@ -17,19 +17,9 @@
                 <span class="icon">
                     <i class="fas fa-hashtag"></i>
                 </span>
-                <span>Categories</span>
+                <span>Tags</span>
             </p>
         </header>
-        <div class="notification is-card-toolbar">
-            <div class="level">
-                <div class="level-left"></div>
-                <div class="level-right">
-                    <a class="button is-primary jb-modal" data-target="modal-category-add" type="button">
-                        Add category
-                    </a>
-                </div>
-            </div>
-        </div>
         <div class="card-content">
             <div class="b-table">
                 <div class="table-wrapper has-mobile-cards">
@@ -42,21 +32,21 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for category in categories %}
+                            {% for tag in tags %}
                                 <tr>
                                     <td>
                                         <span class="icon">
-                                            <i class="fas fa-hashtag"></i>
+                                            <i class="fas fa-tag"></i>
                                         </span>
                                     </td>
-                                    <td data-label="Name">{{ category.name }}</td>
+                                    <td data-label="Name">{{ tag.name }}</td>
                                     <td>
-                                        <a class="button is-primary is-small jb-modal" data-target="modal-category-edit-{{ category.uuid }}" type="button">
+                                        <a class="button is-primary is-small jb-modal" data-target="modal-tag-edit-{{ tag.id }}" type="button">
                                             <span class="icon">
                                                 <i class="fas fa-edit"></i>
                                             </span>
                                         </a>
-                                        <a class="button is-danger is-small jb-modal" data-target="modal-category-delete-{{ category.uuid }}" type="button">
+                                        <a class="button is-danger is-small jb-modal" data-target="modal-tag-delete-{{ tag.id }}" type="button">
                                             <span class="icon">
                                                 <i class="fas fa-trash-alt"></i>
                                             </span>
@@ -73,39 +63,18 @@
 {% endblock content %}
 
 {% block modals %}
-    <div id="modal-category-add" class="modal {% if category_uuid == "add" %} is-active{% endif %}">
-        <div class="modal-background jb-modal-close"></div>
-        <div class="modal-card">
-            <header class="modal-card-head">
-                <p class="modal-card-title">Add category</p>
-                <button class="delete jb-modal-close" aria-label="close"></button>
-            </header>
-            <form method="post" action="{% url "blackbook:categories_add" %}">
-                <section class="modal-card-body">
-                    {% csrf_token %}
-
-                    {% form_field category_form.name %}
-                </section>
-                <footer class="modal-card-foot">
-                    <button class="button is-primary" type="submit">Submit</button>
-                </footer>
-            </form>
-        </div>
-        <button class="modal-close is-large jb-modal-close" aria-label="close"></button>
-    </div>
-
     {% for form in forms %}
-        <div id="modal-category-edit-{{ form.instance.uuid }}" class="modal{% if form.instance.uuid == category_uuid %} is-active{% endif %}">
+        <div id="modal-tag-edit-{{ form.instance.id }}" class="modal{% if form.instance.id == tag_id %} is-active{% endif %}">
             <div class="modal-background jb-modal-close"></div>
             <div class="modal-card">
                 <header class="modal-card-head">
-                    <p class="modal-card-title">Edit category</p>
+                    <p class="modal-card-title">Edit tag</p>
                     <button class="delete jb-modal-close" aria-label="close"></button>
                 </header>
-                <form method="post" action="{% url "blackbook:categories_edit" %}">
+                <form method="post" action="{% url "blackbook:tags_edit" %}">
                     <section class="modal-card-body">
                         {% csrf_token %}
-                        <input type="hidden" name="category_uuid" value="{{ form.instance.uuid }}">
+                        <input type="hidden" name="tag_id" value="{{ form.instance.id }}">
 
                         {% form_field form.name %}
                     </section>
@@ -119,8 +88,8 @@
     {% endfor %}
 
 
-    {% for category in categories %}
-        <div id="modal-category-delete-{{ category.uuid }}" class="modal">
+    {% for tag in tags %}
+        <div id="modal-tag-delete-{{ tag.id }}" class="modal">
             <div class="modal-background jb-modal-close"></div>
             <div class="modal-card">
                 <header class="modal-card-head">
@@ -128,14 +97,14 @@
                     <button class="delete jb-modal-close" aria-label="close"></button>
                 </header>
                 <section class="modal-card-body">
-                    <p>This will permanently delete category <b>{{ category.name }}</b>.</p>
+                    <p>This will permanently delete tag <b>{{ tag.name }}</b>.</p>
                     <p>Are you sure?</p>
                 </section>
                 <footer class="modal-card-foot">
                     <button class="button jb-modal-close">Cancel</button>
-                    <form method="post" action="{% url "blackbook:categories_delete" %}">
+                    <form method="post" action="{% url "blackbook:tags_delete" %}">
                         {% csrf_token %}
-                        <input type="hidden" name="category_uuid" value="{{ category.uuid }}">
+                        <input type="hidden" name="tag_id" value="{{ tag.id }}">
                         <button class="button is-danger" type="submit">Delete</button>
                     </form>
                 </footer>

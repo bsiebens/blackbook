@@ -1,10 +1,50 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from django.db.models import Sum
 
 from ..models import TransactionJournalEntry, Transaction
-from ..utilities import set_message_and_redirect
+from ..utilities import set_message_and_redirect, calculate_period
 from ..forms import TransactionForm
+from ..charts import TransactionChart
+
+
+@login_required
+def transactions(request):
+    transactions = Transaction.objects.filter(journal_entry__user=request.user)
+    period = calculate_period(periodicity=request.user.userprofile.default_period)
+
+    transactions = (
+        transactions.filter(journal_entry__date__range=(period["start_date"], period["end_date"]))
+        .select_related("journal_entry")
+        .select_related("account")
+        .select_related("journal_entry__budget__budget")
+        .select_related("journal_entry__category")
+        .select_related("journal_entry__from_account")
+        .select_related("journal_entry__to_account")
+        .values(
+            "amount_currency",
+            "negative",
+            "account__name",
+            "account__virtual_balance",
+            "journal_entry",
+            "journal_entry__date",
+            "journal_entry__transaction_type",
+            "journal_entry__budget__budget__name",
+            "journal_entry__category__name",
+            "journal_entry__from_account__name",
+        )
+        .annotate(total=Sum("amount"))
+        .order_by('-journal_entry__date", "-journal_entry__created')
+    )
+
+    charts = {
+        "income_chart": TransactionChart(data=transactions, user=request.user, income=True).generate_json(),
+        "expense_budget_chart": TransactionChart(data=transactions, user=request.user, expenses_budget=True).generate_json(),
+        "expense_category_chart": TransactionChart(data=transactions, user=request.user, expenses_category=True).generate_json(),
+    }
+
+    return render(request, "blackbook/transactions/list.html", {"period": period, "charts": charts, "transactions": transactions})
 
 
 @login_required
@@ -47,7 +87,7 @@ def add_edit(request, transaction_uuid=None):
     transaction_form = TransactionForm(request.user, request.POST or None, initial=initial_data)
 
     if request.POST and transaction_form.is_valid():
-        return_url = reverse("blackbook:dashboard")
+        return_url = None
 
         if transaction_form.cleaned_data["add_new"]:
             return_url = reverse("blackbook:transactions_add")
@@ -67,6 +107,11 @@ def add_edit(request, transaction_uuid=None):
                 to_account=transaction_form.cleaned_data["to_account"],
             )
 
+            if return_url is None:
+                return_url = reverse(
+                    "blackbook:accounts", kwargs={"account_type": transaction.account.account_type.slug, "account_name": transaction.account.slug}
+                )
+
             return set_message_and_redirect(
                 request,
                 's|Transaction "{description}" saved succesfully.'.format(description=transaction_form.cleaned_data["description"]),
@@ -74,7 +119,7 @@ def add_edit(request, transaction_uuid=None):
             )
 
         else:
-            TransactionJournalEntry.create_transaction(
+            transaction = TransactionJournalEntry.create_transaction(
                 amount=transaction_form.cleaned_data["amount"],
                 description=transaction_form.cleaned_data["description"],
                 transaction_type=transaction_form.cleaned_data["transaction_type"],
@@ -88,6 +133,16 @@ def add_edit(request, transaction_uuid=None):
                 from_account=transaction_form.cleaned_data["from_account"],
                 to_account=transaction_form.cleaned_data["to_account"],
             )
+
+            if return_url is None:
+                account = (
+                    transaction.from_account
+                    if transaction.transaction_type == TransactionJournalEntry.TransactionType.WITHDRAWAL
+                    or transaction.transaction_type == TransactionJournalEntry.TransactionType.TRANSFER
+                    else transaction.to_account
+                )
+
+                return_url = reverse("blackbook:accounts", kwargs={"account_type": account.account_type.slug, "account_name": account.slug})
 
             return set_message_and_redirect(
                 request,

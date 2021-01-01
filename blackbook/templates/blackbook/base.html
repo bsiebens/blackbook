@@ -30,7 +30,7 @@
         </div>
         <div class="navbar-menu fadeIn animated faster" id="navbar-menu">
             <div class="navbar-end">
-                <div class="navbar-item has-dropdown has-dropdown-with-icons has-divider is-hoverable">
+                <div class="navbar-item has-dropdown has-dropdown-with-icons has-divider is-hoverable is-hidden-mobile">
                     <a class="navbar-link is-arrowless">
                         <span class="icon"><i class="fas fa-plus"></i></span>
                         <span class="icon">
@@ -123,6 +123,15 @@
                         </a>
                     </li>
                 </ul>
+                <p class="menu-label">Transactions</p>
+                <ul class="menu-list">
+                    <li>
+                        <a href="{% url "blackbook:transactions" %}" class="has-icon {% is_active "transactions" %}">
+                            <span class="icon"><i class="fas fa-exchange-alt"></i></span>
+                            <span class="menu-item-label">Transactions</span>
+                        </a>
+                    </li>
+                </ul>
                 <p class="menu-label">Accounts</p>
                 <ul class="menu-list">
                     {% accounts %}
@@ -187,7 +196,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="has-icon">
+                        <a href="{% url "blackbook:tags" %}" class="has-icon {% is_active "tags" %}">
                             <span class="icon"><i class="fas fa-tags"></i></span>
                             <span class="menu-item-label">Tags</span>
                         </a>    

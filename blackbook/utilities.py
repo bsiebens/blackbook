@@ -52,7 +52,7 @@ def set_message_and_redirect(request, message, url):
     return redirect(url)
 
 
-def calculate_period(periodicity, start_date=timezone.now(), as_tuple=False):
+def calculate_period(periodicity, start_date=timezone.localtime(), as_tuple=False):
     if type(start_date) == datetime:
         start_date = start_date.date()
 
@@ -95,7 +95,7 @@ def calculate_period(periodicity, start_date=timezone.now(), as_tuple=False):
     return {"start_date": start_date, "end_date": end_date}
 
 
-def display_period(periodicty, start_date=timezone.now().date()):
+def display_period(periodicty, start_date=timezone.localdate()):
     if periodicty == "day":
         return start_date.strftime("%d %b %Y")
     elif periodicty == "week":

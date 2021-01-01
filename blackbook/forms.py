@@ -4,6 +4,7 @@ from django.utils import timezone
 from djmoney.forms.fields import MoneyField
 from djmoney.forms.widgets import MoneyWidget
 from taggit.forms import TagField
+from taggit.models import Tag
 
 from .models import get_currency_choices, get_default_currency, Budget, Account, TransactionJournalEntry, Category, AccountType
 
@@ -56,6 +57,12 @@ class AccountForm(forms.ModelForm):
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
+        fields = ["name"]
+
+
+class TagForm(forms.ModelForm):
+    class Meta:
+        model = Tag
         fields = ["name"]
 
 
@@ -123,3 +130,15 @@ class TransactionForm(forms.Form):
                 self.add_error("transaction_type", "To and From Account must be supplied for this transaction type.")
                 self.add_error("to_account", "To and From Account must be supplied for this transaction type.")
                 self.add_error("from_account", "To and From Account must be supplied for this transaction type.")
+
+
+class TransactionFilterForm(forms.Form):
+    start_date = forms.DateField()
+    end_date = forms.DateField()
+    description = forms.CharField()
+    amount_lower = MoneyField(widget=BulmaMoneyWidget())
+    amount_upper = MoneyField(widget=BulmaMoneyWidget())
+    # category = forms.ModelMultipleChoiceField()
+    # budget = forms.ModelMultipleChoiceField()
+    tags = forms.CharField()
+    # account = forms.ModelChoiceField()

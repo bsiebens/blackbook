@@ -1,189 +1,16 @@
 {% extends 'blackbook/base.html' %}
 
 {% load djmoney %}
-{% load iban %}
 
-{% block titles %}
-    Account
-{% endblock titles %}
+{% block title %}
+    Transactions
+{% endblock title %}
 
 {% block breadcrumbs %}
-    <li>Accounts</li>
-    <li>{{ account.account_type.name }}s</li>
+    <li>Transactions</li>
 {% endblock breadcrumbs %}
 
-{% block hero-section %}
-    <div class="hero-body">
-        <div class="level">
-            <div class="level-left">
-                <div class="level-item is-hero-avatar-item">
-                    <div class="image is-user-avatar">
-                        <img src="https://avatars.dicebear.com/api/jdenticon/{{ account.slug }}.svg" style="width: 4rem; height: 4rem;">
-                    </div>
-                </div>
-                <div class="level-item is-hero-content-item">
-                    <div>
-                        <h1 class="title is-spaced">
-                            {{ account.name }}
-                        </h1>
-                        <h3 class="subtitle">
-                            <span class="tag is-info">
-                                <span class="icon">
-                                    <i class="fas {{ account.account_type.icon }}"></i>
-                                </span>
-                                <span>{{ account.account_type.name }}</span>
-                            </span>
-                            
-                            {% if account.iban is not None %}
-                                <span class="tag is-info">
-                                    <span class="icon">
-                                        <i class="fas {{ account.account_type.icon }}"></i>
-                                    </span>
-                                    <span>{{ account.iban|iban }}</span>
-                                </span>
-                            {% endif %}
-                            
-                            <span class="tag {% if account.total.amount > 0 %}is-success{% elif account.total.amount < 0 %}is-danger{% else %}is-light{% endif %}">
-                                <span class="icon">
-                                    <i class="fas fa-coins"></i>
-                                </span>
-                                <span>
-                                    {% if account.total.amount > 0 %}+{% endif %}{% money_localize account.total %}
-                                </span>
-                            </span>
-                        </h3>
-                    </div>
-                </div>
-            </div>
-            <div class="level-right">
-                <div class="level-item">
-                    <a href="{% url "blackbook:transactions_add" %}" class="button is-light" title="Add transaction">
-                        Add transaction
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-{% endblock hero-section %}
-
 {% block content %}
-    {% with transaction_count=account.transactions.count %}
-    <div class="card">
-        <header class="card-header">
-            <p class="card-header-title">
-                <span class="icon">
-                    <i class="fas fa-chart-line"></i>
-                </span>
-                <span>Account overview</span>
-            </p>
-        </header>
-        <div class="card-content">
-            <div class="chart-area">
-                <div style="height: 100%;">
-                    <div class="chartjs-size-monitor">
-                        <div class="chartjs-size-monitor-expand">
-                            <div></div>
-                        </div>
-                        <div class="chartjs-size-monitor-shrink">
-                            <div></div>
-                        </div>
-                    </div>
-                    <canvas id="account-line-chart" width="2992" height="1000" class="chartjs-render-monitor" style="display: block; height: 250px; width: 1197px;"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="tile is-ancestor">
-        <div class="tile is-parent">
-            <div class="card is-card-widget tile is-child">
-                <header class="card-header">
-                    <p class="card-header-title">
-                        <span class="icon">
-                            <i class="fas fa-calendar-alt"></i>
-                        </span>
-                        <span>Current period ({{ transaction_count }} transaction{{ transaction_count|pluralize }})</span>
-                    </p>
-                </header>
-                <div class="card-content">
-                    <div class="level is-mobile">
-                        <div class="level-item">
-                            <div class="is-widget-label">
-                                <h3 class="subtitle is-spaced">Income</h3>
-                                <h1 class="title">
-                                    {% if in_for_period.amount > 0 %}+{% endif %}{% money_localize in_for_period %}
-                                </h1>
-                            </div>
-                        </div>
-                        <div class="level-item has-widget-icon">
-                            <div class="is-widget-icon">
-                                <span class="icon has-text-success is-large"><i class="fas fa-arrow-down fa-3x"></i></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="tile is-parent">
-            <div class="card is-card-widget tile is-child">
-                <header class="card-header">
-                    <p class="card-header-title">
-                        <span class="icon">
-                            <i class="fas fa-calendar-alt"></i>
-                        </span>
-                        <span>Current period ({{ transaction_count }} transaction{{ transaction_count|pluralize }})</span>
-                    </p>
-                </header>
-                <div class="card-content">
-                    <div class="level is-mobile">
-                        <div class="level-item">
-                            <div class="is-widget-label">
-                                <h3 class="subtitle is-spaced">Expenses</h3>
-                                <h1 class="title">
-                                    {% money_localize out_for_period %}
-                                </h1>
-                            </div>
-                        </div>
-                        <div class="level-item has-widget-icon">
-                            <div class="is-widget-icon">
-                                <span class="icon has-text-danger is-large"><i class="fas fa-arrow-up fa-3x"></i></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="tile is-parent">
-            <div class="card is-card-widget tile is-child">
-                <header class="card-header">
-                    <p class="card-header-title">
-                        <span class="icon">
-                            <i class="fas fa-calendar-alt"></i>
-                        </span>
-                        <span>Current period</span>
-                    </p>
-                </header>
-                <div class="card-content">
-                    <div class="level is-mobile">
-                        <div class="level-item">
-                            <div class="is-widget-label">
-                                <h3 class="subtitle is-spaced">Balance</h3>
-                                <h1 class="title">
-                                    {% if balance_for_period.amount > 0 %}+{% endif %}{% money_localize balance_for_period %}
-                                </h1>
-                            </div>
-                        </div>
-                        <div class="level-item has-widget-icon">
-                            <div class="is-widget-icon">
-                                <span class="icon has-text-{% if balance_for_period.amount > 0 %}success{% elif balance_for_period.amount < 0 %}danger{% else %}grey{% endif %} is-large"><i class="fas fa-coins fa-3x"></i></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="tile is-ancestor">
         <div class="tile is-parent">
             <div class="card is-card-widget tile is-child">
@@ -281,13 +108,27 @@
     </div>
 
     <div class="card">
-        <div class="card-header">
+        <header class="card-header">
             <p class="card-header-title">
                 <span class="icon">
                     <i class="fas fa-exchange-alt"></i>
                 </span>
-                <span>Transactions</span>
+                <span>Transactions - {{ period.start_date|date:"d b Y" }} until {{ period.end_date|date:"d b Y" }}</span>
             </p>
+        </header>
+        <div class="notification is-card-toolbar">
+            <div class="level">
+                <div class="level-left">
+                    <p>Filter form goes here</p>
+                </div>
+                <div class="level-right">
+                    <div class="level-item">
+                        <a class="button is-primary" href="{% url "blackbook:transactions_add" %}">
+                            Add transaction
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="card-content">
             <div class="b-table">
@@ -301,12 +142,13 @@
                                 <th>Date</th>
                                 <th>Category</th>
                                 <th>Budget</th>
-                                <th>Related account</th>
+                                <th>From account</th>
+                                <th>To account</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for transaction in account.transactions.all %}
+                            {% for transaction in transactions %}
                                 <tr>
                                     <td>
                                         <span class="icon">
@@ -327,7 +169,7 @@
                                     <td data-label="Transaction">{{ transaction.journal_entry.description }}</td>
                                     <td data-label="Amount">
                                         <span class="has-text-{% if transaction.negative %}danger{% else %}success{% endif %}">
-                                            {% if not transaction.negative %}+{% endif %}{% money_localize transaction.amount %}
+                                            {% if not transaction.negative %}+{% endif %}{% money_localize transaction.total transaction.amount_currency %}
                                         </span>
                                     </td>
                                     <td data-label="Date">{{ transaction.journal_entry.date|date:"d b Y" }}</td>
@@ -355,12 +197,17 @@
                                             -
                                         {% endif %}
                                     </td>
-                                    <td data-label="Related account">
+                                    <td data-label="From account">
                                         {% if not transaction.negative and transaction.journal_entry.from_account is not None %}
                                             From: <a href="{% url "blackbook:accounts" transaction.journal_entry.from_account.account_type.slug transaction.journal_entry.from_account.slug %}">
                                                 {{ transaction.journal_entry.from_account.name }}
                                             </a>
-                                        {% elif transaction.negative and transaction.journal_entry.to_account is not None %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </div>
+                                    <div data-label="To account">
+                                        {% if transaction.negative and transaction.journal_entry.to_account is not None %}
                                             To: <a href="{% url "blackbook:accounts" transaction.journal_entry.to_account.account_type.slug transaction.journal_entry.to_account.slug %}">
                                                 {{ transaction.journal_entry.to_account.name }}
                                             </a>
@@ -371,7 +218,7 @@
                                     <td>
                                         <div class="buttons is-right">
                                             {% if transaction.journal_entry.transaction_type != "start" %}
-                                                <a class="button is-primary is-small" href="{% url "blackbook:transactions_edit" transaction.uuid %}" type="button">
+                                                <a class="button is-primary is-small" href="" type="button">
                                                     <span class="icon">
                                                         <i class="fas fa-edit"></i>
                                                     </span>
@@ -392,40 +239,9 @@
             </div>
         </div>
     </div>
-    {% endwith %}
 {% endblock content %}
 
-{% block modals %}
-    {% for transaction in account.transactions.all %}
-        <div id="modal-transaction-delete-{{ transaction.uuid }}" class="modal">
-            <div class="modal-background jb-modal-close"></div>
-            <div class="modal-card">
-                <header class="modal-card-head">
-                    <p class="modal-card-title">Confirm action</p>
-                    <button class="delete jb-modal-close" aria-label="close"></button>
-                </header>
-                <section class="modal-card-body">
-                    <p>This will permanently delete transaction <b>{{ transaction.journal_entry.description }}</b>.</p>
-                    <p>Are you sure?</p>
-                </section>
-                <footer class="modal-card-foot">
-                    <button class="button jb-modal-close">Cancel</button>
-                    <form method="post" action="{% url "blackbook:transactions_delete" %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="transaction_uuid" value="{{ transaction.uuid }}">
-                        <button class="button is-danger" type="submit">Delete</button>
-                    </form>
-                </footer>
-            </div>
-            <button class="modal-close is-large jb-modal-close" aria-label="close"></button>
-        </div>
-    {% endfor %}
-{% endblock modals %}
-
 {% block javascript %}
-    let accountChartLineCTX = document.getElementById("account-line-chart").getContext("2d");
-    new Chart(accountChartLineCTX, {{ charts.account_chart|safe }});
-
     let transactionIncomeChartCTX = document.getElementById("transaction-income-chart").getContext("2d");
     new Chart(transactionIncomeChartCTX, {{ charts.income_chart|safe }});
     
