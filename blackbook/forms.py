@@ -130,3 +130,15 @@ class TransactionForm(forms.Form):
                 self.add_error("transaction_type", "To and From Account must be supplied for this transaction type.")
                 self.add_error("to_account", "To and From Account must be supplied for this transaction type.")
                 self.add_error("from_account", "To and From Account must be supplied for this transaction type.")
+
+
+class TransactionFilterForm(forms.Form):
+    start_date = forms.DateField()
+    end_date = forms.DateField()
+    description = forms.CharField()
+    amount_lower = MoneyField(widget=BulmaMoneyWidget())
+    amount_upper = MoneyField(widget=BulmaMoneyWidget())
+    # category = forms.ModelMultipleChoiceField()
+    # budget = forms.ModelMultipleChoiceField()
+    tags = forms.CharField()
+    # account = forms.ModelChoiceField()

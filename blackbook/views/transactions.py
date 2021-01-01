@@ -1,10 +1,50 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from django.db.models import Sum
 
 from ..models import TransactionJournalEntry, Transaction
-from ..utilities import set_message_and_redirect
+from ..utilities import set_message_and_redirect, calculate_period
 from ..forms import TransactionForm
+from ..charts import TransactionChart
+
+
+@login_required
+def transactions(request):
+    transactions = Transaction.objects.filter(journal_entry__user=request.user)
+    period = calculate_period(periodicity=request.user.userprofile.default_period)
+
+    transactions = (
+        transactions.filter(journal_entry__date__range=(period["start_date"], period["end_date"]))
+        .select_related("journal_entry")
+        .select_related("account")
+        .select_related("journal_entry__budget__budget")
+        .select_related("journal_entry__category")
+        .select_related("journal_entry__from_account")
+        .select_related("journal_entry__to_account")
+        .values(
+            "amount_currency",
+            "negative",
+            "account__name",
+            "account__virtual_balance",
+            "journal_entry",
+            "journal_entry__date",
+            "journal_entry__transaction_type",
+            "journal_entry__budget__budget__name",
+            "journal_entry__category__name",
+            "journal_entry__from_account__name",
+        )
+        .annotate(total=Sum("amount"))
+        .order_by('-journal_entry__date", "-journal_entry__created')
+    )
+
+    charts = {
+        "income_chart": TransactionChart(data=transactions, user=request.user, income=True).generate_json(),
+        "expense_budget_chart": TransactionChart(data=transactions, user=request.user, expenses_budget=True).generate_json(),
+        "expense_category_chart": TransactionChart(data=transactions, user=request.user, expenses_category=True).generate_json(),
+    }
+
+    return render(request, "blackbook/transactions/list.html", {"period": period, "charts": charts, "transactions": transactions})
 
 
 @login_required

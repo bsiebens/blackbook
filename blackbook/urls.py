@@ -16,6 +16,7 @@ urlpatterns = [
     path("accounts/<str:account_type>/<str:account_name>/", accounts.accounts, name="accounts"),
     #
     # Transactions
+    path("transactions/", transactions.transactions, name="transactions"),
     path("transactions/add/", transactions.add_edit, name="transactions_add"),
     path("transactions/edit/<str:transaction_uuid>/", transactions.add_edit, name="transactions_edit"),
     path("transactions/delete/", transactions.delete, name="transactions_delete"),

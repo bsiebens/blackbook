@@ -1,0 +1,253 @@
+{% extends 'blackbook/base.html' %}
+
+{% load djmoney %}
+
+{% block title %}
+    Transactions
+{% endblock title %}
+
+{% block breadcrumbs %}
+    <li>Transactions</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+    <div class="tile is-ancestor">
+        <div class="tile is-parent">
+            <div class="card is-card-widget tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </span>
+                        <span>Current period - income</span>
+                    </p>
+                </header>
+                <div class="card-content">
+                    {% if charts.income_chart_count == 0 %}
+                        <p>No transaction information available yet.</p>
+                    {% else %}
+                        <div class="chart-area">
+                            <div style="height: 100%;">
+                                <div class="chartjs-size-monitor">
+                                    <div class="chartjs-size-monitor-expand">
+                                        <div></div>
+                                    </div>
+                                    <div class="chartjs-size-monitor-shrink">
+                                        <div></div>
+                                    </div>
+                                </div>
+                                <canvas id="transaction-income-chart" width="2992" height="1000" class="chartjs-render-monitor" style="display: block; height: 250px; width: 250px;"></canvas>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="tile is-parent">
+            <div class="card is-card-widget tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </span>
+                        <span>Current period - expenses by category</span>
+                    </p>
+                </header>
+                <div class="card-content">
+                    {% if charts.expense_category_chart_count == 0 %}
+                        <p>No transaction information available yet.</p>
+                    {% else %}
+                        <div class="chart-area">
+                            <div style="height: 100%;">
+                                <div class="chartjs-size-monitor">
+                                    <div class="chartjs-size-monitor-expand">
+                                        <div></div>
+                                    </div>
+                                    <div class="chartjs-size-monitor-shrink">
+                                        <div></div>
+                                    </div>
+                                </div>
+                                <canvas id="transaction-expense-category-chart" width="2992" height="1000" class="chartjs-render-monitor" style="display: block; height: 250px; width: 250px;"></canvas>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="tile is-parent">
+            <div class="card is-card-widget tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </span>
+                        <span>Current period - expenses by budget</span>
+                    </p>
+                </header>
+                <div class="card-content">
+                    {% if charts.expense_budget_chart_count == 0 %}
+                        <p>No transaction information available yet.</p>
+                    {% else %}
+                        <div class="chart-area">
+                            <div style="height: 100%;">
+                                <div class="chartjs-size-monitor">
+                                    <div class="chartjs-size-monitor-expand">
+                                        <div></div>
+                                    </div>
+                                    <div class="chartjs-size-monitor-shrink">
+                                        <div></div>
+                                    </div>
+                                </div>
+                                <canvas id="transaction-expense-budget-chart" width="2992" height="1000" class="chartjs-render-monitor" style="display: block; height: 250px; width: 250px;"></canvas>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </span>
+                <span>Transactions - {{ period.start_date|date:"d b Y" }} until {{ period.end_date|date:"d b Y" }}</span>
+            </p>
+        </header>
+        <div class="notification is-card-toolbar">
+            <div class="level">
+                <div class="level-left">
+                    <p>Filter form goes here</p>
+                </div>
+                <div class="level-right">
+                    <div class="level-item">
+                        <a class="button is-primary" href="{% url "blackbook:transactions_add" %}">
+                            Add transaction
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-content">
+            <div class="b-table">
+                <div class="table-wrapper has-mobile-cards">
+                    <table class="table is-fullwidth is-striped is-hoverable is-fullwidth">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Transaction</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Budget</th>
+                                <th>From account</th>
+                                <th>To account</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions %}
+                                <tr>
+                                    <td>
+                                        <span class="icon">
+                                            {% if transaction.journal_entry.transaction_type == "transfer" %}
+                                                <i class="fas fa-exchange-alt"></i>
+                                            {% elif transaction.journal_entry.transaction_type == "withdrawal" %}
+                                                <i class="fas fa-long-arrow-alt-left"></i>
+                                            {% else %}
+                                                <i class="fas fa-long-arrow-alt-right"></i>
+                                            {% endif %}
+                                        </span>
+                                        {% if transaction.reconciled %}
+                                            <span class="icon">
+                                                <i class="fas fa-check"></i>
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td data-label="Transaction">{{ transaction.journal_entry.description }}</td>
+                                    <td data-label="Amount">
+                                        <span class="has-text-{% if transaction.negative %}danger{% else %}success{% endif %}">
+                                            {% if not transaction.negative %}+{% endif %}{% money_localize transaction.total transaction.amount_currency %}
+                                        </span>
+                                    </td>
+                                    <td data-label="Date">{{ transaction.journal_entry.date|date:"d b Y" }}</td>
+                                    <td data-label="Category">
+                                        {% if transaction.journal_entry.category is not None %}
+                                            <span class="tag is-success">
+                                                <span class="icon">
+                                                    <i class="fas fa-hashtag"></i>
+                                                </span>
+                                                <span>{{ transaction.journal_entry.category.name }}</span>
+                                            </span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td data-label="Budget">
+                                        {% if transaction.journal_entry.budget is not None %}
+                                            <span class="tag is-warning">
+                                                <span class="icon">
+                                                    <i class="fas fa-chart-pie"></i>
+                                                </span>
+                                                <span>{{ transaction.journal_entry.budget.budget.name }}</span>
+                                            </span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td data-label="From account">
+                                        {% if not transaction.negative and transaction.journal_entry.from_account is not None %}
+                                            From: <a href="{% url "blackbook:accounts" transaction.journal_entry.from_account.account_type.slug transaction.journal_entry.from_account.slug %}">
+                                                {{ transaction.journal_entry.from_account.name }}
+                                            </a>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </div>
+                                    <div data-label="To account">
+                                        {% if transaction.negative and transaction.journal_entry.to_account is not None %}
+                                            To: <a href="{% url "blackbook:accounts" transaction.journal_entry.to_account.account_type.slug transaction.journal_entry.to_account.slug %}">
+                                                {{ transaction.journal_entry.to_account.name }}
+                                            </a>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="buttons is-right">
+                                            {% if transaction.journal_entry.transaction_type != "start" %}
+                                                <a class="button is-primary is-small" href="" type="button">
+                                                    <span class="icon">
+                                                        <i class="fas fa-edit"></i>
+                                                    </span>
+                                                </a>
+                                            {% endif %}
+                                            <a class="button is-danger is-small jb-modal" data-target="modal-transaction-delete-{{ transaction.uuid }}" type="button">
+                                                <span class="icon">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </span>
+                                            </a>
+                                        </div>                    
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block javascript %}
+    let transactionIncomeChartCTX = document.getElementById("transaction-income-chart").getContext("2d");
+    new Chart(transactionIncomeChartCTX, {{ charts.income_chart|safe }});
+    
+    let expenseCategoryChartCTX = document.getElementById("transaction-expense-category-chart").getContext("2d");
+    new Chart(expenseCategoryChartCTX, {{ charts.expense_category_chart|safe }});
+    
+    let expenseBudgetChartCTX = document.getElementById("transaction-expense-budget-chart").getContext("2d");
+    new Chart(expenseBudgetChartCTX, {{ charts.expense_budget_chart|safe }});
+{% endblock javascript %}
