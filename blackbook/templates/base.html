@@ -40,7 +40,30 @@
         <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
         <script type="text/javascript">
-            BulmaTagsInput.attach();
+            BulmaTagsInput.attach('input[data-type="tags"], input[type="tags"], select[data-type="tags"], select[type="tags"]', {
+                allowDuplicates: false,
+                caseSensitive: true,
+                clearSelectionOnTyping: false,
+                closeDropdownOnItemSelect: true,
+                delimiter: ',',
+                freeInput: true,
+                highlightDuplicate: true,
+                highlightMatchesString: true,
+                itemValue: undefined,
+                itemText: undefined,
+                maxTags: undefined,
+                maxChars: undefined,
+                minChars: 1,
+                noResultsLabel: 'No results found',
+                placeholder: '',
+                removable: true,
+                searchMinChars: 1,
+                searchOn: 'text',
+                selectable: false,
+                source: undefined,
+                tagClass: '',
+                trim: true
+            });
 
             {% block javascript %}{% endblock %}
         </script>
