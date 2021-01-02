@@ -74,7 +74,7 @@
                 <span class="icon">
                     <i class="fas fa-chart-line"></i>
                 </span>
-                <span>Account overview</span>
+                <span>Account overview  - {{ period.start_date|date:"d b Y" }} until {{ period.end_date|date:"d b Y" }}</span>
             </p>
         </header>
         <div class="card-content">
@@ -286,7 +286,7 @@
                 <span class="icon">
                     <i class="fas fa-exchange-alt"></i>
                 </span>
-                <span>Transactions</span>
+                <span>Transactions  - {{ period.start_date|date:"d b Y" }} until {{ period.end_date|date:"d b Y" }}</span>
             </p>
         </div>
         <div class="card-content">
@@ -431,12 +431,12 @@
         new Chart(transactionIncomeChartCTX, {{ charts.income_chart|safe }});
     {% endif %}
 
-    {% if charts.expense_budget_chart_count != 0%}   
+    {% if charts.expense_category_chart_count != 0%}   
         let expenseCategoryChartCTX = document.getElementById("transaction-expense-category-chart").getContext("2d");
         new Chart(expenseCategoryChartCTX, {{ charts.expense_category_chart|safe }});
     {% endif %}
 
-    {% if charts.expense_category_chart_count != 0 %}
+    {% if charts.expense_budget_chart_count != 0 %}
         let expenseBudgetChartCTX = document.getElementById("transaction-expense-budget-chart").getContext("2d");
         new Chart(expenseBudgetChartCTX, {{ charts.expense_budget_chart|safe }});
     {% endif %}

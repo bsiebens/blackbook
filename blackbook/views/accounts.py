@@ -16,16 +16,14 @@ from ..charts import AccountChart, TransactionChart
 @login_required
 def accounts(request, account_type, account_name=None):
     if account_name is not None:
-        period = request.user.userprofile.default_period
+        period = calculate_period(periodicity=request.user.userprofile.default_period, start_date=timezone.localdate())
 
         account = get_object_or_404(
             Account.objects.select_related("account_type")
             .prefetch_related(
                 Prefetch(
                     "transactions",
-                    Transaction.objects.filter(
-                        journal_entry__date__range=calculate_period(periodicity=period, start_date=timezone.localdate(), as_tuple=True)
-                    ),
+                    Transaction.objects.filter(journal_entry__date__range=(period["start_date"], period["end_date"])),
                 ),
             )
             .prefetch_related("transactions__journal_entry")
@@ -48,12 +46,8 @@ def accounts(request, account_type, account_name=None):
 
         transactions = (
             Transaction.objects.filter(account=account)
-            .select_related("journal_entry")
-            .select_related("account")
-            .select_related("journal_entry__budget__budget")
-            .select_related("journal_entry__category")
-            .select_related("journal_entry__from_account")
-            .filter(journal_entry__date__range=calculate_period(periodicity=period, start_date=timezone.localdate(), as_tuple=True))
+            .select_related("journal_entry", "account", "journal_entry__budget__budget", "journal_entry__category", "journal_entry__from_account")
+            .filter(journal_entry__date__range=(period["start_date"], period["end_date"]))
             .values(
                 "amount_currency",
                 "negative",
@@ -77,8 +71,8 @@ def accounts(request, account_type, account_name=None):
         charts = {
             "account_chart": AccountChart(
                 data=transactions,
-                start_date=calculate_period(periodicity=period)["start_date"],
-                end_date=calculate_period(periodicity=period)["end_date"],
+                start_date=period["start_date"],
+                end_date=period["end_date"],
                 user=request.user,
             ).generate_json(),
             "income_chart": TransactionChart(data=transactions, user=request.user, income=True).generate_json(),
@@ -102,6 +96,7 @@ def accounts(request, account_type, account_name=None):
                 "in_for_period": in_for_period,
                 "out_for_period": out_for_period,
                 "balance_for_period": balance_for_period,
+                "period": period,
             },
         )
 
