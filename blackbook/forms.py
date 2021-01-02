@@ -88,7 +88,7 @@ class TransactionForm(forms.Form):
     tags = forms.CharField(required=False, help_text="A list of comma separated tags.")
     from_account = ListModelChoiceField(model=Account, required=False)
     to_account = ListModelChoiceField(model=Account, required=False)
-    add_new = forms.BooleanField(required=False, initial=False, help_text="After saving, display this form again to add an additional transaction.")
+    add_new = forms.BooleanField(required=False, initial=True, help_text="After saving, display this form again to add an additional transaction.")
 
     def __init__(self, user, *args, **kwargs):
         super(TransactionForm, self).__init__(*args, **kwargs)
@@ -137,12 +137,11 @@ class TransactionForm(forms.Form):
 
 
 class TransactionFilterForm(forms.Form):
-    start_date = forms.DateField()
-    end_date = forms.DateField()
-    description = forms.CharField()
-    amount_lower = MoneyField(widget=BulmaMoneyWidget())
-    amount_upper = MoneyField(widget=BulmaMoneyWidget())
+    start_date = forms.DateField(widget=DateInput, required=False)
+    end_date = forms.DateField(widget=DateInput, required=False)
+    description = forms.CharField(required=False, widget=forms.TextInput(attrs={"placeholder": "Description search"}))
+    # amount_lower = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial="0.0")
+    # amount_upper = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial="0.0")
     # category = forms.ModelMultipleChoiceField()
     # budget = forms.ModelMultipleChoiceField()
-    tags = forms.CharField()
     # account = forms.ModelChoiceField()

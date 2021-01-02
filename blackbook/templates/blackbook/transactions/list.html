@@ -1,6 +1,7 @@
 {% extends 'blackbook/base.html' %}
 
 {% load djmoney %}
+{% load formtags %}
 
 {% block title %}
     Transactions
@@ -119,7 +120,21 @@
         <div class="notification is-card-toolbar">
             <div class="level">
                 <div class="level-left">
-                    <p>Filter form goes here</p>
+                    <div class="level-item is-hidden-mobile">
+                        <form method="{% url "blackbook:transactions" %}">
+                            {% csrf_token %}
+
+                            <div class="field is-horizontal">
+                                <div class="field-body">
+                                    <div class="field is-grouped is-grouped-right">
+                                        {% form_field filter_form.start_date "" "fa-calendar-alt" True %}
+                                        {% form_field filter_form.end_date "" "fa-calendar-alt" True %}
+                                        {% form_field filter_form.description "" "fa-search" True %}
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
                 <div class="level-right">
                     <div class="level-item">

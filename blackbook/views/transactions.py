@@ -6,7 +6,7 @@ from django.utils import timezone
 
 from ..models import TransactionJournalEntry, Transaction
 from ..utilities import set_message_and_redirect, calculate_period
-from ..forms import TransactionForm
+from ..forms import TransactionForm, TransactionFilterForm
 from ..charts import TransactionChart
 
 
@@ -43,9 +43,20 @@ def transactions(request):
         "income_chart": TransactionChart(data=transactions, user=request.user, income=True).generate_json(),
         "expense_budget_chart": TransactionChart(data=transactions, user=request.user, expenses_budget=True).generate_json(),
         "expense_category_chart": TransactionChart(data=transactions, user=request.user, expenses_category=True).generate_json(),
+        "income_chart_count": len([item for item in transactions if not item["negative"]]),
+        "expense_budget_chart_count": len(
+            [item for item in transactions if item["negative"] and item["journal_entry__budget__budget__name"] is not None]
+        ),
+        "expense_category_chart_count": len(
+            [item for item in transactions if item["negative"] and item["journal_entry__category__name"] is not None]
+        ),
     }
 
-    return render(request, "blackbook/transactions/list.html", {"period": period, "charts": charts, "transactions": transactions})
+    return render(
+        request,
+        "blackbook/transactions/list.html",
+        {"filter_form": filter_form, "period": period, "charts": charts, "journal_entries": journal_entries},
+    )
 
 
 @login_required
