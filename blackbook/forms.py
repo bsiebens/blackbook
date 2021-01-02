@@ -9,6 +9,10 @@ from taggit.models import Tag
 from .models import get_currency_choices, get_default_currency, Budget, Account, TransactionJournalEntry, Category, AccountType
 
 
+class DateInput(forms.DateInput):
+    input_type = "date"
+
+
 class ListModelChoiceField(forms.ChoiceField):
     def __init__(self, model, *args, **kwargs):
         self.model = model
@@ -76,7 +80,7 @@ class UserProfileForm(forms.Form):
 
 class TransactionForm(forms.Form):
     description = forms.CharField()
-    date = forms.DateField(initial=timezone.now)
+    date = forms.DateField(initial=timezone.now, widget=DateInput)
     transaction_type = forms.ChoiceField()
     amount = MoneyField(widget=BulmaMoneyWidget())
     category = ListModelChoiceField(model=Category, required=False)
