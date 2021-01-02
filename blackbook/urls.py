@@ -20,6 +20,8 @@ urlpatterns = [
     path("transactions/add/", transactions.add_edit, name="transactions_add"),
     path("transactions/edit/<str:transaction_uuid>/", transactions.add_edit, name="transactions_edit"),
     path("transactions/delete/", transactions.delete, name="transactions_delete"),
+    path("journal_entries/edit/<str:journal_entry_uuid>/", transactions.journal_entry_edit, name="journal_entries_edit"),
+    path("journal_entries/delete/", transactions.journal_entry_delete, name="journal_entries_delete"),
     #
     # Categories
     path("categories/", categories.categories, name="categories"),

@@ -1,7 +1,8 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.db.models import Sum
+from django.utils import timezone
 
 from ..models import TransactionJournalEntry, Transaction
 from ..utilities import set_message_and_redirect, calculate_period
@@ -12,30 +13,30 @@ from ..charts import TransactionChart
 @login_required
 def transactions(request):
     transactions = Transaction.objects.filter(journal_entry__user=request.user)
-    period = calculate_period(periodicity=request.user.userprofile.default_period)
+    journal_entries = TransactionJournalEntry.objects.filter(user=request.user)
+    period = calculate_period(periodicity=request.user.userprofile.default_period, start_date=timezone.localdate())
+
+    filter_form = TransactionFilterForm(request.GET or None, initial={"start_date": period["start_date"], "end_date": period["end_date"]})
 
     transactions = (
         transactions.filter(journal_entry__date__range=(period["start_date"], period["end_date"]))
-        .select_related("journal_entry")
-        .select_related("account")
-        .select_related("journal_entry__budget__budget")
-        .select_related("journal_entry__category")
-        .select_related("journal_entry__from_account")
-        .select_related("journal_entry__to_account")
+        .select_related("journal_entry", "account", "journal_entry__budget__budget", "journal_entry__category", "journal_entry__from_account")
         .values(
             "amount_currency",
             "negative",
             "account__name",
             "account__virtual_balance",
-            "journal_entry",
-            "journal_entry__date",
             "journal_entry__transaction_type",
             "journal_entry__budget__budget__name",
             "journal_entry__category__name",
             "journal_entry__from_account__name",
         )
         .annotate(total=Sum("amount"))
-        .order_by('-journal_entry__date", "-journal_entry__created')
+    )
+    journal_entries = (
+        journal_entries.filter(date__range=(period["start_date"], period["end_date"]))
+        .select_related("budget__budget", "category", "to_account", "from_account")
+        .prefetch_related("transactions")
     )
 
     charts = {
@@ -53,15 +54,14 @@ def add_edit(request, transaction_uuid=None):
     transaction = Transaction()
 
     if transaction_uuid is not None:
-        transaction = (
-            Transaction.objects.select_related("journal_entry")
-            .select_related("journal_entry__budget__budget")
-            .select_related("journal_entry__from_account")
-            .select_related("journal_entry__to_account")
-            .select_related("journal_entry__category")
-            .select_related("account__account_type")
-            .get(uuid=transaction_uuid)
-        )
+        transaction = Transaction.objects.select_related(
+            "journal_entry",
+            "journal_entry__budget__budget",
+            "journal_entry__from_account",
+            "journal_entry__to_account",
+            "journal_entry__category",
+            "account__account_type",
+        ).get(uuid=transaction_uuid)
 
         if transaction.journal_entry.user != request.user:
             return set_message_and_redirect(
@@ -182,3 +182,29 @@ def delete(request):
             "w|You are not allowed to access this page like this.",
             reverse("blackbook:accounts", kwargs={"account_type": transaction.account.account_type.slug, "account_name": transaction.account.slug}),
         )
+
+
+@login_required
+def journal_entry_edit(request, journal_entry_uuid):
+    journal_entry = get_object_or_404(TransactionJournalEntry, uuid=journal_entry_uuid)
+
+    return redirect(reverse("blackbook:transactions_edit", kwargs={"transaction_uuid": journal_entry.transactions.all().first().uuid}))
+
+
+@login_required
+def journal_entry_delete(request):
+    if request.method == "POST":
+        journal_entry = TransactionJournalEntry.objects.get(uuid=request.POST.get("journal_entry_uuid"))
+
+        if journal_entry.user != request.user:
+            return set_message_and_redirect(request, "f|You don't have access to delete this transaction.", reverse("blackbook:accounts"))
+
+        journal_entry.delete()
+        return set_message_and_redirect(
+            request,
+            's|Transaction "{journal_entry.description}" was succesfully deleted.'.format(journal_entry=journal_entry),
+            reverse("blackbook:transactions"),
+        )
+
+    else:
+        return set_message_and_redirect(request, "w|You are not allowed to access this page like this.", reverse("blackbook:transactions"))
