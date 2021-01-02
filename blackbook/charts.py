@@ -222,21 +222,14 @@ class AccountChart(Chart):
                 value = 0
 
                 if date_index == 0:
-                    amounts = dict(filter(lambda elem: elem[0] <= date, date_entries.items()))
-                    value = float(sum([item.amount for item in amounts.values()])) - float(accounts_virtual_balance[account])
-
-                    if len(accounts.keys()) == 1:
-                        account = Account.objects.get(name=account, user=self.user)
-                        value = float(account.balance_until_date(date - timedelta(days=1)).amount)
-
-                        if date in date_entries.keys():
-                            value += float(date_entries[date].amount)
+                    account_object = Account.objects.get(name=account, user=self.user)
+                    value = float(account_object.balance_until_date(date - timedelta(days=1)).amount) - float(accounts_virtual_balance[account])
 
                 else:
                     value = account_data["data"][date_index - 1]
 
-                    if date in date_entries.keys():
-                        value += float(date_entries[date].amount)
+                if date in date_entries.keys():
+                    value += float(date_entries[date].amount)
 
                 account_data["data"].append(round(value, 2))
             data["data"]["datasets"].append(account_data)

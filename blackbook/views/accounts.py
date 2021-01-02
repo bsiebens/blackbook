@@ -1,8 +1,9 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.db.models import Sum
+from django.db.models import Sum, Prefetch
 from django.db.models.functions import Coalesce
+from django.utils import timezone
 
 from djmoney.money import Money
 
@@ -15,9 +16,18 @@ from ..charts import AccountChart, TransactionChart
 @login_required
 def accounts(request, account_type, account_name=None):
     if account_name is not None:
+        period = request.user.userprofile.default_period
+
         account = get_object_or_404(
             Account.objects.select_related("account_type")
-            .prefetch_related("transactions")
+            .prefetch_related(
+                Prefetch(
+                    "transactions",
+                    Transaction.objects.filter(
+                        journal_entry__date__range=calculate_period(periodicity=period, start_date=timezone.localdate(), as_tuple=True)
+                    ),
+                ),
+            )
             .prefetch_related("transactions__journal_entry")
             .prefetch_related("transactions__journal_entry__tags")
             .prefetch_related("transactions__journal_entry__budget__budget")
@@ -36,7 +46,6 @@ def accounts(request, account_type, account_name=None):
                 request, "f|You don't have access to this account.", reverse("blackbook:accounts", kwargs={"account_type": account_type})
             )
 
-        period = request.user.userprofile.default_period
         transactions = (
             Transaction.objects.filter(account=account)
             .select_related("journal_entry")
@@ -44,7 +53,7 @@ def accounts(request, account_type, account_name=None):
             .select_related("journal_entry__budget__budget")
             .select_related("journal_entry__category")
             .select_related("journal_entry__from_account")
-            .filter(journal_entry__date__range=calculate_period(periodicity=period, as_tuple=True))
+            .filter(journal_entry__date__range=calculate_period(periodicity=period, start_date=timezone.localdate(), as_tuple=True))
             .values(
                 "amount_currency",
                 "negative",
