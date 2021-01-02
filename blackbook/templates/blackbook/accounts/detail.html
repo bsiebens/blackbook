@@ -426,12 +426,18 @@
     let accountChartLineCTX = document.getElementById("account-line-chart").getContext("2d");
     new Chart(accountChartLineCTX, {{ charts.account_chart|safe }});
 
-    let transactionIncomeChartCTX = document.getElementById("transaction-income-chart").getContext("2d");
-    new Chart(transactionIncomeChartCTX, {{ charts.income_chart|safe }});
-    
-    let expenseCategoryChartCTX = document.getElementById("transaction-expense-category-chart").getContext("2d");
-    new Chart(expenseCategoryChartCTX, {{ charts.expense_category_chart|safe }});
-    
-    let expenseBudgetChartCTX = document.getElementById("transaction-expense-budget-chart").getContext("2d");
-    new Chart(expenseBudgetChartCTX, {{ charts.expense_budget_chart|safe }});
+    {% if charts.income_chart_count != 0 %}
+        let transactionIncomeChartCTX = document.getElementById("transaction-income-chart").getContext("2d");
+        new Chart(transactionIncomeChartCTX, {{ charts.income_chart|safe }});
+    {% endif %}
+
+    {% if charts.expense_budget_chart_count != 0%}   
+        let expenseCategoryChartCTX = document.getElementById("transaction-expense-category-chart").getContext("2d");
+        new Chart(expenseCategoryChartCTX, {{ charts.expense_category_chart|safe }});
+    {% endif %}
+
+    {% if charts.expense_category_chart_count != 0 %}
+        let expenseBudgetChartCTX = document.getElementById("transaction-expense-budget-chart").getContext("2d");
+        new Chart(expenseBudgetChartCTX, {{ charts.expense_budget_chart|safe }});
+    {% endif %}
 {% endblock javascript %}
