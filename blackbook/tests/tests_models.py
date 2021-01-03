@@ -55,7 +55,7 @@ class BudgetTest(TestCase):
         budget = models.Budget.objects.create(name="Test Budget", amount=Money(20, "EUR"))
         self.assertIsInstance(budget.current_period, models.BudgetPeriod)
         self.assertEqual(budget.current_period.end_date, date(9999, 12, 31))
-        self.assertEqual(budget.current_period.start_date, timezone.now().date())
+        self.assertEqual(budget.current_period.start_date, timezone.localdate())
         self.assertEqual(budget.current_period.amount, budget.amount)
 
         budget = models.Budget.objects.create(

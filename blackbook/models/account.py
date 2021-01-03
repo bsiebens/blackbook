@@ -8,6 +8,7 @@ from django.utils.functional import cached_property
 from localflavor.generic.models import IBANField
 from djmoney.models.fields import CurrencyField
 from djmoney.money import Money
+from decimal import Decimal
 
 from .base import get_default_currency, get_default_value, get_currency_choices
 from ..utilities import calculate_period, unique_slugify
@@ -91,13 +92,13 @@ class Account(models.Model):
     def balance(self):
         return self.balance_until_date()
 
-    def balance_until_date(self, date=timezone.now()):
+    def balance_until_date(self, date=timezone.localdate()):
         total = self.transactions.filter(journal_entry__date__lte=date).aggregate(total=Coalesce(Sum("amount"), Value(0)))["total"] or 0
-        total = float(total) - self.virtual_balance
+        total = total - Decimal(self.virtual_balance)
 
         return Money(total, self.currency)
 
-    def total_in_for_period(self, period="month", start_date=timezone.now()):
+    def total_in_for_period(self, period="month", start_date=timezone.localdate()):
         period = calculate_period(periodicity=period, start_date=start_date, as_tuple=True)
         total = (
             self.transactions.filter(journal_entry__date__range=period)
@@ -107,7 +108,7 @@ class Account(models.Model):
 
         return Money(total, self.currency)
 
-    def total_out_for_period(self, period="month", start_date=timezone.now()):
+    def total_out_for_period(self, period="month", start_date=timezone.localdate()):
         period = calculate_period(periodicity=period, start_date=start_date, as_tuple=True)
         total = (
             self.transactions.filter(journal_entry__date__range=period)
@@ -117,10 +118,10 @@ class Account(models.Model):
 
         return Money(total, self.currency)
 
-    def balance_for_period(self, period="month", start_date=timezone.now()):
+    def balance_for_period(self, period="month", start_date=timezone.localdate()):
         return self.total_in_for_period(period, start_date) + self.total_out_for_period(period, start_date)
 
-    def journal_entries_for_period(self, period="month", start_date=timezone.now()):
+    def journal_entries_for_period(self, period="month", start_date=timezone.localdate()):
         period = calculate_period(periodicity=period, start_date=start_date, as_tuple=True)
 
         return self.transactions.filter(journal_entry__date__range=period)
