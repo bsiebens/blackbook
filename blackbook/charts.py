@@ -6,7 +6,7 @@ from datetime import timedelta
 
 import json
 
-from .models import get_default_currency, TransactionJournalEntry, Account
+from .models import get_default_currency, TransactionJournalEntry, Account, AccountType
 from .utilities import get_currency
 
 
@@ -105,7 +105,9 @@ class TransactionChart(Chart):
             self.data = [
                 item
                 for item in self.data
-                if not item["negative"] and item["journal_entry__transaction_type"] != TransactionJournalEntry.TransactionType.TRANSFER
+                if not item["negative"]
+                and item["journal_entry__transaction_type"] != TransactionJournalEntry.TransactionType.TRANSFER
+                and item["journal_entry__from_account__account_type"] != AccountType.AccountTypeCategory.ASSETS
             ]
         else:
             self.data = [item for item in self.data if item["negative"]]

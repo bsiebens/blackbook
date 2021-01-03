@@ -46,7 +46,13 @@ def transactions(request):
 
     transactions = (
         transactions.filter(journal_entry__date__range=date_range)
-        .select_related("journal_entry", "account", "journal_entry__budget__budget", "journal_entry__category", "journal_entry__from_account")
+        .select_related(
+            "journal_entry",
+            "account",
+            "journal_entry__budget__budget",
+            "journal_entry__category",
+            "journal_entry__from_account__account_type",
+        )
         .values(
             "amount_currency",
             "negative",
@@ -56,6 +62,7 @@ def transactions(request):
             "journal_entry__budget__budget__name",
             "journal_entry__category__name",
             "journal_entry__from_account__name",
+            "journal_entry__from_account__account_type",
         )
         .annotate(total=Sum("amount"))
     )
