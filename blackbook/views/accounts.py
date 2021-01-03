@@ -60,6 +60,23 @@ def accounts(request, account_type, account_name=None):
             .order_by("-journal_entry__date", "-journal_entry__created")
         )
 
+        if len(transactions) == 0:
+            transactions = [
+                {
+                    "amount_currency": account.currency,
+                    "negative": None,
+                    "account__name": account.name,
+                    "account__virtual_balance": account.virtual_balance,
+                    "journal_entry": None,
+                    "journal_entry__date": timezone.localdate(),
+                    "journal_entry__transaction_type": None,
+                    "journal_entry__budget__budget__name": None,
+                    "journal_entry__category__name": None,
+                    "journal_entry__from_account__name": None,
+                    "total": 0,
+                }
+            ]
+
         in_for_period = Money(sum([transaction["total"] for transaction in transactions if not transaction["negative"]]), account.currency)
         out_for_period = Money(sum([transaction["total"] for transaction in transactions if transaction["negative"]]), account.currency)
         balance_for_period = in_for_period + out_for_period
@@ -74,7 +91,7 @@ def accounts(request, account_type, account_name=None):
             "income_chart": TransactionChart(data=transactions, user=request.user, income=True).generate_json(),
             "expense_budget_chart": TransactionChart(data=transactions, user=request.user, expenses_budget=True).generate_json(),
             "expense_category_chart": TransactionChart(data=transactions, user=request.user, expenses_category=True).generate_json(),
-            "income_chart_count": len([item for item in transactions if not item["negative"]]),
+            "income_chart_count": len([item for item in transactions if not item["negative"] and item["negative"] is not None]),
             "expense_budget_chart_count": len(
                 [item for item in transactions if item["negative"] and item["journal_entry__budget__budget__name"] is not None]
             ),
