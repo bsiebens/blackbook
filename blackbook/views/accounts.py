@@ -6,8 +6,9 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from djmoney.money import Money
+from djmoney.contrib.exchange.models import convert_money
 
-from ..models import AccountType, Account, TransactionJournalEntry, Transaction
+from ..models import AccountType, Account, TransactionJournalEntry, Transaction, get_default_currency
 from ..utilities import set_message_and_redirect, calculate_period
 from ..forms import AccountForm
 from ..charts import AccountChart, TransactionChart
@@ -103,12 +104,21 @@ def accounts(request, account_type, account_name=None):
             .prefetch_related(Prefetch("accounts", Account.objects.annotate(total=Coalesce(Sum("transactions__amount"), 0))))
         )
         accounts = Account.objects.filter(account_type__category=account_type).annotate(total=Coalesce(Sum("transactions__amount"), 0))
+        currency = get_default_currency(request.user)
 
         for account_type in account_types:
+            account_type.total = Money(0, currency)
+
             for account in account_type.accounts.all():
                 account.total -= account.virtual_balance
 
-        return render(request, "blackbook/accounts/list.html", {"account_type": account_type, "account_types": account_types, "accounts": accounts})
+                account_type.total += convert_money(Money(account.total, account.currency), currency)
+
+        return render(
+            request,
+            "blackbook/accounts/list.html",
+            {"account_type": account_type, "account_types": account_types, "accounts": accounts},
+        )
 
 
 @login_required
