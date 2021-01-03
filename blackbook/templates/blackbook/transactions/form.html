@@ -58,7 +58,7 @@
                         <hr />
                         {% form_field transaction_form.category %}
                         {% form_field transaction_form.budget %}
-                        {% form_field transaction_form.tags None "fa-tags" %}
+                        <!-- {% form_field transaction_form.tags None "fa-tags" %} -->
                         <hr />
                         {% form_field transaction_form.from_account None "fa-landmark" %}
                         {% form_field transaction_form.to_account None "fa-landmark" %}
@@ -124,21 +124,6 @@
                                     {% endif %}
                                 </div>
                             </div>
-                            <div class="field">
-                                <label class="label">Budget</label>
-                                <div class="control is-clearfix">
-                                    {% if transaction.id is not None and transaction.journal_entry.budget is not None %}
-                                        <span class="tag is-warning">
-                                            <span class="icon">
-                                                <i class="fas fa-chart-pie"></i>
-                                            </span>
-                                            <span>{{ transaction.journal_entry.budget.budget.name }}</span>
-                                        </span>
-                                    {% else %}
-                                        <input type="text" readonly value="-" class="input is-static">
-                                    {% endif %}
-                                </div>
-                            </div>
                         </div>
                         <div class="column">
                             <div class="field">
@@ -158,6 +143,21 @@
                                 </div>
                             </div>
                             <div class="field">
+                                <label class="label">Budget</label>
+                                <div class="control is-clearfix">
+                                    {% if transaction.id is not None and transaction.journal_entry.budget is not None %}
+                                        <span class="tag is-warning">
+                                            <span class="icon">
+                                                <i class="fas fa-chart-pie"></i>
+                                            </span>
+                                            <span>{{ transaction.journal_entry.budget.budget.name }}</span>
+                                        </span>
+                                    {% else %}
+                                        <input type="text" readonly value="-" class="input is-static">
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <!-- <div class="field">
                                 <label class="label">Tags</label>
                                 <div class="control is-clearfix">
                                     <span class="tags">
@@ -175,7 +175,7 @@
                                         {% endif %}
                                     </span>
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                     <hr />
