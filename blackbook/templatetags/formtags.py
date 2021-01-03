@@ -23,7 +23,7 @@ def add_class(field):
     if field.errors:
         css_class.append("is-danger")
 
-    if field.widget_type in ("tag", "text", "email", "password", "number", "date"):
+    if field.widget_type in ("tag", "text", "listtext", "email", "password", "number", "date"):
         css_class.append("input")
 
         if field.name == "tags":

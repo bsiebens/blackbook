@@ -114,7 +114,7 @@
                 <span class="icon">
                     <i class="fas fa-exchange-alt"></i>
                 </span>
-                <span>Transactions - {{ period.start_date|date:"d b Y" }} until {{ period.end_date|date:"d b Y" }}</span>
+                <span>Transactions - {{ period.0|date:"d b Y" }} until {{ period.1|date:"d b Y" }}</span>
             </p>
         </header>
         <div class="notification is-card-toolbar">
@@ -130,6 +130,10 @@
                                         {% form_field filter_form.start_date "" "fa-calendar-alt" True %}
                                         {% form_field filter_form.end_date "" "fa-calendar-alt" True %}
                                         {% form_field filter_form.description "" "fa-search" True %}
+
+                                        {% form_field filter_form.account "" "fa-landmark" True %}
+                                        {% form_field filter_form.category "" "fa-hashtag" True %}
+                                        {% form_field filter_form.budget "" "fa-chart-pie" True %}
 
                                         <div class="control">
                                             <button class="button is-primary" type="submit">

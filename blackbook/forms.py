@@ -1,5 +1,5 @@
 from django import forms
-from django.utils import timezone
+from django.utils import timezone, safestring
 
 from djmoney.forms.fields import MoneyField
 from djmoney.forms.widgets import MoneyWidget
@@ -38,6 +38,25 @@ class ListModelChoiceField(forms.ChoiceField):
 
         else:
             return True
+
+
+class ListTextWidget(forms.TextInput):
+    def __init__(self, data_list, name, *args, **kwargs):
+        super(ListTextWidget, self).__init__(*args, **kwargs)
+        self._name = name
+        self._list = data_list
+        self.attrs.update({"list": "list__%s" % self._name})
+
+    def render(self, name, value, attrs=None, renderer=None):
+        text_html = super(ListTextWidget, self).render(name, value, attrs=attrs)
+        data_list = '<datalist id="list__%s">' % self._name
+
+        for item in self._list:
+            data_list += '<option value="%s">%s</option>' % (item, item)
+
+        data_list += "</datalist>"
+
+        return safestring.mark_safe(text_html + data_list)
 
 
 class BulmaMoneyWidget(MoneyWidget):
@@ -81,28 +100,30 @@ class UserProfileForm(forms.Form):
 class TransactionForm(forms.Form):
     description = forms.CharField()
     date = forms.DateField(initial=timezone.now, widget=DateInput)
-    transaction_type = forms.ChoiceField()
+    transaction_type = forms.ChoiceField(initial=TransactionJournalEntry.TransactionType.WITHDRAWAL)
     amount = MoneyField(widget=BulmaMoneyWidget())
-    category = ListModelChoiceField(model=Category, required=False)
-    budget = ListModelChoiceField(model=Budget, required=False)
+    category = forms.CharField(required=False)
+    budget = forms.CharField(required=False)
     tags = forms.CharField(required=False, help_text="A list of comma separated tags.")
-    from_account = ListModelChoiceField(model=Account, required=False)
-    to_account = ListModelChoiceField(model=Account, required=False)
-    add_new = forms.BooleanField(required=False, initial=True, help_text="After saving, display this form again to add an additional transaction.")
+    from_account = forms.CharField(required=False)
+    to_account = forms.CharField(required=False)
+    add_new = forms.BooleanField(required=False, initial=False, help_text="After saving, display this form again to add an additional transaction.")
+    display = forms.BooleanField(required=False, initial=True, help_text="After saving, display this form again to review this transaction.")
 
     def __init__(self, user, *args, **kwargs):
         super(TransactionForm, self).__init__(*args, **kwargs)
 
         account_choices = [(account.id, account) for account in Account.objects.filter(active=True).order_by("account_type", "name")]
         account_choices.insert(0, (None, ""))
-        category_choices = [(category.id, category) for category in Category.objects.all().order_by("name")]
-        category_choices.insert(0, (None, ""))
-        budget_choices = [(budget.id, budget) for budget in Budget.objects.filter(active=True).order_by("name")]
-        budget_choices.insert(0, (None, ""))
+        account_list = [
+            "{account.account_type} - {account.name}".format(account=account)
+            for account in Account.objects.filter(active=True).order_by("account_type", "name").select_related("account_type")
+        ]
 
-        self.fields["category"].choices = category_choices
-        self.fields["budget"].choices = budget_choices
-        self.fields["from_account"].choices = account_choices
+        self.fields["category"].widget = ListTextWidget(data_list=Category.objects.all().order_by("name"), name="category-list")
+        self.fields["budget"].widget = ListTextWidget(data_list=Budget.objects.filter(active=True).order_by("name"), name="budget-list")
+        self.fields["from_account"].widget = ListTextWidget(data_list=account_list, name="from_account_list")
+        self.fields["to_account"].widget = ListTextWidget(data_list=account_list, name="to_account_list")
         self.fields["to_account"].choices = account_choices
         self.fields["amount"].initial = ["0", get_default_currency(user=user)]
 
@@ -139,4 +160,20 @@ class TransactionForm(forms.Form):
 class TransactionFilterForm(forms.Form):
     start_date = forms.DateField(widget=DateInput, required=False)
     end_date = forms.DateField(widget=DateInput, required=False)
-    description = forms.CharField(required=False, widget=forms.TextInput(attrs={"placeholder": "Description search"}))
+    description = forms.CharField(required=False, widget=forms.TextInput(attrs={"placeholder": "Search descriptions"}))
+    account = forms.CharField(required=False)
+    category = forms.CharField(required=False)
+    budget = forms.CharField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(TransactionFilterForm, self).__init__(*args, **kwargs)
+
+        self.fields["account"].widget = ListTextWidget(
+            data_list=Account.objects.filter(active=True).order_by("name"), name="account-list", attrs={"placeholder": "Select account"}
+        )
+        self.fields["category"].widget = ListTextWidget(
+            data_list=Category.objects.all().order_by("name"), name="category-list", attrs={"placeholder": "Select category"}
+        )
+        self.fields["budget"].widget = ListTextWidget(
+            data_list=Budget.objects.filter(active=True).order_by("name"), name="budget-list", attrs={"placeholder": "Select budget"}
+        )

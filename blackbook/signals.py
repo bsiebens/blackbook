@@ -42,7 +42,7 @@ def update_accounts(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Budget)
 def create_budget_period(sender, instance, created, **kwargs):
-    current_date = timezone.now().date()
+    current_date = timezone.localdate()
     period = {"start_date": current_date, "end_date": date(9999, 12, 31)}
 
     if instance.auto_budget != Budget.AutoBudget.NO:

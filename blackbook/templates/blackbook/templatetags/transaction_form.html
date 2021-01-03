@@ -29,11 +29,12 @@
                 <hr />
                 {% form_field transaction_form.category %}
                 {% form_field transaction_form.budget %}
-                {% form_field transaction_form.tags %}
+                {% form_field transaction_form.tags None "fa-tags" %}
                 <hr />
-                {% form_field transaction_form.from_account %}
-                {% form_field transaction_form.to_account %}
+                {% form_field transaction_form.from_account None "fa-landmark" %}
+                {% form_field transaction_form.to_account None "fa-landmark" %}
                 <hr />
+                {% form_field transaction_form.display "Display after save" %}
                 {% form_field transaction_form.add_new "Return after save" %}
             </section>
             <footer class="modal-card-foot">    
