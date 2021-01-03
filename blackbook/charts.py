@@ -222,7 +222,7 @@ class AccountChart(Chart):
                 value = 0
 
                 if date_index == 0:
-                    account_object = Account.objects.get(name=account, user=self.user)
+                    account_object = Account.objects.get(name=account)
                     value = float(account_object.balance_until_date(date - timedelta(days=1)).amount) - float(accounts_virtual_balance[account])
 
                 else:

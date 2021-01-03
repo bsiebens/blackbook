@@ -31,7 +31,7 @@ class TransactionJournalEntry(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, blank=True, null=True, related_name="transactions")
     budget = models.ForeignKey(BudgetPeriod, on_delete=models.SET_NULL, blank=True, null=True, related_name="transactions")
     tags = TaggableManager(blank=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="transactions")
+    # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="transactions")
     uuid = models.UUIDField("UUID", default=uuid.uuid4, editable=False, db_index=True, unique=True)
     from_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL, related_name="from_transactions")
     to_account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL, related_name="to_transactions")
@@ -81,7 +81,6 @@ class TransactionJournalEntry(models.Model):
         amount,
         description,
         transaction_type,
-        user,
         date=timezone.now(),
         category=None,
         budget=None,
@@ -90,7 +89,7 @@ class TransactionJournalEntry(models.Model):
         to_account=None,
     ):
         journal_entry = cls.objects.create(
-            date=date, description=description, transaction_type=transaction_type, amount=amount, category=category, budget=budget, user=user
+            date=date, description=description, transaction_type=transaction_type, amount=amount, category=category, budget=budget
         )
         journal_entry._create_transactions(to_account=to_account, from_account=from_account)
 

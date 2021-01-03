@@ -27,16 +27,14 @@ def dashboard(request):
     currency = get_default_currency(user=request.user)
 
     totals = (
-        Transaction.objects.filter(account__user=request.user)
-        .filter(account__active=True)
+        Transaction.objects.filter(account__active=True)
         .filter(account__include_in_net_worth=True)
         .filter(journal_entry__date__range=calculate_period(period, start_date=timezone.localdate(), as_tuple=True))
         .values("amount_currency", "negative")
         .annotate(total=Sum("amount"))
     )
     net_worth = (
-        Transaction.objects.filter(account__user=request.user)
-        .filter(account__active=True)
+        Transaction.objects.filter(account__active=True)
         .filter(account__include_in_net_worth=True)
         .filter(journal_entry__date__range=calculate_period(period, start_date=timezone.localdate(), as_tuple=True))
         .select_related("journal_entry")
@@ -47,8 +45,7 @@ def dashboard(request):
     )
 
     budgets = (
-        BudgetPeriod.objects.filter(budget__user=request.user)
-        .filter(start_date__lte=timezone.now())
+        BudgetPeriod.objects.filter(start_date__lte=timezone.now())
         .filter(end_date__gte=timezone.now())
         .values("amount_currency")
         .annotate(total=Sum("amount"))
@@ -56,19 +53,13 @@ def dashboard(request):
     budgets_used = (
         Transaction.objects.filter(account__active=True)
         .filter(negative=True)
-        .filter(journal_entry__budget__budget__user=request.user)
         .filter(journal_entry__budget__start_date__lte=timezone.now())
         .filter(journal_entry__budget__end_date__gte=timezone.now())
         .values("amount_currency")
         .annotate(total=Sum("amount"))
     )
 
-    accounts = (
-        Account.objects.filter(user=request.user)
-        .filter(active=True)
-        .filter(include_in_net_worth=True)
-        .prefetch_related("transactions__journal_entry")
-    )
+    accounts = Account.objects.filter(active=True).filter(include_in_net_worth=True).prefetch_related("transactions__journal_entry")
 
     data = {
         "totals": {

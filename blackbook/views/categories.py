@@ -9,7 +9,7 @@ from ..utilities import set_message_and_redirect
 
 @login_required
 def categories(request):
-    categories = Category.objects.filter(user=request.user)
+    categories = Category.objects.all()
 
     forms = []
     for category in categories:
@@ -43,9 +43,10 @@ def categories(request):
             category_form = CategoryForm(request.POST, instance=Category())
 
             if category_form.is_valid():
-                category = category_form.save(commit=False)
-                category.user = request.user
-                category.save()
+                category = category_form.save()
+                # category = category_form.save(commit=False)
+                # category.user = request.user
+                # category.save()
 
                 return set_message_and_redirect(
                     request, 's|Category "{category.name}" was saved succesfully.'.format(category=category), reverse("blackbook:categories")
@@ -64,8 +65,8 @@ def delete(request):
     if request.method == "POST":
         category = get_object_or_404(Category, uuid=request.POST.get("category_uuid"))
 
-        if category.user != request.user:
-            return set_message_and_redirect(request, "f|You don't have access to delete this category.", reverse("blackbook:categories"))
+        # if category.user != request.user:
+        #     return set_message_and_redirect(request, "f|You don't have access to delete this category.", reverse("blackbook:categories"))
 
         category.delete()
         return set_message_and_redirect(

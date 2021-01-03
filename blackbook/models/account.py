@@ -48,7 +48,7 @@ class Account(models.Model):
         help_text="Enter a number here to have BlackBook treat this as the new zero point for this account. Leave at 0.0 to disable.",
     )
     slug = models.SlugField()
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="accounts")
+    # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="accounts")
     uuid = models.UUIDField("UUID", default=uuid.uuid4, editable=False, db_index=True, unique=True)
 
     created = models.DateTimeField(auto_now_add=True)

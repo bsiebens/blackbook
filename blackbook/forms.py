@@ -93,11 +93,11 @@ class TransactionForm(forms.Form):
     def __init__(self, user, *args, **kwargs):
         super(TransactionForm, self).__init__(*args, **kwargs)
 
-        account_choices = [(account.id, account) for account in Account.objects.filter(user=user).filter(active=True)]
+        account_choices = [(account.id, account) for account in Account.objects.filter(active=True).order_by("account_type", "name")]
         account_choices.insert(0, (None, ""))
-        category_choices = [(category.id, category) for category in Category.objects.filter(user=user)]
+        category_choices = [(category.id, category) for category in Category.objects.all().order_by("name")]
         category_choices.insert(0, (None, ""))
-        budget_choices = [(budget.id, budget) for budget in Budget.objects.filter(user=user)]
+        budget_choices = [(budget.id, budget) for budget in Budget.objects.all().order_by("name")]
         budget_choices.insert(0, (None, ""))
 
         self.fields["category"].choices = category_choices

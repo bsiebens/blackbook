@@ -12,8 +12,8 @@ from ..charts import TransactionChart
 
 @login_required
 def transactions(request):
-    transactions = Transaction.objects.filter(journal_entry__user=request.user)
-    journal_entries = TransactionJournalEntry.objects.filter(user=request.user)
+    transactions = Transaction.objects.all()
+    journal_entries = TransactionJournalEntry.objects.all()
     period = calculate_period(periodicity=request.user.userprofile.default_period, start_date=timezone.localdate())
 
     filter_form = TransactionFilterForm(request.GET or None, initial={"start_date": period["start_date"], "end_date": period["end_date"]})
@@ -74,14 +74,14 @@ def add_edit(request, transaction_uuid=None):
             "account__account_type",
         ).get(uuid=transaction_uuid)
 
-        if transaction.journal_entry.user != request.user:
-            return set_message_and_redirect(
-                request,
-                "f|You don't have access to this transaction.",
-                reverse(
-                    "blackbook:accounts", kwargs={"account_type": transaction.account.account_type.slug, "account_name": transacion.account.slug}
-                ),
-            )
+        # if transaction.journal_entry.user != request.user:
+        #     return set_message_and_redirect(
+        #         request,
+        #         "f|You don't have access to this transaction.",
+        #         reverse(
+        #             "blackbook:accounts", kwargs={"account_type": transaction.account.account_type.slug, "account_name": transacion.account.slug}
+        #         ),
+        #     )
 
         initial_data = {
             "amount": transaction.journal_entry.amount,
@@ -134,7 +134,7 @@ def add_edit(request, transaction_uuid=None):
                 amount=transaction_form.cleaned_data["amount"],
                 description=transaction_form.cleaned_data["description"],
                 transaction_type=transaction_form.cleaned_data["transaction_type"],
-                user=request.user,
+                # user=request.user,
                 date=transaction_form.cleaned_data["date"],
                 category=transaction_form.cleaned_data["category"],
                 budget=transaction_form.cleaned_data["budget"].get_period_for_date(transaction_form.cleaned_data["date"])
@@ -171,14 +171,14 @@ def delete(request):
             Transaction.objects.select_related("journal_entry").select_related("account__account_type").get(uuid=request.POST.get("transaction_uuid"))
         )
 
-        if transaction.journal_entry.user != request.user:
-            return set_message_and_redirect(
-                request,
-                "f|You don't have access to delete this transaction.",
-                reverse(
-                    "blackbook:accounts", kwargs={"account_type": transaction.account.account_type.slug, "account_name": transacion.account.slug}
-                ),
-            )
+        # if transaction.journal_entry.user != request.user:
+        #     return set_message_and_redirect(
+        #         request,
+        #         "f|You don't have access to delete this transaction.",
+        #         reverse(
+        #             "blackbook:accounts", kwargs={"account_type": transaction.account.account_type.slug, "account_name": transacion.account.slug}
+        #         ),
+        #     )
 
         transaction.journal_entry.delete()
         return set_message_and_redirect(
@@ -207,8 +207,8 @@ def journal_entry_delete(request):
     if request.method == "POST":
         journal_entry = TransactionJournalEntry.objects.get(uuid=request.POST.get("journal_entry_uuid"))
 
-        if journal_entry.user != request.user:
-            return set_message_and_redirect(request, "f|You don't have access to delete this transaction.", reverse("blackbook:accounts"))
+        # if journal_entry.user != request.user:
+        #     return set_message_and_redirect(request, "f|You don't have access to delete this transaction.", reverse("blackbook:accounts"))
 
         journal_entry.delete()
         return set_message_and_redirect(
