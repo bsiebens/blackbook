@@ -63,6 +63,7 @@ def transactions(request):
         journal_entries.filter(date__range=date_range)
         .select_related("budget__budget", "category", "to_account", "from_account")
         .prefetch_related("transactions")
+        .order_by("-date", "-created")
     )
 
     charts = {
@@ -198,7 +199,7 @@ def add_edit(request, transaction_uuid=None):
 
             if return_url is None:
                 return_url = reverse(
-                    "blackbook:accounts", kwargs={"account_type": transaction.account.account_type.slug, "account_name": transaction.account.slug}
+                    "blackbook:accounts", kwargs={"account_type": transaction.account.account_type.category, "account_name": transaction.account.slug}
                 )
 
             return set_message_and_redirect(
@@ -232,7 +233,7 @@ def add_edit(request, transaction_uuid=None):
                     else transaction.to_account
                 )
 
-                return_url = reverse("blackbook:accounts", kwargs={"account_type": account.account_type.slug, "account_name": account.slug})
+                return_url = reverse("blackbook:accounts", kwargs={"account_type": account.account_type.category, "account_name": account.slug})
 
             return set_message_and_redirect(
                 request,
@@ -254,14 +255,18 @@ def delete(request):
         return set_message_and_redirect(
             request,
             's|Transaction "{transaction.journal_entry.description}" was succesfully deleted.'.format(transaction=transaction),
-            reverse("blackbook:accounts", kwargs={"account_type": transaction.account.account_type.slug, "account_name": transaction.account.slug}),
+            reverse(
+                "blackbook:accounts", kwargs={"account_type": transaction.account.account_type.category, "account_name": transaction.account.slug}
+            ),
         )
 
     else:
         return set_message_and_redirect(
             request,
             "w|You are not allowed to access this page like this.",
-            reverse("blackbook:accounts", kwargs={"account_type": transaction.account.account_type.slug, "account_name": transaction.account.slug}),
+            reverse(
+                "blackbook:accounts", kwargs={"account_type": transaction.account.account_type.category, "account_name": transaction.account.slug}
+            ),
         )
 
 

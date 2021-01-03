@@ -33,7 +33,6 @@ class Budget(models.Model):
     amount = MoneyField(max_digits=15, decimal_places=2, default_currency=get_default_currency(), default=0)
     auto_budget = models.CharField("auto-budget", max_length=30, choices=AutoBudget.choices, default=AutoBudget.NO)
     auto_budget_period = models.CharField("auto-budget period", max_length=30, choices=Period.choices, default=Period.WEEK, blank=True, null=True)
-    # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="budgets")
     uuid = models.UUIDField("UUID", default=uuid.uuid4, editable=False, db_index=True, unique=True)
 
     created = models.DateTimeField(auto_now_add=True)

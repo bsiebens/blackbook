@@ -128,7 +128,9 @@ class TransactionForm(forms.Form):
         self.fields["amount"].initial = ["0", get_default_currency(user=user)]
 
         self.fields["transaction_type"].choices = [
-            (k, v) for k, v in TransactionJournalEntry.TransactionType.choices if k != TransactionJournalEntry.TransactionType.START
+            (k, v)
+            for k, v in TransactionJournalEntry.TransactionType.choices
+            if k != TransactionJournalEntry.TransactionType.START and k != TransactionJournalEntry.TransactionType.RECONCILIATION
         ]
 
     def clean(self):

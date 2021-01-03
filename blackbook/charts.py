@@ -102,7 +102,11 @@ class TransactionChart(Chart):
         account_names = {}
 
         if self.income:
-            self.data = [item for item in self.data if not item["negative"]]
+            self.data = [
+                item
+                for item in self.data
+                if not item["negative"] and item["journal_entry__transaction_type"] != TransactionJournalEntry.TransactionType.TRANSFER
+            ]
         else:
             self.data = [item for item in self.data if item["negative"]]
 

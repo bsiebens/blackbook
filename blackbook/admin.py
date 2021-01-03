@@ -23,7 +23,7 @@ class TransactionInline(admin.TabularInline):
 @admin.register(models.AccountType)
 class AccountTypeAdmin(admin.ModelAdmin):
     ordering = ["name"]
-    list_display = ["name", "icon", "slug", "created", "modified"]
+    list_display = ["name", "icon", "slug", "category", "created", "modified"]
     search_fields = ["name", "slug"]
     readonly_fields = ["slug"]
 

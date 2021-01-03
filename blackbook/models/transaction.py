@@ -11,7 +11,7 @@ from model_utils import FieldTracker
 from .base import get_default_currency
 from .category import Category
 from .budget import BudgetPeriod
-from .account import Account
+from .account import Account, AccountType
 
 import uuid
 
@@ -76,6 +76,24 @@ class TransactionJournalEntry(models.Model):
             self.transactions.create(account=from_account, amount=self.amount, negative=True)
 
     @classmethod
+    def verify_transaction_type(cls, transaction_type, to_account=None, from_account=None):
+        owned_account_types = AccountType.objects.filter(
+            category__in=[AccountType.AccountTypeCategory.ASSETS, AccountType.AccountTypeCategory.LIABILITIES]
+        )
+
+        if to_account is not None and from_account is not None:
+            if to_account.account_type in owned_account_types and from_account.account_type in owned_account_types:
+                return cls.TransactionType.TRANSFER
+
+        if to_account is not None and to_account.account_type in owned_account_types:
+            return cls.TransactionType.DEPOSIT
+
+        if from_account is not None and from_account.account_type in owned_account_types:
+            return cls.TransactionType.WITHDRAWAL
+
+        return transaction_type
+
+    @classmethod
     def create_transaction(
         cls,
         amount,
@@ -88,6 +106,8 @@ class TransactionJournalEntry(models.Model):
         from_account=None,
         to_account=None,
     ):
+        transaction_type = cls.verify_transaction_type(transaction_type, to_account, from_account)
+
         journal_entry = cls.objects.create(
             date=date, description=description, transaction_type=transaction_type, amount=amount, category=category, budget=budget
         )
@@ -107,6 +127,8 @@ class TransactionJournalEntry(models.Model):
         self.date = date
         self.budget = budget
         self.category = category
+
+        self.transaction_type = self.verify_transaction_type(self.transaction_type, to_account, from_account)
 
         if (
             self.tracker.has_changed("amount")

@@ -52,21 +52,21 @@ class BudgetTest(TestCase):
         cls.user = get_user_model().objects.create_user("Test User", "test@siebens.org", "ThisIsATestUser88")
 
     def test_period_created(self):
-        budget = models.Budget.objects.create(name="Test Budget", amount=Money(20, "EUR"), user=self.user)
+        budget = models.Budget.objects.create(name="Test Budget", amount=Money(20, "EUR"))
         self.assertIsInstance(budget.current_period, models.BudgetPeriod)
         self.assertEqual(budget.current_period.end_date, date(9999, 12, 31))
-        self.assertEqual(budget.current_period.start_date, timezone.now().date())
+        self.assertEqual(budget.current_period.start_date, timezone.localdate())
         self.assertEqual(budget.current_period.amount, budget.amount)
 
         budget = models.Budget.objects.create(
-            name="Test Budget With Period", auto_budget=models.Budget.AutoBudget.ADD, auto_budget_period=models.Budget.Period.WEEK, user=self.user
+            name="Test Budget With Period", auto_budget=models.Budget.AutoBudget.ADD, auto_budget_period=models.Budget.Period.WEEK
         )
         self.assertIsInstance(budget.current_period, models.BudgetPeriod)
         self.assertEqual(budget.current_period.amount, budget.amount)
 
     def test_period_after_save(self):
         budget = models.Budget.objects.create(
-            name="Test Budget With Period", auto_budget=models.Budget.AutoBudget.ADD, auto_budget_period=models.Budget.Period.WEEK, user=self.user
+            name="Test Budget With Period", auto_budget=models.Budget.AutoBudget.ADD, auto_budget_period=models.Budget.Period.WEEK
         )
 
         pre_timestamp = budget.current_period.modified
@@ -76,7 +76,7 @@ class BudgetTest(TestCase):
 
     def test_period_change_amount(self):
         budget = models.Budget.objects.create(
-            name="Test Budget With Period", auto_budget=models.Budget.AutoBudget.ADD, auto_budget_period=models.Budget.Period.WEEK, user=self.user
+            name="Test Budget With Period", auto_budget=models.Budget.AutoBudget.ADD, auto_budget_period=models.Budget.Period.WEEK
         )
 
         budget.amount = Money(100, "EUR")
@@ -85,12 +85,14 @@ class BudgetTest(TestCase):
 
     def test_period_change_period(self):
         budget = models.Budget.objects.create(
-            name="Test Budget With Period", auto_budget=models.Budget.AutoBudget.ADD, auto_budget_period=models.Budget.Period.WEEK, user=self.user
+            name="Test Budget With Period", auto_budget=models.Budget.AutoBudget.ADD, auto_budget_period=models.Budget.Period.WEEK
         )
 
         period = calculate_period(periodicity=models.Budget.Period.MONTH)
         budget.auto_budget_period = models.Budget.Period.MONTH
         budget.save()
+
+        del budget.current_period
 
         self.assertEqual(budget.current_period.start_date, period["start_date"])
         self.assertEqual(budget.current_period.end_date, period["end_date"])
@@ -108,27 +110,21 @@ class AccountBudgetCategoryTransactionTest(TestCase):
 
         OpenExchangeRatesBackend().update_rates()
 
-        cls.account = models.Account.objects.create(
-            name="Account 1", account_type=models.AccountType.objects.all().first(), currency="EUR", user=cls.user
-        )
+        cls.account = models.Account.objects.create(name="Account 1", account_type=models.AccountType.objects.all().first(), currency="EUR")
         cls.budget_EUR = models.Budget.objects.create(
             name="Budget 1",
             amount=Money(200, "EUR"),
             auto_budget=models.Budget.AutoBudget.ADD,
             auto_budget_period=models.Budget.Period.WEEK,
-            user=cls.user,
         )
         cls.budget_DKK = models.Budget.objects.create(
             name="Budget 2",
             amount=Money(2000, "DKK"),
             auto_budget=models.Budget.AutoBudget.ADD,
             auto_budget_period=models.Budget.Period.WEEK,
-            user=cls.user,
         )
-        cls.budget_no = models.Budget.objects.create(
-            name="Budget 3", amount=Money(200, "EUR"), auto_budget=models.Budget.AutoBudget.NO, user=cls.user
-        )
-        cls.category = models.Category.objects.create(name="Category 1", user=cls.user)
+        cls.budget_no = models.Budget.objects.create(name="Budget 3", amount=Money(200, "EUR"), auto_budget=models.Budget.AutoBudget.NO)
+        cls.category = models.Category.objects.create(name="Category 1")
 
         models.TransactionJournalEntry.create_transaction(
             amount=Money(10, "EUR"),
@@ -137,7 +133,6 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             category=cls.category,
             budget=cls.budget_EUR.current_period,
             from_account=cls.account,
-            user=cls.user,
         )
         models.TransactionJournalEntry.create_transaction(
             amount=Money(10, "EUR"),
@@ -146,7 +141,6 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             category=cls.category,
             budget=cls.budget_DKK.current_period,
             from_account=cls.account,
-            user=cls.user,
         )
         models.TransactionJournalEntry.create_transaction(
             amount=Money(10, "EUR"),
@@ -155,7 +149,6 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             category=cls.category,
             budget=cls.budget_EUR.current_period,
             from_account=cls.account,
-            user=cls.user,
         )
         models.TransactionJournalEntry.create_transaction(
             amount=Money(15, "EUR"),
@@ -163,7 +156,6 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             transaction_type=models.TransactionJournalEntry.TransactionType.DEPOSIT,
             budget=cls.budget_EUR.current_period,
             to_account=cls.account,
-            user=cls.user,
         )
         models.TransactionJournalEntry.create_transaction(
             amount=Money(50, "EUR"),
@@ -172,7 +164,6 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             date=timezone.now() - timedelta(days=10),
             budget=cls.budget_EUR.get_period_for_date(timezone.now() - timedelta(days=10)),
             from_account=cls.account,
-            user=cls.user,
         )
         cls.tag_transaction_1 = models.TransactionJournalEntry.create_transaction(
             amount=Money(50, "EUR"),
@@ -181,7 +172,6 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             budget=cls.budget_no.current_period,
             from_account=cls.account,
             tags="tag 1, tag 2",
-            user=cls.user,
         )
         cls.tag_transaction_2 = models.TransactionJournalEntry.create_transaction(
             amount=Money(50, "EUR"),
@@ -190,7 +180,6 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             budget=cls.budget_no.current_period,
             to_account=cls.account,
             tags=["tag 1", "tag 2"],
-            user=cls.user,
         )
 
     def category_test_total(self):
@@ -232,12 +221,8 @@ class AccountBudgetCategoryTransactionTest(TestCase):
         self.assertEqual(self.account.journal_entries_for_period(period="week").count(), 6)
 
     def test_to_and_from_account(self):
-        account_1 = models.Account.objects.create(
-            name="Account 1", account_type=models.AccountType.objects.all().first(), currency="EUR", user=self.user
-        )
-        account_2 = models.Account.objects.create(
-            name="Account 2", account_type=models.AccountType.objects.all().first(), currency="EUR", user=self.user
-        )
+        account_1 = models.Account.objects.create(name="Account 1", account_type=models.AccountType.objects.all().first(), currency="EUR")
+        account_2 = models.Account.objects.create(name="Account 2", account_type=models.AccountType.objects.all().first(), currency="EUR")
 
         transaction_1 = models.TransactionJournalEntry.create_transaction(
             amount=Money(10, "EUR"),
@@ -245,7 +230,6 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             transaction_type=models.TransactionJournalEntry.TransactionType.WITHDRAWAL,
             from_account=account_1,
             to_account=account_2,
-            user=self.user,
         )
         transaction_2 = models.TransactionJournalEntry.create_transaction(
             amount=Money(10, "EUR"),
@@ -253,7 +237,6 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             transaction_type=models.TransactionJournalEntry.TransactionType.DEPOSIT,
             to_account=account_2,
             from_account=account_1,
-            user=self.user,
         )
         transaction_3 = models.TransactionJournalEntry.create_transaction(
             amount=Money(10, "EUR"),
@@ -261,7 +244,6 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             transaction_type=models.TransactionJournalEntry.TransactionType.TRANSFER,
             from_account=account_1,
             to_account=account_2,
-            user=self.user,
         )
 
         self.assertEqual(transaction_1.from_account, account_1)
@@ -276,7 +258,6 @@ class AccountBudgetCategoryTransactionTest(TestCase):
                 amount=Money(10, "EUR"),
                 description="Transaction 1",
                 transaction_type=models.TransactionJournalEntry.TransactionType.WITHDRAWAL,
-                user=self.user,
             )
 
         with self.assertRaisesMessage(AttributeError, "to_account should be specified for transaction type deposit"):
@@ -284,23 +265,17 @@ class AccountBudgetCategoryTransactionTest(TestCase):
                 amount=Money(10, "EUR"),
                 description="Transaction 1",
                 transaction_type=models.TransactionJournalEntry.TransactionType.DEPOSIT,
-                user=self.user,
             )
         with self.assertRaisesMessage(AttributeError, "to_account and from_account should be specified for transaction type transfer"):
             models.TransactionJournalEntry.create_transaction(
                 amount=Money(10, "EUR"),
                 description="Transaction 1",
                 transaction_type=models.TransactionJournalEntry.TransactionType.TRANSFER,
-                user=self.user,
             )
 
     def test_update_transaction(self):
-        account_1 = models.Account.objects.create(
-            name="Account 1", account_type=models.AccountType.objects.all().first(), currency="EUR", user=self.user
-        )
-        account_2 = models.Account.objects.create(
-            name="Account 2", account_type=models.AccountType.objects.all().first(), currency="EUR", user=self.user
-        )
+        account_1 = models.Account.objects.create(name="Account 1", account_type=models.AccountType.objects.all().first(), currency="EUR")
+        account_2 = models.Account.objects.create(name="Account 2", account_type=models.AccountType.objects.all().first(), currency="EUR")
 
         transaction = models.TransactionJournalEntry.create_transaction(
             amount=Money(10, "EUR"),
@@ -308,7 +283,6 @@ class AccountBudgetCategoryTransactionTest(TestCase):
             transaction_type=models.TransactionJournalEntry.TransactionType.WITHDRAWAL,
             from_account=account_1,
             to_account=account_2,
-            user=self.user,
         )
 
         modified = transaction.modified
@@ -346,16 +320,13 @@ class AccountBudgetCategoryTransactionTest(TestCase):
         self.assertEqual(transaction.from_account, account_1)
 
     def test_transaction_different_currency(self):
-        account = models.Account.objects.create(
-            name="Account 1", account_type=models.AccountType.objects.all().first(), currency="EUR", user=self.user
-        )
+        account = models.Account.objects.create(name="Account 1", account_type=models.AccountType.objects.all().first(), currency="EUR")
 
         transaction = models.TransactionJournalEntry.create_transaction(
             amount=Money(10, "DKK"),
             description="Transaction 1",
             transaction_type=models.TransactionJournalEntry.TransactionType.WITHDRAWAL,
             from_account=account,
-            user=self.user,
         )
 
         self.assertEqual(str(transaction.transactions.get(negative=True).amount.currency), "EUR")

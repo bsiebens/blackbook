@@ -9,134 +9,148 @@
 
 {% block breadcrumbs %}
     <li>Accounts</li>
-    <li>{{ account_type.name }}s</li>
+    <li>{{ account_type|capfirst }}</li>
 {% endblock breadcrumbs %}
 
 {% block content %}
-    <div class="card">
-        <header class="card-header">
-            <p class="card-header-title">
-                <span class="icon">
-                    <i class="fas {{ account_type.icon }}"></i>
-                </span>
-                <span>{{ account_type.name }}s</span>
-            </p>
-        </header>
-        <div class="notification is-card-toolbar">
-            <div class="level">
-                <div class="level-left"></div>
-                <div class="level-right">
-                    <div class="level-item">
-                        <a class="button is-primary" href="{% url "blackbook:transactions_add" %}">
-                            Add transaction
-                        </a>
-                    </div>
-                    <div class="level-item">
-                        <a class="button is-primary" href="{% url "blackbook:accounts_add" %}">
-                            Add account
-                        </a>
-                    </div>
-                </div>
+    <div class="level">
+        <div class="level-left"></div>
+        <div class="level-right">
+            <div class="level-item">
+                <a class="button is-primary" href="{% url "blackbook:transactions_add" %}">
+                    Add transaction
+                </a>
             </div>
-        </div>
-        <div class="card-content">
-            <div class="b-table">
-                <div class="table-wrapper has-mobile-cards">
-                    <table class="table is-fullwidth is-striped is-hoverable is-fullwidth">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>Account name</th>
-                                <th>Currency</th>
-                                <th>IBAN</th>
-                                <th>Active?</th>
-                                <th>Include in net worth?</th>
-                                <th>Include on dashboard?</th>
-                                <th>Virtual balance</th>
-                                <th>Current balance</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for account in accounts %}
-                                <tr>
-                                    <td class="is-image-cell">
-                                        <div class="image">
-                                            <img src="https://avatars.dicebear.com/api/jdenticon/{{ account.slug }}.svg" class="is-rounded">
-                                        </div>
-                                    </td>
-                                    <td data-label="Account name">
-                                        <a href="{% url "blackbook:accounts" account_type.slug account.slug %}">
-                                            {{ account.name }}
-                                        </a>
-                                    </td>
-                                    <td data-label="Currency">{{ account.get_currency_display }}</td>
-                                    <td data-label="IBAN">{{ account.iban|iban|default:"-" }}</td>
-                                    <td data-label="Active?">
-                                        <span class="icon">
-                                            {% if account.active %}
-                                                <i class="fas fa-check"></i>
-                                            {% else %}
-                                                <i class="fas fa-times"></i>
-                                            {% endif %}
-                                        </span>
-                                    </td>
-                                    <td data-label="Include in net worth?">
-                                        <span class="icon">
-                                            {% if account.include_in_net_worth %}
-                                                <i class="fas fa-check"></i>
-                                            {% else %}
-                                                <i class="fas fa-times"></i>
-                                            {% endif %}
-                                        </span>
-                                    </td>
-                                     <td data-label="Include on dashboard?">
-                                        <span class="icon">
-                                            {% if account.include_on_dashboard %}
-                                                <i class="fas fa-check"></i>
-                                            {% else %}
-                                                <i class="fas fa-times"></i>
-                                            {% endif %}
-                                        </span>
-                                    </td>
-                                    <td data-label="Virtual balance">{{ account.virtual_balance }}</td>
-                                    <td data-label="Current balance">
-                                        <span class="tag {% if account.total > 0 %}is-success{% elif account.total < 0 %}is-danger{% else %}is-light{% endif %}">
-                                            <span class="icon">
-                                                <i class="fas fa-coins"></i>
-                                            </span>
-                                            <span>
-                                                {% if account.total > 0 %}+{% endif %}{% money_localize account.total account.currency %}
-                                            </span>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="buttons is-right">
-                                            <a class="button is-info is-small" href="{% url "blackbook:accounts" account_type.slug account.slug %}" type="button">
-                                                <span class="icon">
-                                                    <i class="fas fa-eye"></i>
-                                                </span>
-                                            </a>
-                                            <a class="button is-primary is-small" href="{% url "blackbook:accounts_edit" account.slug %}" type="button">
-                                                <span class="icon">
-                                                    <i class="fas fa-edit"></i>
-                                                </span>
-                                            </a>
-                                            <a class="button is-danger is-small jb-modal" data-target="modal-account-delete-{{ account.uuid }}" type="button">
-                                                <span class="icon">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </span>
-                                            </a>
-                                        </div>                                            
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+            <div class="level-item">
+                <a class="button is-primary" href="{% url "blackbook:accounts_add" %}">
+                    Add account
+                </a>
             </div>
         </div>
     </div>
+
+    {% for account_type in account_types %}    
+        <div class="card">
+            <header class="card-header">
+                <p class="card-header-title">
+                    <span class="icon">
+                        <i class="fas {{ account_type.icon }}"></i>
+                    </span>
+                    <span>{{ account_type.name|capfirst }}s</span>
+                </p>
+            </header>
+            <div class="card-content">
+                <div class="b-table">
+                    <div class="table-wrapper has-mobile-cards">
+                        <table class="table is-fullwidth is-striped is-hoverable is-fullwidth">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Account name</th>
+                                    <th>Currency</th>
+                                    <th>IBAN</th>
+                                    <th>Active?</th>
+                                    <th>Include in net worth?</th>
+                                    <th>Include on dashboard?</th>
+                                    <th>Virtual balance</th>
+                                    <th>Current balance</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tfoot class="is-hidden-mobile">
+                                <tr>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th>
+                                        <span class="{% if account_type.total.amount > 0 %}has-text-success{% elif account_type.total.amount < 0 %}has-text-danger{% endif %}">
+                                            {% if account_type.total.amount > 0 %}+{% endif %}{% money_localize account_type.total %}
+                                        </span>
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                            <tbody>
+                                {% for account in account_type.accounts.all %}
+                                    <tr>
+                                        <td class="is-image-cell">
+                                            <div class="image">
+                                                <img src="https://avatars.dicebear.com/api/jdenticon/{{ account.slug }}.svg" class="is-rounded">
+                                            </div>
+                                        </td>
+                                        <td data-label="Account name">
+                                            <a href="{% url "blackbook:accounts" account_type account.slug %}">
+                                                {{ account.name }}
+                                            </a>
+                                        </td>
+                                        <td data-label="Currency">{{ account.get_currency_display }}</td>
+                                        <td data-label="IBAN">{{ account.iban|iban|default:"-" }}</td>
+                                        <td data-label="Active?">
+                                            <span class="icon">
+                                                {% if account.active %}
+                                                    <i class="fas fa-check"></i>
+                                                {% else %}
+                                                    <i class="fas fa-times"></i>
+                                                {% endif %}
+                                            </span>
+                                        </td>
+                                        <td data-label="Include in net worth?">
+                                            <span class="icon">
+                                                {% if account.include_in_net_worth %}
+                                                    <i class="fas fa-check"></i>
+                                                {% else %}
+                                                    <i class="fas fa-times"></i>
+                                                {% endif %}
+                                            </span>
+                                        </td>
+                                        <td data-label="Include on dashboard?">
+                                            <span class="icon">
+                                                {% if account.include_on_dashboard %}
+                                                    <i class="fas fa-check"></i>
+                                                {% else %}
+                                                    <i class="fas fa-times"></i>
+                                                {% endif %}
+                                            </span>
+                                        </td>
+                                        <td data-label="Virtual balance">{{ account.virtual_balance }}</td>
+                                        <td data-label="Current balance">
+                                            <span class="{% if account.total > 0 %}has-text-success{% elif account.total < 0 %}has-text-danger{% endif %}">
+                                                {% if account.total > 0 %}+{% endif %}{% money_localize account.total account.currency %}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="buttons is-right">
+                                                <a class="button is-info is-small" href="{% url "blackbook:accounts" account_type account.slug %}" type="button">
+                                                    <span class="icon">
+                                                        <i class="fas fa-eye"></i>
+                                                    </span>
+                                                </a>
+                                                <a class="button is-primary is-small" href="{% url "blackbook:accounts_edit" account.slug %}" type="button">
+                                                    <span class="icon">
+                                                        <i class="fas fa-edit"></i>
+                                                    </span>
+                                                </a>
+                                                <a class="button is-danger is-small jb-modal" data-target="modal-account-delete-{{ account.uuid }}" type="button">
+                                                    <span class="icon">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </span>
+                                                </a>
+                                            </div>                                            
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
 {% endblock content %}
 
 {% block modals %}
