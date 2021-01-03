@@ -63,6 +63,7 @@ def create_budget_period(sender, instance, created, **kwargs):
             else:
                 current_period.end_date = current_date - timedelta(days=1)
                 current_period.save()
+                instance.periods.create(start_date=period["start_date"], end_date=period["end_date"], amount=instance.amount)
 
         if instance.current_period is None:
             instance.periods.create(start_date=period["start_date"], end_date=period["end_date"], amount=instance.amount)

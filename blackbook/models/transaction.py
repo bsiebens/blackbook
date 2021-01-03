@@ -83,13 +83,13 @@ class TransactionJournalEntry(models.Model):
 
         if to_account is not None and from_account is not None:
             if to_account.account_type in owned_account_types and from_account.account_type in owned_account_types:
-                return self.TransactionType.TRANSFER
+                return cls.TransactionType.TRANSFER
 
         if to_account is not None and to_account.account_type in owned_account_types:
-            return self.TransactionType.DEPOSIT
+            return cls.TransactionType.DEPOSIT
 
         if from_account is not None and from_account.account_type in owned_account_types:
-            return self.TransactionType.WITHDRAWAL
+            return cls.TransactionType.WITHDRAWAL
 
         return transaction_type
 
@@ -106,7 +106,7 @@ class TransactionJournalEntry(models.Model):
         from_account=None,
         to_account=None,
     ):
-        transaction_type = cls.verify_transaction_type(transaction_type, from_account, to_account)
+        transaction_type = cls.verify_transaction_type(transaction_type, to_account, from_account)
 
         journal_entry = cls.objects.create(
             date=date, description=description, transaction_type=transaction_type, amount=amount, category=category, budget=budget
@@ -127,6 +127,8 @@ class TransactionJournalEntry(models.Model):
         self.date = date
         self.budget = budget
         self.category = category
+
+        self.transaction_type = self.verify_transaction_type(self.transaction_type, to_account, from_account)
 
         if (
             self.tracker.has_changed("amount")
