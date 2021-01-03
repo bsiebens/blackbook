@@ -16,9 +16,16 @@ import uuid
 
 
 class AccountType(models.Model):
+    class AccountTypeCategory(models.TextChoices):
+        ASSETS = "assets", "Assets"
+        LIABILITIES = "liabilities", "Liabilities"
+        EXPENSES = "expenses", "Expenses"
+        INCOME = "income", "Income"
+
     name = models.CharField(max_length=250)
     icon = models.CharField(max_length=250, default="fa-coins")
     slug = models.SlugField()
+    category = models.CharField(max_length=250, choices=AccountTypeCategory.choices, default=AccountTypeCategory.ASSETS)
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)

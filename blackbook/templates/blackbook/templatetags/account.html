@@ -2,11 +2,11 @@
 
 {% for account_type in account_types %}
     <li>
-        <a href="{% url "blackbook:accounts" account_type.slug %}" class="has-icon {% is_active account_type.slug %}">
+        <a href="{% url "blackbook:accounts" account_type.category %}" class="has-icon {% is_active account_type.category %}">
             <span class="icon">
-                <i class="fas {{ account_type.icon }}"></i>
+                <i class="fas {% if account_type.category == "assets" %}fa-landmark{% elif account_type.category == "liabilities" %}fa-invoice-dollar{% elif account_type.category == "expenses" %}fa-coins{% else %}fa-donate{% endif %}"></i>
             </span>
-            <span class="menu-item-label">{{ account_type.name }}{{ account_type.count|pluralize }}</span>
+            <span class="menu-item-label">{{ account_type.category|capfirst }}</span>
         </a>
     </li>
 {% endfor %}

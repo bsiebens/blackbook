@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.db.models import Sum, Prefetch
+from django.db.models import Sum, Prefetch, Count
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
@@ -38,11 +38,6 @@ def accounts(request, account_type, account_name=None):
         )
 
         account.total = Money(account.total - account.virtual_balance, account.currency)
-
-        # if account.user != request.user:
-        #     return set_message_and_redirect(
-        #         request, "f|You don't have access to this account.", reverse("blackbook:accounts", kwargs={"account_type": account_type})
-        #     )
 
         transactions = (
             Transaction.objects.filter(account=account)
@@ -101,13 +96,19 @@ def accounts(request, account_type, account_name=None):
         )
 
     else:
-        account_type = get_object_or_404(AccountType, slug=account_type)
-        accounts = Account.objects.filter(account_type=account_type).annotate(total=Coalesce(Sum("transactions__amount"), 0))
+        account_types = (
+            AccountType.objects.filter(category=account_type)
+            .annotate(count=Count("accounts"))
+            .filter(count__gt=0)
+            .prefetch_related(Prefetch("accounts", Account.objects.annotate(total=Coalesce(Sum("transactions__amount"), 0))))
+        )
+        accounts = Account.objects.filter(account_type__category=account_type).annotate(total=Coalesce(Sum("transactions__amount"), 0))
 
-        for account in accounts:
-            account.total -= account.virtual_balance
+        for account_type in account_types:
+            for account in account_type.accounts.all():
+                account.total -= account.virtual_balance
 
-        return render(request, "blackbook/accounts/list.html", {"account_type": account_type, "accounts": accounts})
+        return render(request, "blackbook/accounts/list.html", {"account_type": account_type, "account_types": account_types, "accounts": accounts})
 
 
 @login_required
@@ -117,16 +118,10 @@ def add_edit(request, account_name=None):
     if account_name is not None:
         account = get_object_or_404(Account, slug=account_name)
 
-        # if account.user != request.user:
-        #     return set_message_and_redirect(
-        #         request, "f|You don't have access to this account.", reverse("blackbook:accounts", kwargs={"account_type": account_type})
-        #     )
-
     account_form = AccountForm(request.POST or None, instance=account, initial={"starting_balance": account.starting_balance.amount})
 
     if request.POST and account_form.is_valid():
         account = account_form.save(commit=False)
-        # account.user = request.user
         account.save()
 
         if account_form.cleaned_data["starting_balance"] > 0:
@@ -157,7 +152,7 @@ def add_edit(request, account_name=None):
         return set_message_and_redirect(
             request,
             's|Account "{account.name}" was saved succesfully.'.format(account=account),
-            reverse("blackbook:accounts", kwargs={"account_type": account.account_type.slug, "account_name": account.slug}),
+            reverse("blackbook:accounts", kwargs={"account_type": account.account_type.category, "account_name": account.slug}),
         )
 
     return render(request, "blackbook/accounts/form.html", {"account_form": account_form, "account": account})
@@ -168,13 +163,6 @@ def delete(request):
     if request.method == "POST":
         account = Account.objects.select_related("account_type").get(uuid=request.POST.get("account_uuid"))
 
-        # if account.user != request.user:
-        #     return set_message_and_redirect(
-        #         request,
-        #         "f|You don't have access to delete this account.",
-        #         reverse("blackbook:accounts", kwargs={"account_type", account.account_type.slug}),
-        #     )
-
         account.delete()
 
         # Delete all "hanging" journal entries (no transactions linked)
@@ -184,7 +172,7 @@ def delete(request):
         return set_message_and_redirect(
             request,
             's|Account "{account.name}" was succesfully deleted.'.format(account=account),
-            reverse("blackbook:accounts", kwargs={"account_type": account.account_type.slug}),
+            reverse("blackbook:accounts", kwargs={"account_type": account.account_type.category}),
         )
 
     else:

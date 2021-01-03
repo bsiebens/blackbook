@@ -185,7 +185,7 @@
                                 <label class="label">From account</label>
                                 <div class="control is-clearfix">
                                     {% if transaction.id is not None and transaction.journal_entry.from_account is not None %}
-                                        <a href="{% url "blackbook:accounts" transaction.journal_entry.from_account.account_type.slug transaction.journal_entry.from_account.slug %}">
+                                        <a href="{% url "blackbook:accounts" transaction.journal_entry.from_account.account_type.category transaction.journal_entry.from_account.slug %}">
                                             <span class="tag is-dark">
                                                 <span class="icon">
                                                     <i class="fas {{ transaction.journal_entry.from_account.account_type.icon }}"></i>
@@ -209,7 +209,7 @@
                                 <label class="label">To account</label>
                                 <div class="control is-clearfix">
                                     {% if transaction.id is not None and transaction.journal_entry.to_account is not None %}
-                                        <a href="{% url "blackbook:accounts" transaction.journal_entry.to_account.account_type.slug transaction.journal_entry.to_account.slug %}">
+                                        <a href="{% url "blackbook:accounts" transaction.journal_entry.to_account.account_type.category transaction.journal_entry.to_account.slug %}">
                                             <span class="tag is-dark">
                                                 <span class="icon">
                                                     <i class="fas {{ transaction.journal_entry.to_account.account_type.icon }}"></i>

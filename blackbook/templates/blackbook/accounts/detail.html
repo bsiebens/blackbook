@@ -357,11 +357,11 @@
                                     </td>
                                     <td data-label="Related account">
                                         {% if not transaction.negative and transaction.journal_entry.from_account is not None %}
-                                            From: <a href="{% url "blackbook:accounts" transaction.journal_entry.from_account.account_type.slug transaction.journal_entry.from_account.slug %}">
+                                            From: <a href="{% url "blackbook:accounts" transaction.journal_entry.from_account.account_type.category transaction.journal_entry.from_account.slug %}">
                                                 {{ transaction.journal_entry.from_account.name }}
                                             </a>
                                         {% elif transaction.negative and transaction.journal_entry.to_account is not None %}
-                                            To: <a href="{% url "blackbook:accounts" transaction.journal_entry.to_account.account_type.slug transaction.journal_entry.to_account.slug %}">
+                                            To: <a href="{% url "blackbook:accounts" transaction.journal_entry.to_account.account_type.category transaction.journal_entry.to_account.slug %}">
                                                 {{ transaction.journal_entry.to_account.name }}
                                             </a>
                                         {% else %}

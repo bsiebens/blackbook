@@ -190,8 +190,8 @@
                                     </td>
                                     <td data-label="Transaction">{{ entry.description }}</td>
                                     <td data-label="Amount">
-                                        <span class="has-text-{% if entry.transaction_type == "withdrawal" %}danger{% else %}success{% endif %}">
-                                            {% if entry.transaction_type == "withdrawal" %}-{% else %}+{% endif %}{% money_localize entry.amount %}
+                                        <span class="{% if entry.transaction_type != "transfer" %}has-text-{% if entry.transaction_type == "withdrawal" %}danger{% else %}success{% endif %}{% endif %}">
+                                            {% if entry.transaction_type != "transfer" %}{% if entry.transaction_type == "withdrawal" %}-{% else %}+{% endif %}{% endif %}{% money_localize entry.amount %}
                                         </span>
                                     </td>
                                     <td data-label="Date">{{ entry.date|date:"d b Y" }}</td>
