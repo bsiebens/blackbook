@@ -51,22 +51,20 @@ class AccountAdmin(admin.ModelAdmin):
         "created",
         "modified",
     ]
-    list_filter = ["account_type", "user", "active", "include_in_net_worth", "include_on_dashboard", "currency"]
+    list_filter = ["account_type", "active", "include_in_net_worth", "include_on_dashboard", "currency"]
     search_fields = ["name", "iban", "uuid"]
     fieldsets = (
-        ("General information", {"fields": ("name", "slug", "user", "account_type", "iban", "currency")}),
+        ("General information", {"fields": ("name", "slug", "account_type", "iban", "currency")}),
         ("Options", {"fields": ("active", "include_in_net_worth", "include_on_dashboard", "virtual_balance", "uuid")}),
     )
-    raw_id_fields = ["user"]
     readonly_fields = ["slug", "uuid"]
 
 
 @admin.register(models.Category)
 class CategoryAdmin(admin.ModelAdmin):
     ordering = ["name"]
-    list_display = ["name", "user", "uuid", "created", "modified"]
+    list_display = ["name", "uuid", "created", "modified"]
     search_fields = ["name"]
-    raw_id_fields = ["user"]
     fieldsets = (
         ("General information", {"fields": ("name", "user")}),
         ("Options", {"fields": ("uuid",)}),
@@ -77,15 +75,14 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(models.Budget)
 class BudgetAdmin(admin.ModelAdmin):
     ordering = ["name"]
-    list_display = ["name", "user", "active", "amount", "auto_budget", "auto_budget_period", "uuid", "created", "modified"]
+    list_display = ["name", "active", "amount", "auto_budget", "auto_budget_period", "uuid", "created", "modified"]
     search_fields = ["name", "uuid"]
     list_filter = ["active", "auto_budget", "auto_budget_period"]
     fieldsets = (
-        ("General information", {"fields": ("name", "user")}),
+        ("General information", {"fields": ("name",)}),
         ("Options", {"fields": ("active", "amount", "auto_budget", "auto_budget_period", "uuid")}),
     )
     inlines = [BudgetPeriodInline]
-    raw_id_fields = ["user"]
     readonly_fields = ["uuid"]
 
 
@@ -100,7 +97,6 @@ class TransactionJournalEntryAdmin(admin.ModelAdmin):
     date_hierarchy = "date"
     list_display = [
         "description",
-        "user",
         "date",
         "transaction_type",
         "amount",
@@ -116,12 +112,12 @@ class TransactionJournalEntryAdmin(admin.ModelAdmin):
     list_filter = ["transaction_type", "category", "budget", TaggitListFilter]
     search_fields = ["description", "uuid"]
     fieldsets = (
-        ("General information", {"fields": ("description", "user", "date", "transaction_type", "amount", "from_account", "to_account")}),
+        ("General information", {"fields": ("description", "date", "transaction_type", "amount", "from_account", "to_account")}),
         ("Options", {"fields": ("budget", "category", "tags", "uuid")}),
     )
     readonly_fields = ["uuid", "from_account", "to_account"]
     inlines = [TransactionInline]
-    raw_id_fields = ["user", "from_account", "to_account"]
+    raw_id_fields = ["from_account", "to_account"]
 
 
 @admin.register(models.Transaction)

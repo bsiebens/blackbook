@@ -11,7 +11,7 @@ from ..utilities import set_message_and_redirect
 
 @login_required
 def tags(request):
-    transactions = TransactionJournalEntry.objects.filter(user=request.user)
+    transactions = TransactionJournalEntry.objects.all()
     tags = Tag.objects.filter(transactionjournalentry__in=transactions)
 
     forms = []

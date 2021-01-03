@@ -1,6 +1,7 @@
 {% extends 'blackbook/base.html' %}
 
 {% load djmoney %}
+{% load formtags %}
 
 {% block title %}
     Transactions
@@ -113,13 +114,39 @@
                 <span class="icon">
                     <i class="fas fa-exchange-alt"></i>
                 </span>
-                <span>Transactions - {{ period.start_date|date:"d b Y" }} until {{ period.end_date|date:"d b Y" }}</span>
+                <span>Transactions - {{ period.0|date:"d b Y" }} until {{ period.1|date:"d b Y" }}</span>
             </p>
         </header>
         <div class="notification is-card-toolbar">
             <div class="level">
                 <div class="level-left">
-                    <p>Filter form goes here</p>
+                    <div class="level-item is-hidden-mobile">
+                        <form method="{% url "blackbook:transactions" %}">
+                            {% csrf_token %}
+
+                            <div class="field is-horizontal">
+                                <div class="field-body">
+                                    <div class="field is-grouped is-grouped-right">
+                                        {% form_field filter_form.start_date "" "fa-calendar-alt" True %}
+                                        {% form_field filter_form.end_date "" "fa-calendar-alt" True %}
+                                        {% form_field filter_form.description "" "fa-search" True %}
+
+                                        {% form_field filter_form.account "" "fa-landmark" True %}
+                                        {% form_field filter_form.category "" "fa-hashtag" True %}
+                                        {% form_field filter_form.budget "" "fa-chart-pie" True %}
+
+                                        <div class="control">
+                                            <button class="button is-primary" type="submit">
+                                                <span class="icon">
+                                                    <i class="fas fa-filter"></i>
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
                 <div class="level-right">
                     <div class="level-item">
@@ -148,83 +175,78 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for transaction in transactions %}
+                            {% for entry in journal_entries %}
                                 <tr>
                                     <td>
                                         <span class="icon">
-                                            {% if transaction.journal_entry.transaction_type == "transfer" %}
+                                            {% if entry.transaction_type == "transfer" %}
                                                 <i class="fas fa-exchange-alt"></i>
-                                            {% elif transaction.journal_entry.transaction_type == "withdrawal" %}
+                                            {% elif entry.transaction_type == "withdrawal" %}
                                                 <i class="fas fa-long-arrow-alt-left"></i>
                                             {% else %}
                                                 <i class="fas fa-long-arrow-alt-right"></i>
                                             {% endif %}
                                         </span>
-                                        {% if transaction.reconciled %}
-                                            <span class="icon">
-                                                <i class="fas fa-check"></i>
-                                            </span>
-                                        {% endif %}
                                     </td>
-                                    <td data-label="Transaction">{{ transaction.journal_entry.description }}</td>
+                                    <td data-label="Transaction">{{ entry.description }}</td>
                                     <td data-label="Amount">
-                                        <span class="has-text-{% if transaction.negative %}danger{% else %}success{% endif %}">
-                                            {% if not transaction.negative %}+{% endif %}{% money_localize transaction.total transaction.amount_currency %}
+                                        <span class="has-text-{% if entry.transaction_type == "withdrawal" %}danger{% else %}success{% endif %}">
+                                            {% if entry.transaction_type == "withdrawal" %}-{% else %}+{% endif %}{% money_localize entry.amount %}
                                         </span>
                                     </td>
-                                    <td data-label="Date">{{ transaction.journal_entry.date|date:"d b Y" }}</td>
+                                    <td data-label="Date">{{ entry.date|date:"d b Y" }}</td>
                                     <td data-label="Category">
-                                        {% if transaction.journal_entry.category is not None %}
+                                        {% if entry.category is not None %}
                                             <span class="tag is-success">
                                                 <span class="icon">
                                                     <i class="fas fa-hashtag"></i>
                                                 </span>
-                                                <span>{{ transaction.journal_entry.category.name }}</span>
+                                                <span>{{ entry.category.name }}</span>
                                             </span>
                                         {% else %}
                                             -
                                         {% endif %}
                                     </td>
                                     <td data-label="Budget">
-                                        {% if transaction.journal_entry.budget is not None %}
+                                        {% if entry.budget is not None %}
                                             <span class="tag is-warning">
                                                 <span class="icon">
                                                     <i class="fas fa-chart-pie"></i>
                                                 </span>
-                                                <span>{{ transaction.journal_entry.budget.budget.name }}</span>
+                                                <span>{{ entry.budget.budget.name }}</span>
                                             </span>
                                         {% else %}
                                             -
                                         {% endif %}
                                     </td>
                                     <td data-label="From account">
-                                        {% if not transaction.negative and transaction.journal_entry.from_account is not None %}
-                                            From: <a href="{% url "blackbook:accounts" transaction.journal_entry.from_account.account_type.slug transaction.journal_entry.from_account.slug %}">
-                                                {{ transaction.journal_entry.from_account.name }}
+                                        {% if entry.from_account is not None %}
+                                            <a href="">
+                                                {{ entry.from_account.name }}
                                             </a>
                                         {% else %}
-                                            -
+                                            (untracked)
                                         {% endif %}
-                                    </div>
-                                    <div data-label="To account">
-                                        {% if transaction.negative and transaction.journal_entry.to_account is not None %}
-                                            To: <a href="{% url "blackbook:accounts" transaction.journal_entry.to_account.account_type.slug transaction.journal_entry.to_account.slug %}">
-                                                {{ transaction.journal_entry.to_account.name }}
+                                    </td>
+                                    <td data-label="To account">
+                                        {% if entry.to_account is not None %}
+                                            <a href="">
+                                                {{ entry.to_account }}
                                             </a>
                                         {% else %}
-                                            -
+                                            (untracked)
                                         {% endif %}
                                     </td>
                                     <td>
                                         <div class="buttons is-right">
-                                            {% if transaction.journal_entry.transaction_type != "start" %}
-                                                <a class="button is-primary is-small" href="" type="button">
+                                            {% if entry.transaction_type != "start" %}
+                                                <a class="button is-primary is-small" href="{% url "blackbook:journal_entries_edit" entry.uuid %}" type="button">
                                                     <span class="icon">
                                                         <i class="fas fa-edit"></i>
                                                     </span>
                                                 </a>
                                             {% endif %}
-                                            <a class="button is-danger is-small jb-modal" data-target="modal-transaction-delete-{{ transaction.uuid }}" type="button">
+                                            <a class="button is-danger is-small jb-modal" data-target="modal-journal-entry-delete-{{ entry.uuid }}" type="button">
                                                 <span class="icon">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </span>
@@ -241,13 +263,46 @@
     </div>
 {% endblock content %}
 
+{% block modals %}
+    {% for entry in journal_entries %}
+        <div id="modal-journal-entry-delete-{{ entry.uuid }}" class="modal">
+            <div class="modal-background jb-modal-close"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Confirm action</p>
+                    <button class="delete jb-modal-close" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <p>This will permanently delete transaction <b>{{ entry.description }}</b>.</p>
+                    <p>Are you sure?</p>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button jb-modal-close">Cancel</button>
+                    <form method="post" action="{% url "blackbook:journal_entries_delete" %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="journal_entry_uuid" value="{{ entry.uuid }}">
+                        <button class="button is-danger" type="submit">Delete</button>
+                    </form>
+                </footer>
+            </div>
+            <button class="modal-close is-large jb-modal-close" aria-label="close"></button>
+        </div>
+    {% endfor %}
+{% endblock modals %}
+
 {% block javascript %}
-    let transactionIncomeChartCTX = document.getElementById("transaction-income-chart").getContext("2d");
-    new Chart(transactionIncomeChartCTX, {{ charts.income_chart|safe }});
-    
-    let expenseCategoryChartCTX = document.getElementById("transaction-expense-category-chart").getContext("2d");
-    new Chart(expenseCategoryChartCTX, {{ charts.expense_category_chart|safe }});
-    
-    let expenseBudgetChartCTX = document.getElementById("transaction-expense-budget-chart").getContext("2d");
-    new Chart(expenseBudgetChartCTX, {{ charts.expense_budget_chart|safe }});
+    {% if charts.income_chart_count != 0 %}
+        let transactionIncomeChartCTX = document.getElementById("transaction-income-chart").getContext("2d");
+        new Chart(transactionIncomeChartCTX, {{ charts.income_chart|safe }});
+    {% endif %}
+
+    {% if charts.expense_category_chart_count != 0%}   
+        let expenseCategoryChartCTX = document.getElementById("transaction-expense-category-chart").getContext("2d");
+        new Chart(expenseCategoryChartCTX, {{ charts.expense_category_chart|safe }});
+    {% endif %}
+
+    {% if charts.expense_budget_chart_count != 0 %}
+        let expenseBudgetChartCTX = document.getElementById("transaction-expense-budget-chart").getContext("2d");
+        new Chart(expenseBudgetChartCTX, {{ charts.expense_budget_chart|safe }});
+    {% endif %}
 {% endblock javascript %}

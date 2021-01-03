@@ -12,7 +12,7 @@ import uuid
 
 class Category(models.Model):
     name = models.CharField(max_length=250)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="categories")
+    # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="categories")
     uuid = models.UUIDField("UUID", default=uuid.uuid4, editable=False, db_index=True, unique=True)
 
     created = models.DateTimeField(auto_now_add=True)
