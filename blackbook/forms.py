@@ -97,7 +97,7 @@ class TransactionForm(forms.Form):
         account_choices.insert(0, (None, ""))
         category_choices = [(category.id, category) for category in Category.objects.all().order_by("name")]
         category_choices.insert(0, (None, ""))
-        budget_choices = [(budget.id, budget) for budget in Budget.objects.all().order_by("name")]
+        budget_choices = [(budget.id, budget) for budget in Budget.objects.filter(active=True).order_by("name")]
         budget_choices.insert(0, (None, ""))
 
         self.fields["category"].choices = category_choices
@@ -140,8 +140,3 @@ class TransactionFilterForm(forms.Form):
     start_date = forms.DateField(widget=DateInput, required=False)
     end_date = forms.DateField(widget=DateInput, required=False)
     description = forms.CharField(required=False, widget=forms.TextInput(attrs={"placeholder": "Description search"}))
-    # amount_lower = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial="0.0")
-    # amount_upper = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial="0.0")
-    # category = forms.ModelMultipleChoiceField()
-    # budget = forms.ModelMultipleChoiceField()
-    # account = forms.ModelChoiceField()
