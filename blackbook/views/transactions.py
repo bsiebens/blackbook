@@ -62,7 +62,7 @@ def transactions(request):
             "journal_entry__budget__budget__name",
             "journal_entry__category__name",
             "journal_entry__from_account__name",
-            "journal_entry__from_account__account_type",
+            "journal_entry__from_account__account_type__category",
         )
         .annotate(total=Sum("amount"))
     )
