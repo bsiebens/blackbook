@@ -63,6 +63,7 @@ def transactions(request):
         journal_entries.filter(date__range=date_range)
         .select_related("budget__budget", "category", "to_account", "from_account")
         .prefetch_related("transactions")
+        .order_by("-date", "-created")
     )
 
     charts = {
