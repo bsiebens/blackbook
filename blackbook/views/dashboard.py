@@ -7,6 +7,7 @@ from django.db.models import Sum
 from djmoney.money import Money
 from djmoney.contrib.exchange.backends import OpenExchangeRatesBackend
 from djmoney.contrib.exchange.models import convert_money
+from datetime import timedelta
 
 from ..models import get_default_currency, Account, BudgetPeriod, Category, TransactionJournalEntry, Transaction
 from ..utilities import display_period, calculate_period, set_message_and_redirect
@@ -91,6 +92,10 @@ def dashboard(request):
 
     for total in net_worth:
         data["totals"]["net_worth"] += convert_money(Money(total["total"], total["amount_currency"]), currency)
+
+    start_date = calculate_period(periodicity=period, start_date=timezone.localdate())["start_date"] - timedelta(days=1)
+    for account in accounts:
+        data["totals"]["net_worth"] += convert_money(account.balance_until_date(date=start_date), currency)
 
     total_virtual_balance = Money(0, currency)
     for account in accounts:
