@@ -55,6 +55,7 @@ def accounts(request, account_type, account_name=None):
                 "journal_entry__budget__budget__name",
                 "journal_entry__category__name",
                 "journal_entry__from_account__name",
+                "journal_entry__from_account__account_type__category",
             )
             .annotate(total=Sum("amount"))
             .order_by("-journal_entry__date", "-journal_entry__created")
@@ -73,6 +74,7 @@ def accounts(request, account_type, account_name=None):
                     "journal_entry__budget__budget__name": None,
                     "journal_entry__category__name": None,
                     "journal_entry__from_account__name": None,
+                    "journal_entry__from_account__account_type__category": None,
                     "total": 0,
                 }
             ]
