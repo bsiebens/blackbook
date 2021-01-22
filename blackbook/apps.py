@@ -5,5 +5,6 @@ class BlackbookConfig(AppConfig):
     name = "blackbook"
     verbose_name = "BlackBook"
 
-    def ready(self):
-        import blackbook.signals
+
+#    def ready(self):
+#        import blackbook.signals
