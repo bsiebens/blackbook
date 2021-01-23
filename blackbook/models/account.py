@@ -66,16 +66,20 @@ class Account(models.Model):
             return Money(opening_balance, self.currency) - Money(self.virtual_balance, self.currency)
 
         except:
-            return Money(self.virtual_balance, self.currency) * -1
+            return Money(0, self.currency) - Money(self.virtual_balance, self.currency)
 
     @cached_property
     def balance(self):
         return self.balance_until_date()
 
     def balance_until_date(self, date=timezone.localdate()):
-        total = Money(self.transactions.filter(transaction__date__lte=date).aggregate(total=Coalesce(Sum("amount"), 0))["total"], self.currency)
+        try:
+            total = Money(self.transactions.filter(transaction__date__lte=date).aggregate(total=Coalesce(Sum("amount"), 0))["total"], self.currency)
 
-        return total - Money(self.virtual_balance, self.currency)
+            return total - Money(self.virtual_balance, self.currency)
+
+        except:
+            return Money(0, self.currency) - Money(self.virtual_balance, self.currency)
 
 
 class AssetAccount(Account):
