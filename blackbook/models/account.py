@@ -16,11 +16,11 @@ import uuid
 
 class Account(models.Model):
     class AccountType(models.TextChoices):
-        ASSET_ACCOUNT = "assetaccount", "asset account"
-        REVENUE_ACCOUNT = "revenueaccount", "revenue account"
-        EXPENSE_ACCOUNT = "expenseaccount", "expense account"
-        LIABILITIES_ACCOUNT = "liabilitiesaccount", "liabilities"
-        CASH_ACCOUNT = "cashaccount", "cash account"
+        ASSET_ACCOUNT = "assetaccount", "Asset Account"
+        REVENUE_ACCOUNT = "revenueaccount", "Revenue Account"
+        EXPENSE_ACCOUNT = "expenseaccount", "Expense Account"
+        LIABILITIES_ACCOUNT = "liabilitiesaccount", "Liabilities"
+        CASH_ACCOUNT = "cashaccount", "Cash Account"
 
     name = models.CharField(max_length=250)
     slug = models.SlugField(editable=False, db_index=True, unique=True)
