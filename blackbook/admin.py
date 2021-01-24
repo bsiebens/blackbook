@@ -20,6 +20,47 @@ class UserProfileAdmin(admin.ModelAdmin):
     ]
 
 
+@admin.register(models.Transaction)
+class TransactionAdmin(admin.ModelAdmin):
+    ordering = ["date"]
+    list_display = [
+        "short_description",
+        "source_account",
+        "amount_source_currency",
+        "destination_account",
+        "amount_destination_currency",
+        "type",
+        "uuid",
+        "date",
+        "created",
+        "modified",
+    ]
+    date_hierarchy = "date"
+    list_filter = ["type", "source_account", "destination_account"]
+    search_fields = ["short_description", "description"]
+    fieldsets = [
+        [
+            "General information",
+            {
+                "fields": [
+                    "date",
+                    "type",
+                    "short_description",
+                    "source_account",
+                    "amount_source_currency",
+                    "destination_account",
+                    "amount_destination_currency",
+                ]
+            },
+        ],
+        ["Options", {"fields": ["description", "linked_transactions", "uuid"]}],
+    ]
+    readonly_fields = ["uuid"]
+    raw_id_fields = ["source_account", "destination_account"]
+    filter_horizontal = ["linked_transactions"]
+
+
+@admin.register(models.Account)
 @admin.register(models.CashAccount)
 class AccountAdmin(admin.ModelAdmin):
     ordering = ["name"]
