@@ -20,7 +20,7 @@ from django.http import HttpResponseRedirect
 
 urlpatterns = [
     path("", lambda r: HttpResponseRedirect("blackbook/")),
-    # path("blackbook/", include("blackbook.urls")),
+    path("blackbook/", include("blackbook.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
     path("admin/", admin.site.urls),
 ]

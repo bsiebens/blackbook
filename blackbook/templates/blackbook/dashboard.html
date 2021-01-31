@@ -90,13 +90,13 @@
                         <span class="icon">
                             <i class="fas fa-arrow-down"></i>
                         </span>
-                        <span>+{% money_localize data.totals.period.in %}</span>
+                        <span>+</span>
                     </p>
                     <p class="card-header-title">
                         <span class="icon">
                             <i class="fas fa-arrow-up"></i>
                         </span>
-                        <span>{% if data.totals.period.out.amount == 0 %}-{% endif %}{% money_localize data.totals.period.out %}</span>
+                        <span>{% if data.totals.period.out.amount == 0 %}-{% endif %}</span>
                     </p>
                 </header>
                 <div class="card-content">
@@ -105,7 +105,7 @@
                             <div class="is-widget-label">
                                 <h3 class="subtitle is-spaced">Balance</h3>
                                 <h1 class="title">
-                                    {% if data.totals.period.total.amount >= 0 %}+{% endif %}{% money_localize data.totals.period.total %}
+                                    {% if data.totals.period.total.amount >= 0 %}+{% endif %}
                                 </h1>
                             </div>
                         </div>
@@ -139,7 +139,7 @@
                             <div class="is-widget-label">
                                 <h3 class="subtitle is-spaced">Net worth</h3>
                                 <h1 class="title">
-                                    {% money_localize data.totals.net_worth %}
+                                    
                                 </h1>
                             </div>
                         </div>
@@ -201,7 +201,7 @@
                         <span class="icon">
                             <i class="fas fa-arrow-right"></i>
                         </span>
-                        <span>{% money_localize data.budget.per_day %}</span>
+                        <span></span>
                     </p>
                     <button type="button" class="button is-small">
                         <span class="icon">
@@ -215,7 +215,7 @@
                             <div class="is-widget-label">
                                 <h3 class="subtitle is-spaced">Budget available</h3>
                                 <h1 class="title">
-                                    {% money_localize data.budget.available %}
+                                    
                                 </h1>
                             </div>
                         </div>

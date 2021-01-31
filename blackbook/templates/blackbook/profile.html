@@ -30,7 +30,7 @@
                         {% form_field profile_form.last_name %}
                         {% form_field profile_form.email %}
                         {% form_field profile_form.default_currency %}
-                        {% form_field profile_form.default_period %}
+                        {# {% form_field profile_form.default_period %} #}
 
                         <hr />
                         
@@ -87,6 +87,29 @@
                                     <input type="text" readonly value="{{ request.user.userprofile.get_default_currency_display }}" class="input is-static">
                                 </div>
                             </div>
+                            {% if request.user.is_staff or request.user.is_superuser %}
+                                <div class="field">
+                                    <label class="label">Tags</label>
+                                    <div class="tags">
+                                        {% if request.user.is_superuser %}
+                                            <span class="tag is-primary">
+                                                <span class="icon">
+                                                    <i class="fas fa-user-astronaut"></i>
+                                                </span>
+                                                <span>superuser</span>
+                                            </span>
+                                        {% endif %}
+                                        {% if request.user.is_staff %}
+                                            <span class="tag is-primary">
+                                                <span class="icon">
+                                                    <i class="fas fa-user-check"></i>
+                                                </span>
+                                                <span>staff</span>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="column">
                             <div class="field">
@@ -95,12 +118,12 @@
                                     <input type="text" readonly value="{{ request.user.email }}" class="input is-static">
                                 </div>
                             </div>
-                            <div class="field">
+                            <!-- <div class="field">
                                 <label class="label">Default period</label>
                                 <div class="control is-clearfix">
                                     <input type="text" readonly value="{{ request.user.userprofile.get_default_period_display }}" class="input is-static">
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>

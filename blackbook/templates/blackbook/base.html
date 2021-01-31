@@ -2,7 +2,6 @@
 
 {% load humanize %}
 {% load navigationtags %}
-{% load modalforms %}
 
 {% block body %}
     <nav id="navbar-main" class="navbar is-fixed-top">
@@ -53,7 +52,7 @@
                     <span class="icon"><i class="fas fa-question"></i></span>
                     <span>About</span>
                 </a>
-                <a href="{% url "blackbook:update_exchange_rates" %}?next={{ request.path }}" title="Refresh exchange rates" class="navbar-item has-divider is-desktop-icon-only">
+                <a href="" title="Refresh exchange rates" class="navbar-item has-divider is-desktop-icon-only">
                     <span class="icon"><i class="fas fa-sync-alt"></i></span>
                     <span>Refresh exchange rates</span>
                 </a>
@@ -126,7 +125,7 @@
                 <p class="menu-label">Transactions</p>
                 <ul class="menu-list">
                     <li>
-                        <a href="{% url "blackbook:transactions" %}" class="has-icon {% is_active "transactions" %}">
+                        <a href="" class="has-icon {% is_active "transactions" %}">
                             <span class="icon"><i class="fas fa-exchange-alt"></i></span>
                             <span class="menu-item-label">Transactions</span>
                         </a>
@@ -134,7 +133,7 @@
                 </ul>
                 <p class="menu-label">Accounts</p>
                 <ul class="menu-list">
-                    {% accounts %}
+                    
                 </ul>
                 <p class="menu-label">Monitoring</p>
                 <ul class="menu-list">
@@ -190,13 +189,13 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{% url "blackbook:categories" %}" class="has-icon {% is_active "categories" %}">
+                        <a href="" class="has-icon {% is_active "categories" %}">
                             <span class="icon"><i class="fas fa-hashtag"></i></span>
                             <span class="menu-item-label">Categories</span>
                         </a>
                     </li>
                     <!-- <li>
-                        <a href="{% url "blackbook:tags" %}" class="has-icon {% is_active "tags" %}">
+                        <a href="" class="has-icon {% is_active "tags" %}">
                             <span class="icon"><i class="fas fa-tags"></i></span>
                             <span class="menu-item-label">Tags</span>
                         </a>    
@@ -274,6 +273,5 @@
 {% endblock body %}
 
 {% block forms %}
-    {% account_form %}
-    {% transaction_form %}
+
 {% endblock forms %}
