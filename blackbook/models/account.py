@@ -79,6 +79,11 @@ class Account(models.Model):
                 .filter(transaction__amount_currency=self.currency)
                 .aggregate(total=Coalesce(Sum("amount"), 0))["total"],
                 self.currency,
+            ) + Money(
+                self.transactions.filter(transaction__date__lte=date)
+                .filter(transaction__foreign_amount_currency=self.currency)
+                .aggregate(total=Coalesce(Sum("foreign_amount"), 0))["total"],
+                self.currency,
             )
 
             return total - Money(self.virtual_balance, self.currency)
