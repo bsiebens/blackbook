@@ -20,44 +20,22 @@ class UserProfileAdmin(admin.ModelAdmin):
     ]
 
 
-@admin.register(models.Transaction)
-class TransactionAdmin(admin.ModelAdmin):
+class TransactionInline(admin.TabularInline):
+    model = models.Transaction
+    extra = 0
+    fields = ["uuid", "type", "source_account", "destination_account", "amount", "foreign_amount", "created", "modified"]
+    readonly_fields = fields
+
+
+@admin.register(models.TransactionJournal)
+class TransactionJournalAdmin(admin.ModelAdmin):
     ordering = ["date"]
-    list_display = [
-        "short_description",
-        "source_account",
-        "amount_source_currency",
-        "destination_account",
-        "amount_destination_currency",
-        "type",
-        "uuid",
-        "date",
-        "created",
-        "modified",
-    ]
     date_hierarchy = "date"
-    list_filter = ["type", "source_account", "destination_account"]
-    search_fields = ["short_description", "description"]
-    fieldsets = [
-        [
-            "General information",
-            {
-                "fields": [
-                    "date",
-                    "type",
-                    "short_description",
-                    "source_account",
-                    "amount_source_currency",
-                    "destination_account",
-                    "amount_destination_currency",
-                ]
-            },
-        ],
-        ["Options", {"fields": ["description", "linked_transactions", "uuid"]}],
-    ]
+    list_display = ["uuid", "short_description", "date", "created", "modified"]
+    search_fields = ["uuid", "short_description", "description"]
+    fieldsets = [["General information", {"fields": ["date", "short_description", "description"]}], ["Options", {"fields": ["uuid"]}]]
     readonly_fields = ["uuid"]
-    raw_id_fields = ["source_account", "destination_account"]
-    filter_horizontal = ["linked_transactions"]
+    inlines = [TransactionInline]
 
 
 @admin.register(models.Account)
