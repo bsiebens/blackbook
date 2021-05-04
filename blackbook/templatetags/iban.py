@@ -4,6 +4,7 @@ from ..utilities import format_iban
 
 register = template.Library()
 
-@register.filter 
+
+@register.filter
 def iban(value):
     return format_iban(value)

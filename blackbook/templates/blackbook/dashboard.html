@@ -86,13 +86,13 @@
                     <p class="card-header-title">
                         {{ data.period|unlocalize }}
                     </p>
-                    <p class="card-header-title">
+                    <p class="card-header-title has-text-success">
                         <span class="icon">
                             <i class="fas fa-arrow-down"></i>
                         </span>
                         <span>+{% money_localize data.totals.period.in %}</span>
                     </p>
-                    <p class="card-header-title">
+                    <p class="card-header-title has-text-danger">
                         <span class="icon">
                             <i class="fas fa-arrow-up"></i>
                         </span>
@@ -104,7 +104,7 @@
                         <div class="level-item">
                             <div class="is-widget-label">
                                 <h3 class="subtitle is-spaced">Balance</h3>
-                                <h1 class="title">
+                                <h1 class="title has-text-{% if data.totals.period.total.amount > 0 %}success{% elif data.totals.period.total.amount < 0 %}danger{% else %}grey{% endif %}">
                                     {% if data.totals.period.total.amount >= 0 %}+{% endif %}{% money_localize data.totals.period.total %}
                                 </h1>
                             </div>
@@ -201,7 +201,7 @@
                         <span class="icon">
                             <i class="fas fa-arrow-right"></i>
                         </span>
-                        <span>{% money_localize data.budget.per_day %}</span>
+                        <span></span>
                     </p>
                     <button type="button" class="button is-small">
                         <span class="icon">
@@ -215,7 +215,7 @@
                             <div class="is-widget-label">
                                 <h3 class="subtitle is-spaced">Budget available</h3>
                                 <h1 class="title">
-                                    {% money_localize data.budget.available %}
+                                    
                                 </h1>
                             </div>
                         </div>

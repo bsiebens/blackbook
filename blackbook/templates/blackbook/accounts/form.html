@@ -41,14 +41,14 @@
                         {% csrf_token %} 
 
                         {% form_field account_form.name %}
-                        {% form_field account_form.account_type %}
+                        {% form_field account_form.type %}
                         {% form_field account_form.currency %}
                         {% form_field account_form.starting_balance %}
                         {% form_field account_form.iban %}
                         <hr />
                         {% form_field account_form.active %}
-                        {% form_field account_form.include_in_net_worth %}
-                        {% form_field account_form.include_on_dashboard %}
+                        {% form_field account_form.net_worth %}
+                        {% form_field account_form.dashboard %}
                         {% form_field account_form.virtual_balance %}
                         <hr />
                         
@@ -100,7 +100,7 @@
                             <div class="field">
                                 <label class="label">Account Type</label>
                                 <div class="control is-clearfix">
-                                    <input type="text" readonly value="{{ account.account_type.name|default:"-" }}" class="input is-static">
+                                    <input type="text" readonly value="{{ account.get_type_display|default:"-" }}" class="input is-static">
                                 </div>
                             </div>
                         </div>

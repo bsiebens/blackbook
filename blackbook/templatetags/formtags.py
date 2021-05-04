@@ -29,4 +29,7 @@ def add_class(field):
         if field.name == "tags":
             data_type.append("tags")
 
+    if field.widget_type == "textarea":
+        css_class.append("textarea")
+
     return field.as_widget(attrs={"class": " ".join(css_class), "data-type": " ".join(data_type)})

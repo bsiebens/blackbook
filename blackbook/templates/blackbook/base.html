@@ -2,7 +2,6 @@
 
 {% load humanize %}
 {% load navigationtags %}
-{% load modalforms %}
 
 {% block body %}
     <nav id="navbar-main" class="navbar is-fixed-top">
@@ -38,11 +37,11 @@
                         </span>
                     </a>
                     <div class="navbar-dropdown">
-                        <a class="navbar-item jb-modal" data-target="modal-account-add">
+                        <a class="navbar-item jb-modal" data-target="modal-account-add" href="{% url "blackbook:accounts_add" %}">
                             <span class="icon"><i class="fas fa-landmark"></i></span>
                             <span>Add account</span>
                         </a>
-                        <a class="navbar-item jb-modal" data-target="modal-transaction-add">
+                        <a class="navbar-item jb-modal" data-target="modal-transaction-add" href="{% url "blackbook:transactions_add" %}">
                             <span class="icon"><i class="fas fa-exchange-alt"></i></span>
                             <span>Add transaction</span>
                         </a>
@@ -53,7 +52,7 @@
                     <span class="icon"><i class="fas fa-question"></i></span>
                     <span>About</span>
                 </a>
-                <a href="{% url "blackbook:update_exchange_rates" %}?next={{ request.path }}" title="Refresh exchange rates" class="navbar-item has-divider is-desktop-icon-only">
+                <a href="" title="Refresh exchange rates" class="navbar-item has-divider is-desktop-icon-only">
                     <span class="icon"><i class="fas fa-sync-alt"></i></span>
                     <span>Refresh exchange rates</span>
                 </a>
@@ -134,7 +133,36 @@
                 </ul>
                 <p class="menu-label">Accounts</p>
                 <ul class="menu-list">
-                    {% accounts %}
+                    <li>
+                        <a href="{% url "blackbook:accounts_list" "assetaccount" %}" class="has-icon {% is_active "assetaccount" %}">
+                            <span class="icon"><i class="fas fa-landmark"></i></span>
+                            <span class="menu-item-label">Asset accounts</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url "blackbook:accounts_list" "revenueaccount" %}" class="has-icon {% is_active "revenueaccount" %}">
+                            <span class="icon"><i class="fas fa-donate"></i></span>
+                            <span class="menu-item-label">Revenue accounts</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url "blackbook:accounts_list" "expenseaccount" %}" class="has-icon {% is_active "expenseaccount" %}">
+                            <span class="icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                            <span class="menu-item-label">Expense accounts</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url "blackbook:accounts_list" "liabilities" %}" class="has-icon {% is_active "liabilities" %}">
+                            <span class="icon"><i class="fas fa-home"></i></span>
+                            <span class="menu-item-label">Liabilities</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url "blackbook:accounts_list" "cashaccount" %}" class="has-icon {% is_active "cashaccount" %}">
+                            <span class="icon"><i class="fas fa-coins"></i></span>
+                            <span class="menu-item-label">Cash accounts</span>
+                        </a>
+                    </li>
                 </ul>
                 <p class="menu-label">Monitoring</p>
                 <ul class="menu-list">
@@ -190,13 +218,13 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{% url "blackbook:categories" %}" class="has-icon {% is_active "categories" %}">
+                        <a href="" class="has-icon {% is_active "categories" %}">
                             <span class="icon"><i class="fas fa-hashtag"></i></span>
                             <span class="menu-item-label">Categories</span>
                         </a>
                     </li>
                     <!-- <li>
-                        <a href="{% url "blackbook:tags" %}" class="has-icon {% is_active "tags" %}">
+                        <a href="" class="has-icon {% is_active "tags" %}">
                             <span class="icon"><i class="fas fa-tags"></i></span>
                             <span class="menu-item-label">Tags</span>
                         </a>    
@@ -274,6 +302,5 @@
 {% endblock body %}
 
 {% block forms %}
-    {% account_form %}
-    {% transaction_form %}
+
 {% endblock forms %}

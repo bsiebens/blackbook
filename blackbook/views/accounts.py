@@ -6,182 +6,127 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from djmoney.money import Money
-from djmoney.contrib.exchange.models import convert_money
+from decimal import Decimal
 
-from ..models import AccountType, Account, TransactionJournalEntry, Transaction, get_default_currency
+from ..models import get_default_value, Account, Transaction, TransactionJournal
 from ..utilities import set_message_and_redirect, calculate_period
 from ..forms import AccountForm
 from ..charts import AccountChart, TransactionChart
 
 
 @login_required
-def accounts(request, account_type, account_name=None):
-    if account_name is not None:
-        period = calculate_period(periodicity=request.user.userprofile.default_period, start_date=timezone.localdate())
+def accounts(request, account_type=None, account_slug=None):
+    if account_slug is not None:
+        period = get_default_value(key="default_period", default_value="month", user=request.user)
+        period = calculate_period(periodicity=period, start_date=timezone.localdate())
 
-        account = get_object_or_404(
-            Account.objects.select_related("account_type")
-            .prefetch_related(
-                Prefetch(
-                    "transactions",
-                    Transaction.objects.filter(journal_entry__date__range=(period["start_date"], period["end_date"])),
-                ),
-            )
-            .prefetch_related("transactions__journal_entry")
-            .prefetch_related("transactions__journal_entry__tags")
-            .prefetch_related("transactions__journal_entry__budget__budget")
-            .prefetch_related("transactions__journal_entry__category")
-            .prefetch_related("transactions__journal_entry__from_account__account_type")
-            .prefetch_related("transactions__journal_entry__to_account__account_type")
-            .annotate(total=Coalesce(Sum("transactions__amount"), 0))
-            .order_by("transactions__journal_entry__date", "transactions__journal_entry__created"),
-            slug=account_name,
-        )
-
-        account.total = Money(account.total - account.virtual_balance, account.currency)
-
+        account = get_object_or_404(Account, slug=account_slug)
         transactions = (
             Transaction.objects.filter(account=account)
-            .select_related("journal_entry", "account", "journal_entry__budget__budget", "journal_entry__category", "journal_entry__from_account")
-            .filter(journal_entry__date__range=(period["start_date"], period["end_date"]))
-            .values(
-                "amount_currency",
-                "negative",
-                "account__name",
-                "account__virtual_balance",
-                "journal_entry",
-                "journal_entry__date",
-                "journal_entry__transaction_type",
-                "journal_entry__budget__budget__name",
-                "journal_entry__category__name",
-                "journal_entry__from_account__name",
-                "journal_entry__from_account__account_type__category",
-            )
-            .annotate(total=Sum("amount"))
-            .order_by("-journal_entry__date", "-journal_entry__created")
+            .filter(journal__date__range=(period["start_date"], period["end_date"]))
+            .select_related("journal", "account")
+            .order_by("-journal__date")
+            .annotate(total=Coalesce(Sum("amount"), Decimal(0)))
         )
 
-        if len(transactions) == 0:
-            transactions = [
-                {
-                    "amount_currency": account.currency,
-                    "negative": None,
-                    "account__name": account.name,
-                    "account__virtual_balance": account.virtual_balance,
-                    "journal_entry": None,
-                    "journal_entry__date": timezone.localdate(),
-                    "journal_entry__transaction_type": None,
-                    "journal_entry__budget__budget__name": None,
-                    "journal_entry__category__name": None,
-                    "journal_entry__from_account__name": None,
-                    "journal_entry__from_account__account_type__category": None,
-                    "total": 0,
-                }
-            ]
-
-        in_for_period = Money(sum([transaction["total"] for transaction in transactions if not transaction["negative"]]), account.currency)
-        out_for_period = Money(sum([transaction["total"] for transaction in transactions if transaction["negative"]]), account.currency)
-        balance_for_period = in_for_period + out_for_period
+        period_in = Money(transactions.filter(amount__gte=0).aggregate(total=Coalesce(Sum("amount"), Decimal(0)))["total"], account.currency)
+        period_out = Money(transactions.filter(amount__lte=0).aggregate(total=Coalesce(Sum("amount"), Decimal(0)))["total"], account.currency)
+        period_balance = period_in + period_out
+        account.total = account.balance_until_date()
 
         charts = {
             "account_chart": AccountChart(
-                data=transactions,
-                start_date=period["start_date"],
-                end_date=period["end_date"],
-                user=request.user,
+                data=transactions, accounts=[account], start_date=period["start_date"], end_date=period["end_date"], user=request.user
             ).generate_json(),
             "income_chart": TransactionChart(data=transactions, user=request.user, income=True).generate_json(),
-            "expense_budget_chart": TransactionChart(data=transactions, user=request.user, expenses_budget=True).generate_json(),
-            "expense_category_chart": TransactionChart(data=transactions, user=request.user, expenses_category=True).generate_json(),
-            "income_chart_count": len([item for item in transactions if not item["negative"] and item["negative"] is not None]),
-            "expense_budget_chart_count": len(
-                [item for item in transactions if item["negative"] and item["journal_entry__budget__budget__name"] is not None]
-            ),
-            "expense_category_chart_count": len(
-                [item for item in transactions if item["negative"] and item["journal_entry__category__name"] is not None]
-            ),
+            "income_chart_count": len([item for item in transactions if not item.amount.amount < 0]),
+            "expense_budget_chart": TransactionChart(data=transactions, expenses_budget=True, user=request.user).generate_json(),
+            "expense_budget_chart_count": len([item for item in transactions if item.amount.amount < 0 and item.journal.budget is not None]),
+            "expense_category_chart": TransactionChart(data=transactions, expenses_category=True, user=request.user).generate_json(),
+            "expense_category_chart_count": len([item for item in transactions if item.amount.amount < 0 and item.journal.category is not None]),
         }
 
         return render(
             request,
             "blackbook/accounts/detail.html",
             {
+                "transactions": transactions,
                 "account": account,
-                "charts": charts,
-                "in_for_period": in_for_period,
-                "out_for_period": out_for_period,
-                "balance_for_period": balance_for_period,
+                "in_for_period": period_in,
+                "out_for_period": period_out,
+                "balance_for_period": period_balance,
                 "period": period,
+                "charts": charts,
             },
         )
 
     else:
-        account_types = (
-            AccountType.objects.filter(category=account_type)
-            .annotate(count=Count("accounts"))
-            .filter(count__gt=0)
-            .prefetch_related(Prefetch("accounts", Account.objects.annotate(total=Coalesce(Sum("transactions__amount"), 0))))
+        account_types = {
+            "assetaccount": {"name": "asset accounts", "icon": "fa-landmark", "total": {}},
+            "revenueaccount": {"name": "revenue accounts", "icon": "fa-donate", "total": {}},
+            "expenseaccount": {"name": "expense accounts", "icon": "fa-file-invoice-dollar", "total": {}},
+            "liabilities": {"name": "liabilities", "icon": "fa-home", "total": {}},
+            "cashaccount": {"name": "cash accounts", "icon": "fa-coins", "total": {}},
+        }
+
+        accounts = (
+            Account.objects.filter(type=account_type)
+            .annotate(
+                total=Coalesce(Sum("transactions__amount"), Decimal(0)),
+            )
+            .order_by("name")
         )
-        accounts = Account.objects.filter(account_type__category=account_type).annotate(total=Coalesce(Sum("transactions__amount"), 0))
-        currency = get_default_currency(request.user)
 
-        for account_type in account_types:
-            account_type.total = Money(0, currency)
+        account_type = account_types[account_type]
 
-            for account in account_type.accounts.all():
-                account.total -= account.virtual_balance
+        for account in accounts:
+            account.total_amount = Money(account.total, account.currency) - Money(account.virtual_balance, account.currency)
+            account_type["total"][account.currency] = account_type["total"].get(account.currency, Money(0, account.currency)) + account.total_amount
 
-                account_type.total += convert_money(Money(account.total, account.currency), currency)
-
-        return render(
-            request,
-            "blackbook/accounts/list.html",
-            {"account_type": account_type, "account_types": account_types, "accounts": accounts},
-        )
+        return render(request, "blackbook/accounts/list.html", {"account_type": account_type, "accounts": accounts})
 
 
 @login_required
-def add_edit(request, account_name=None):
+def add_edit_account(request, account_slug=None):
     account = Account()
 
-    if account_name is not None:
-        account = get_object_or_404(Account, slug=account_name)
+    if account_slug is not None:
+        account = get_object_or_404(Account, slug=account_slug)
 
     account_form = AccountForm(request.POST or None, instance=account, initial={"starting_balance": account.starting_balance.amount})
 
     if request.POST and account_form.is_valid():
-        account = account_form.save(commit=False)
-        account.save()
+        account = account_form.save()
 
-        if account_form.cleaned_data["starting_balance"] > 0:
+        if account_form.cleaned_data["starting_balance"] != 0:
+            opening_balance = Money(account_form.cleaned_data["starting_balance"], account.currency)
+
             try:
-                opening_balance_transaction = account.transactions.filter(
-                    journal_entry__transaction_type=TransactionJournalEntry.TransactionType.START
-                ).get(journal_entry__date=account.created.date())
+                opening_balance_transaction = account.transactions.filter(journal__type=TransactionJournal.TransactionType.START).get(
+                    journal__date=account.created.date()
+                )
 
-                if opening_balance_transaction.amount != Money(account_form.cleaned_data["starting_balance"], account_form.cleaned_data["currency"]):
-                    opening_balance_transaction.journal_entry.update(
-                        amount=Money(account_form.cleaned_data["starting_balance"], account_form.cleaned_data["currency"]),
-                        description="Starting balance",
-                        transaction_type=TransactionJournalEntry.TransactionType.START,
-                        date=account.created.date(),
-                        to_account=account,
-                    )
+                if opening_balance_transaction.amount != opening_balance:
+                    opening_balance_transaction.amount = opening_balance
+                    opening_balance_transaction.save()
 
             except Transaction.DoesNotExist:
-                TransactionJournalEntry.create_transaction(
-                    amount=Money(account_form.cleaned_data["starting_balance"], account_form.cleaned_data["currency"]),
-                    description="Starting balance",
-                    transaction_type=TransactionJournalEntry.TransactionType.START,
-                    # user=request.user,
-                    date=account.created.date(),
-                    to_account=account,
-                )
+                transaction = {
+                    "short_description": "Starting balance",
+                    "description": "Starting balance",
+                    "date": account.created.date(),
+                    "type": TransactionJournal.TransactionType.START,
+                    "transactions": [{"account": account, "amount": opening_balance}],
+                }
+
+                TransactionJournal.create(transactions=transaction)
 
         return set_message_and_redirect(
             request,
-            's|Account "{account.name}" was saved succesfully.'.format(account=account),
-            reverse("blackbook:accounts", kwargs={"account_type": account.account_type.category, "account_name": account.slug}),
+            "s|Account '{account_name}' ({account_type}) has been saved succesfully.".format(
+                account_name=account.name, account_type=account.get_type_display()
+            ),
+            reverse("blackbook:dashboard"),
         )
 
     return render(request, "blackbook/accounts/form.html", {"account_form": account_form, "account": account})
@@ -190,19 +135,18 @@ def add_edit(request, account_name=None):
 @login_required
 def delete(request):
     if request.method == "POST":
-        account = Account.objects.select_related("account_type").get(uuid=request.POST.get("account_uuid"))
-
+        account = Account.objects.get(uuid=request.POST.get("account_uuid"))
         account.delete()
 
-        # Delete all "hanging" journal entries (no transactions linked)
-        hanging_journal_entries = TransactionJournalEntry.objects.filter(transactions=None)
-        hanging_journal_entries.delete()
+        hanging_transactions = Transaction.objects.filter(source_account=None, destination_account=None)
+        hanging_transactions.delete()
+        hanging_journals = TransactionJournal.objects.filter(transactions=None)
+        hanging_journals.delete()
 
         return set_message_and_redirect(
             request,
             's|Account "{account.name}" was succesfully deleted.'.format(account=account),
-            reverse("blackbook:accounts", kwargs={"account_type": account.account_type.category}),
+            reverse("blackbook:accounts_list", kwargs={"account_type": account.type}),
         )
-
     else:
         return set_message_and_redirect(request, "w|You are not allowed to access this page like this.", reverse("blackbook:dashboard"))

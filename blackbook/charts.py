@@ -1,12 +1,12 @@
 from django.db.models import Sum
 
 from djmoney.money import Money
-from djmoney.contrib.exchange.models import convert_money
 from datetime import timedelta
 
 import json
+import re
 
-from .models import get_default_currency, TransactionJournalEntry, Account, AccountType
+from .models import get_default_currency, TransactionJournal, Transaction, Account
 from .utilities import get_currency
 
 
@@ -24,13 +24,9 @@ class Chart:
     def generate_json(self):
         chart_data = self._generate_chart_data()
         chart_options = self._generate_chart_options()
-
         chart_data["options"] = chart_options
 
-        json_output = json.dumps(chart_data)
-        json_output = json_output.replace('"<<', "").replace('>>"', "")
-
-        return json_output
+        return json.dumps(chart_data).replace('"<<', "").replace('>>"', "")
 
     def _generate_chart_data(self):
         raise NotImplementedError
@@ -77,83 +73,11 @@ class Chart:
         }
 
 
-class TransactionChart(Chart):
-    def __init__(self, data, user=None, income=False, expenses_budget=False, expenses_category=False, *args, **kwargs):
-        self.income = income
-        self.expenses_budget = expenses_budget
-        self.expenses_category = expenses_category
-        self.user = user
-        self.currency = get_default_currency(user=self.user)
-
-        super().__init__(data=data, *args, **kwargs)
-
-    def _generate_chart_options(self):
-        options = self._get_default_options()
-
-        options["scales"] = {}
-        options["legend"] = {"position": "right"}
-
-        return options
-
-    def _generate_chart_data(self):
-        data = {"type": "pie", "data": {"labels": [], "datasets": [{"data": [], "borderWidth": [], "backgroundColor": [], "borderColor": []}]}}
-
-        amounts = {}
-        account_names = {}
-
-        if self.income:
-            self.data = [
-                item
-                for item in self.data
-                if not item["negative"]
-                and item["journal_entry__transaction_type"] != TransactionJournalEntry.TransactionType.TRANSFER
-                and item["journal_entry__from_account__account_type__category"] != AccountType.AccountTypeCategory.ASSETS
-            ]
-        else:
-            self.data = [item for item in self.data if item["negative"]]
-
-        for transaction in self.data:
-            account_name = "External account (untracked)"
-            if self.income:
-                if transaction["journal_entry__transaction_type"] == TransactionJournalEntry.TransactionType.START:
-                    account_name = "Starting balance"
-
-                else:
-                    if transaction["journal_entry__from_account__name"] is not None:
-                        account_name = transaction["journal_entry__from_account__name"]
-
-            if not self.income:
-                if self.expenses_budget and transaction["journal_entry__budget__budget__name"] is not None:
-                    account_name = transaction["journal_entry__budget__budget__name"]
-
-                if self.expenses_category and transaction["journal_entry__category__name"] is not None:
-                    account_name = transaction["journal_entry__category__name"]
-
-            amount = amounts.get(account_name, 0.0)
-            amount += float(transaction["total"]) * -1 if transaction["negative"] else float(transaction["total"])
-            amounts[account_name] = amount
-
-        if not self.income:
-            amounts.pop("External account (untracked)", None)
-
-        counter = 1
-        for account, amount in amounts.items():
-            color = get_color_code(counter)
-            counter += 1
-
-            data["data"]["labels"].append("{account} ({currency})".format(account=account, currency=get_currency(self.currency, self.user)))
-            data["data"]["datasets"][0]["data"].append(round(amount, 2))
-            data["data"]["datasets"][0]["borderWidth"].append(2)
-            data["data"]["datasets"][0]["backgroundColor"].append("rgba({color}, 1.0)".format(color=color))
-            data["data"]["datasets"][0]["borderColor"].append("rgba(255, 255, 255, 1.0)".format(color=color))
-
-        return data
-
-
 class AccountChart(Chart):
-    def __init__(self, data, start_date, end_date, user=None, *args, **kwargs):
+    def __init__(self, data, accounts, start_date, end_date, user=None, *args, **kwargs):
         self.start_date = start_date
         self.end_date = end_date
+        self.accounts = accounts
         self.user = user
         self.currency = get_default_currency(user=self.user)
 
@@ -163,7 +87,7 @@ class AccountChart(Chart):
         options = self._get_default_options()
 
         options["tooltips"]["callbacks"] = {
-            "label": "<<function(tooltipItems, data) { return data.datasets[tooltipItems.datasetIndex].label +': ' + tooltipItems.yLabel + ' (%s)'; }>>"
+            "label": "<<function(tooltipItems, data) { return data.datasets[tooltipItems.datasetIndex].label + ': ' + tooltipItems.yLabel + ' (%s)'; }>>"
             % get_currency(self.currency, self.user)
         }
 
@@ -183,18 +107,26 @@ class AccountChart(Chart):
 
         accounts = {}
         accounts_virtual_balance = {}
+
         for item in self.data:
-            if item["account__name"] in accounts.keys():
-                date_entry = accounts[item["account__name"]].get(item["journal_entry__date"], Money(0, self.currency))
-                date_entry += convert_money(Money(item["total"], item["amount_currency"]), self.currency)
+            if str(item.amount.currency) == str(self.currency) and item.account is not None:
+                account_key = "{type} - {account}".format(type=item.account.get_type_display(), account=item.account.name)
 
-                accounts[item["account__name"]][item["journal_entry__date"]] = date_entry
+                if account_key in accounts.keys():
+                    date_entry = accounts[account_key].get(item.journal.date, Money(0, self.currency))
+                    date_entry += Money(item.total, self.currency)
 
-            else:
-                accounts[item["account__name"]] = {
-                    item["journal_entry__date"]: convert_money(Money(item["total"], item["amount_currency"]), self.currency)
-                }
-                accounts_virtual_balance[item["account__name"]] = item["account__virtual_balance"]
+                    accounts[account_key][item.journal.date] = date_entry
+
+                else:
+                    accounts[account_key] = {item.journal.date: Money(item.total, self.currency)}
+                    accounts_virtual_balance[account_key] = item.account.virtual_balance
+
+        for account in self.accounts:
+            account_key = "{type} - {account}".format(type=account.get_type_display(), account=account.name)
+
+            if account_key not in accounts.keys():
+                accounts[account_key] = {}
 
         counter = 1
         for account, date_entries in accounts.items():
@@ -228,9 +160,17 @@ class AccountChart(Chart):
                 value = 0
 
                 if date_index == 0:
-                    account_object = Account.objects.get(name=account)
-                    value = float(account_object.balance_until_date(date - timedelta(days=1)).amount) - float(accounts_virtual_balance[account])
+                    ACCOUNT_REGEX = re.compile(r"(.*)\s-\s(.*)")
 
+                    account_name = ACCOUNT_REGEX.match(account)[2]
+                    account_type = Account.AccountType.ASSET_ACCOUNT
+
+                    for type in Account.AccountType:
+                        if type.label == ACCOUNT_REGEX.match(account)[1]:
+                            account_type = type
+
+                    account_object = Account.objects.get(name=account_name, type=account_type)
+                    value = float(account_object.balance_until_date(date - timedelta(days=1)).amount) - float(account_object.virtual_balance)
                 else:
                     value = account_data["data"][date_index - 1]
 
@@ -239,5 +179,73 @@ class AccountChart(Chart):
 
                 account_data["data"].append(round(value, 2))
             data["data"]["datasets"].append(account_data)
+
+        return data
+
+
+class TransactionChart(Chart):
+    def __init__(self, data, user=None, income=False, expenses_budget=False, expenses_category=False, *args, **kwargs):
+        self.income = income
+        self.expenses_budget = expenses_budget
+        self.expenses_category = expenses_category
+        self.user = user
+        self.currency = get_default_currency(user=self.user)
+
+        super().__init__(data=data, *args, **kwargs)
+
+    def _generate_chart_options(self):
+        options = self._get_default_options()
+
+        options["scales"] = {}
+        options["legend"] = {"position": "right"}
+
+        return options
+
+    def _generate_chart_data(self):
+        data = {"type": "pie", "data": {"labels": [], "datasets": [{"data": [], "borderWidth": [], "backgroundColor": [], "borderColor": []}]}}
+
+        amounts = {}
+        account_names = {}
+
+        if self.income:
+            self.data = [item for item in self.data if not item.amount.amount < 0]
+        else:
+            self.data = [item for item in self.data if item.amount.amount < 0]
+
+        for transaction in self.data:
+            account_name = "External account (untracked)"
+
+            if self.income:
+                if transaction.journal.type == TransactionJournal.TransactionType.START:
+                    account_name = "Starting balance"
+
+                else:
+                    if len(transaction.journal.source_accounts) > 0:
+                        account_name = ", ".join([account["account"] for account in transaction.journal.source_accounts])
+
+            else:
+                if self.expenses_budget and transaction.journal.budget is not None:
+                    account_name = transaction.journal.budget.name
+
+                if self.expenses_category and transaction.journal.category is not None:
+                    account_name = transaction.journal.category.name
+
+            amount = amounts.get(account_name, 0.0)
+            amount += float(transaction.total)
+            amounts[account_name] = amount
+
+        if not self.income:
+            amounts.pop("External account (untracked)", None)
+
+        counter = 1
+        for account, amount in amounts.items():
+            color = get_color_code(counter)
+            counter += 1
+
+            data["data"]["labels"].append("{account} ({currency})".format(account=account, currency=get_currency(self.currency, self.user)))
+            data["data"]["datasets"][0]["data"].append(round(amount, 2))
+            data["data"]["datasets"][0]["borderWidth"].append(2)
+            data["data"]["datasets"][0]["backgroundColor"].append("rgba({color}, 1.0)".format(color=color))
+            data["data"]["datasets"][0]["borderColor"].append("rgba(255, 255, 255, 1.0)".format(color=color))
 
         return data

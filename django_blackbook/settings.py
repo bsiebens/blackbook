@@ -29,6 +29,8 @@ DEBUG = True
 ALLOWED_HOSTS = ["localhost", "192.168.60.25", "blackbook.siebens.org"]
 INTERNAL_IPS = ["127.0.0.1", "192.168.60.25"]
 
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 
 # Application definition
 

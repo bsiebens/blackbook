@@ -1,15 +1,12 @@
-from django.db import models
 from django.conf import settings
 
 from ..utilities import get_currency
 
 
 def get_default_value(key, default_value=None, user=None):
-    if user is None:
-        return getattr(settings, key.upper(), default_value)
-
     try:
         profile = user.userprofile
+
         return getattr(profile, key.lower(), default_value)
     except:
         return getattr(settings, key.upper(), default_value)
