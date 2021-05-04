@@ -2,14 +2,16 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.db.models import Sum, Q
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from djmoney.money import Money
+from decimal import Decimal
 
-from ..models import Transaction, TransactionJournal, Account, get_default_currency
+from ..models import Transaction, TransactionJournal, Account, get_default_currency, get_default_value
 from ..utilities import set_message_and_redirect, calculate_period, set_message
 from ..charts import TransactionChart
-from ..forms import TransactionForm
+from ..forms import TransactionForm, TransactionFilterForm
 
 import datetime
 import re
@@ -18,18 +20,72 @@ ACCOUNT_REGEX = re.compile(r"(.*)\s-\s(.*)")
 
 
 @login_required
+def transactions(request):
+    transaction_journals = TransactionJournal.objects.all()
+
+    period = get_default_value(key="default_period", default_value="month", user=request.user)
+    period = calculate_period(periodicity=period, start_date=timezone.localdate())
+
+    filter_form = TransactionFilterForm(request.GET or None, initial={"start_date": period["start_date"], "end_date": period["end_date"]})
+    if filter_form.is_valid():
+        period["start_date"] = filter_form.cleaned_data["start_date"]
+        period["end_date"] = filter_form.cleaned_data["end_date"]
+
+        if filter_form.cleaned_data["description"] != "":
+            transaction_journals = transaction_journals.filter(
+                Q(short_description__icontains=filter_form.cleaned_data["description"])
+                | Q(description__icontains=filter_form.cleaned_data["description"])
+            )
+
+        if filter_form.cleaned_data["account"] != "":
+            account_type = Account.AccountType.REVENUE_ACCOUNT
+            account_name = filter_form.cleaned_data["account"]
+
+            for type in Account.AccountType:
+                if type.label == ACCOUNT_REGEX.match(account_name)[1]:
+                    account_type = type
+
+            if ACCOUNT_REGEX.match(account_name) is not None:
+                account_name = ACCOUNT_REGEX.match(account_name)[2]
+
+            account = Account.objects.get(name=account_name, type=account_type)
+            transaction_journals = transaction_journals.filter(transactions__account=account)
+
+    transaction_journals = (
+        transaction_journals.filter(date__range=(period["start_date"], period["end_date"])).prefetch_related("transactions").order_by("-date")
+    )
+    transactions = Transaction.objects.filter(journal__in=transaction_journals).annotate(total=Coalesce(Sum("amount"), Decimal(0)))
+
+    charts = {
+        "income_chart": TransactionChart(
+            data=transactions.exclude(journal__type=TransactionJournal.TransactionType.TRANSFER), user=request.user, income=True
+        ).generate_json(),
+        "income_chart_count": len([item for item in transactions if not item.amount.amount < 0]),
+        "expense_budget_chart": TransactionChart(data=transactions, expenses_budget=True, user=request.user).generate_json(),
+        "expense_budget_chart_count": len([item for item in transactions if item.amount.amount < 0 and item.journal.budget is not None]),
+        "expense_category_chart": TransactionChart(data=transactions, expenses_category=True, user=request.user).generate_json(),
+        "expense_category_chart_count": len([item for item in transactions if item.amount.amount < 0 and item.journal.category is not None]),
+    }
+
+    return render(
+        request,
+        "blackbook/transactions/list.html",
+        {"filter_form": filter_form, "charts": charts, "period": period, "transaction_journals": transaction_journals},
+    )
+
+
+@login_required
 def add_edit(request, transaction_uuid=None):
     initial_data = {}
     transaction_journal = TransactionJournal()
 
-    initial_amount = Money(0, get_default_currency(user=request.user))
-    initial_data["amount"] = initial_amount
+    initial_data["amount"] = Money(0, get_default_currency(user=request.user))
 
     if transaction_uuid is not None:
         transaction_journal = TransactionJournal.objects.prefetch_related("transactions", "transactions__account").get(uuid=transaction_uuid)
 
         initial_data = {
-            "amount": initial_amount,
+            "amount": abs(transaction_journal.amount),
             "short_description": transaction_journal.short_description,
             "description": transaction_journal.description,
             "type": transaction_journal.type,
@@ -37,13 +93,6 @@ def add_edit(request, transaction_uuid=None):
             "source_account": None,
             "destination_account": None,
         }
-
-        if transaction_journal.type == TransactionJournal.TransactionType.WITHDRAWAL:
-            initial_data["amount"] = abs(transaction_journal.transactions.get(amount__lte=0).amount)
-        elif transaction_journal.type == TransactionJournal.TransactionType.DEPOSIT:
-            initial_data["amount"] = abs(transaction_journal.transactions.get(amount__gte=0).amount)
-        else:
-            initial_data["amount"] = abs(transaction_journal.transactions.first().amount)
 
         if len(transaction_journal.source_accounts) > 0:
             initial_data["source_account"] = "{type} - {name}".format(

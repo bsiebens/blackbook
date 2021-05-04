@@ -40,9 +40,9 @@ def accounts(request, account_type=None, account_slug=None):
             ).generate_json(),
             "income_chart": TransactionChart(data=transactions, user=request.user, income=True).generate_json(),
             "income_chart_count": len([item for item in transactions if not item.amount.amount < 0]),
-            "expense_budget_chart": TransactionChart(data=transactions, expenses_budget=True, user=request.user, income=True).generate_json(),
+            "expense_budget_chart": TransactionChart(data=transactions, expenses_budget=True, user=request.user).generate_json(),
             "expense_budget_chart_count": len([item for item in transactions if item.amount.amount < 0 and item.journal.budget is not None]),
-            "expense_category_chart": TransactionChart(data=transactions, expenses_category=True, user=request.user, income=True).generate_json(),
+            "expense_category_chart": TransactionChart(data=transactions, expenses_category=True, user=request.user).generate_json(),
             "expense_category_chart_count": len([item for item in transactions if item.amount.amount < 0 and item.journal.category is not None]),
         }
 

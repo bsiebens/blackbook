@@ -31,10 +31,13 @@ class TransactionInline(admin.TabularInline):
 class TransactionJournalAdmin(admin.ModelAdmin):
     ordering = ["date"]
     date_hierarchy = "date"
-    list_display = ["uuid", "short_description", "date", "type", "created", "modified"]
+    list_display = ["uuid", "short_description", "date", "amount", "type", "created", "modified"]
     search_fields = ["uuid", "short_description", "description"]
     fieldsets = [
-        ["General information", {"fields": ["date", "short_description", "description", "type", "source_accounts", "destination_accounts"]}],
+        [
+            "General information",
+            {"fields": ["date", "short_description", "description", "type"]},
+        ],
         ["Options", {"fields": ["uuid"]}],
     ]
     list_filter = ["type"]

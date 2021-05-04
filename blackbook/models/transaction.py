@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.utils.functional import cached_property
 
 from djmoney.models.fields import MoneyField
+from djmoney.money import Money
 
 from .base import get_default_currency
 from .account import Account
@@ -27,6 +28,7 @@ class TransactionJournal(models.Model):
     category = models.CharField(null=True, blank=True, max_length=1)
     source_accounts = models.JSONField(null=True)
     destination_accounts = models.JSONField(null=True)
+    amount = MoneyField("amount", max_digits=15, decimal_places=2, default_currency=get_default_currency(), default=0)
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -153,6 +155,15 @@ class TransactionJournal(models.Model):
             {"account": account.name, "slug": account.slug, "type": account.get_type_display(), "link_type": account.type, "icon": account.icon}
             for account in destination_accounts
         ]
+
+        self.amount = self.transactions.first().amount
+        if self.type == self.TransactionType.WITHDRAWAL:
+            self.amount = self.transactions.get(amount__lte=0).amount
+        if self.type == self.TransactionType.DEPOSIT or type == self.TransactionType.TRANSFER:
+            self.amount = self.transactions.get(amount__gte=0).amount
+
+        if self.type == self.TransactionType.TRANSFER:
+            self.amount = abs(self.amount)
 
         self.save()
 

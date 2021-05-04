@@ -93,11 +93,14 @@ class TransactionForm(forms.Form):
         super(TransactionForm, self).__init__(*args, **kwargs)
 
         accounts = Account.objects.filter(active=True).order_by("type", "name")
-
         account_list = ["{type} - {account.name}".format(type=account.get_type_display(), account=account) for account in accounts]
 
-        self.fields["source_account"].widget = ListTextWidget(data_list=account_list, name="source_account_list")
-        self.fields["destination_account"].widget = ListTextWidget(data_list=account_list, name="destination_account_list")
+        self.fields["source_account"].widget = ListTextWidget(
+            data_list=account_list, name="source_account_list", attrs={"placeholder": "Select account"}
+        )
+        self.fields["destination_account"].widget = ListTextWidget(
+            data_list=account_list, name="destination_account_list", attrs={"placeholder": "Select account"}
+        )
         self.fields["amount"].inital = ["0", get_default_currency(user=user)]
 
         self.fields["type"].choices = [
@@ -134,3 +137,22 @@ class TransactionForm(forms.Form):
 
                 if cleaned_data.get("destination_account") == "":
                     self.add_error("destination_account", "Destination account must be set for this transaction type.")
+
+
+class TransactionFilterForm(forms.Form):
+    start_date = forms.DateField(widget=DateInput, required=False)
+    end_date = forms.DateField(widget=DateInput, required=False)
+    description = forms.CharField(required=False, widget=forms.TextInput(attrs={"placeholder": "Search description", "size": 40}))
+    account = forms.CharField(required=False)
+    category = forms.CharField(required=False)
+    budget = forms.CharField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(TransactionFilterForm, self).__init__(*args, **kwargs)
+
+        accounts = Account.objects.filter(active=True).order_by("type", "name")
+        account_list = ["{type} - {account.name}".format(type=account.get_type_display(), account=account) for account in accounts]
+
+        self.fields["account"].widget = ListTextWidget(
+            data_list=account_list, name="account-list", attrs={"placeholder": "Select account", "size": 40}
+        )
