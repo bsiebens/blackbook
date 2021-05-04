@@ -392,7 +392,7 @@
                                                         <i class="fas fa-edit"></i>
                                                     </span>
                                                 </a>
-                                                <a class="button is-danger is-small jb-modal" data-target="modal-transaction-delete-{{ transaction.uuid }}" type="button">
+                                                <a class="button is-danger is-small jb-modal" data-target="modal-transaction-delete-{{ transaction.journal.uuid }}" type="button">
                                                     <span class="icon">
                                                         <i class="fas fa-trash-alt"></i>
                                                     </span>
@@ -412,8 +412,8 @@
 {% endblock content %}
 
 {% block modals %}
-    {% for transaction in account.transactions.all %}
-        <div id="modal-transaction-delete-{{ transaction.uuid }}" class="modal">
+    {% for transaction in transactions %}
+        <div id="modal-transaction-delete-{{ transaction.journal.uuid }}" class="modal">
             <div class="modal-background jb-modal-close"></div>
             <div class="modal-card">
                 <header class="modal-card-head">
@@ -426,9 +426,9 @@
                 </section>
                 <footer class="modal-card-foot">
                     <button class="button jb-modal-close">Cancel</button>
-                    <form method="post" action="">
+                    <form method="post" action="{% url "blackbook:transactions_delete" %}">
                         {% csrf_token %}
-                        <input type="hidden" name="transaction_uuid" value="{{ transaction.uuid }}">
+                        <input type="hidden" name="transaction_uuid" value="{{ transaction.journal.uuid }}">
                         <button class="button is-danger" type="submit">Delete</button>
                     </form>
                 </footer>

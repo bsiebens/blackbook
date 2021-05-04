@@ -118,3 +118,18 @@ def add_edit(request, transaction_uuid=None):
         "blackbook/transactions/form.html",
         {"transaction_form": transaction_form, "transaction_journal": transaction_journal, "amount": initial_data["amount"]},
     )
+
+
+@login_required
+def delete(request):
+    if request.method == "POST":
+        journal_entry = TransactionJournal.objects.get(uuid=request.POST.get("transaction_uuid"))
+        journal_entry.delete()
+
+        return set_message_and_redirect(
+            request,
+            's|Transaction "{journal_entry.short_description}" was succesfully deleted.'.format(journal_entry=journal_entry),
+            reverse("blackbook:dashboard"),
+        )
+    else:
+        return set_message_and_redirect(request, "w|You are not allowed to access this page like this.", reverse("blackbook:dashboard"))
