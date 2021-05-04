@@ -45,6 +45,7 @@ def dashboard(request):
         "charts": {
             "account_chart": AccountChart(
                 data=net_worth_transactions,
+                accounts=accounts,
                 start_date=calculate_period(periodicity=period, start_date=timezone.localdate())["start_date"],
                 end_date=calculate_period(periodicity=period, start_date=timezone.localdate())["end_date"],
                 user=request.user,

@@ -4,6 +4,7 @@ from djmoney.money import Money
 from datetime import timedelta
 
 import json
+import re
 
 from .models import get_default_currency, TransactionJournal, Transaction, Account
 from .utilities import get_currency
@@ -73,9 +74,10 @@ class Chart:
 
 
 class AccountChart(Chart):
-    def __init__(self, data, start_date, end_date, user=None, *args, **kwargs):
+    def __init__(self, data, accounts, start_date, end_date, user=None, *args, **kwargs):
         self.start_date = start_date
         self.end_date = end_date
+        self.accounts = accounts
         self.user = user
         self.currency = get_default_currency(user=self.user)
 
@@ -108,15 +110,23 @@ class AccountChart(Chart):
 
         for item in self.data:
             if str(item.amount.currency) == str(self.currency) and item.account is not None:
-                if item.account.name in accounts.keys():
-                    date_entry = accounts[item.account.name].get(item.journal.date, Money(0, self.currency))
+                account_key = "{type} - {account}".format(type=item.account.get_type_display(), account=item.account.name)
+
+                if account_key in accounts.keys():
+                    date_entry = accounts[account_key].get(item.journal.date, Money(0, self.currency))
                     date_entry += Money(item.total, self.currency)
 
-                    accounts[item.account.name][item.journal.date] = date_entry
+                    accounts[account_key][item.journal.date] = date_entry
 
                 else:
-                    accounts[item.account.name] = {item.journal.date: Money(item.total, self.currency)}
-                    accounts_virtual_balance[item.account.name] = item.account.virtual_balance
+                    accounts[account_key] = {item.journal.date: Money(item.total, self.currency)}
+                    accounts_virtual_balance[account_key] = item.account.virtual_balance
+
+        for account in self.accounts:
+            account_key = "{type} - {account}".format(type=account.get_type_display(), account=account.name)
+
+            if account_key not in accounts.keys():
+                accounts[account_key] = {}
 
         counter = 1
         for account, date_entries in accounts.items():
@@ -150,8 +160,17 @@ class AccountChart(Chart):
                 value = 0
 
                 if date_index == 0:
-                    account_object = Account.objects.get(name=account)
-                    value = float(account_object.balance_until_date(date - timedelta(days=1)).amount) - float(accounts_virtual_balance[account])
+                    ACCOUNT_REGEX = re.compile(r"(.*)\s-\s(.*)")
+
+                    account_name = ACCOUNT_REGEX.match(account)[2]
+                    account_type = Account.AccountType.ASSET_ACCOUNT
+
+                    for type in Account.AccountType:
+                        if type.label == ACCOUNT_REGEX.match(account)[1]:
+                            account_type = type
+
+                    account_object = Account.objects.get(name=account_name, type=account_type)
+                    value = float(account_object.balance_until_date(date - timedelta(days=1)).amount) - float(account_object.virtual_balance)
                 else:
                     value = account_data["data"][date_index - 1]
 

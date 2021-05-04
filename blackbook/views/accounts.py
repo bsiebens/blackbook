@@ -36,7 +36,7 @@ def accounts(request, account_type=None, account_slug=None):
 
         charts = {
             "account_chart": AccountChart(
-                data=transactions, start_date=period["start_date"], end_date=period["end_date"], user=request.user
+                data=transactions, accounts=[account], start_date=period["start_date"], end_date=period["end_date"], user=request.user
             ).generate_json(),
             "income_chart": TransactionChart(data=transactions, user=request.user, income=True).generate_json(),
             "income_chart_count": len([item for item in transactions if not item.amount.amount < 0]),
