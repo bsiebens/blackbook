@@ -9,7 +9,7 @@
 
 {% block breadcrumbs %}
     <li>Accounts</li>
-    <li>{{ account.account_type.name }}s</li>
+    <li>{{ account.get_type_display }}s</li>
 {% endblock breadcrumbs %}
 
 {% block hero-section %}
@@ -29,15 +29,15 @@
                         <h3 class="subtitle">
                             <span class="tag is-info">
                                 <span class="icon">
-                                    <i class="fas {{ account.account_type.icon }}"></i>
+                                    <i class="fas {{ account.icon }}"></i>
                                 </span>
-                                <span>{{ account.account_type.name }}</span>
+                                <span>{{ account.get_type_display }}</span>
                             </span>
                             
                             {% if account.iban is not None %}
                                 <span class="tag is-info">
                                     <span class="icon">
-                                        <i class="fas {{ account.account_type.icon }}"></i>
+                                        <i class="fas {{ account.icon }}"></i>
                                     </span>
                                     <span>{{ account.iban|iban }}</span>
                                 </span>
@@ -48,7 +48,7 @@
                                     <i class="fas fa-coins"></i>
                                 </span>
                                 <span>
-                                    {% if account.total.amount > 0 %}+{% endif %}{% money_localize account.total %}
+                                    {% if account.total.amount > 0 %}+{% endif %}{% money_localize account.total%}
                                 </span>
                             </span>
                         </h3>
@@ -110,14 +110,14 @@
                         <div class="level-item">
                             <div class="is-widget-label">
                                 <h3 class="subtitle is-spaced">Income</h3>
-                                <h1 class="title">
+                                <h1 class="title has-text-{% if in_for_period.amount > 0 %}success{% else %}grey{% endif %}">
                                     {% if in_for_period.amount > 0 %}+{% endif %}{% money_localize in_for_period %}
                                 </h1>
                             </div>
                         </div>
                         <div class="level-item has-widget-icon">
                             <div class="is-widget-icon">
-                                <span class="icon has-text-success is-large"><i class="fas fa-arrow-down fa-3x"></i></span>
+                                <span class="icon has-text-{% if in_for_period.amount > 0 %}success{% else %}grey{% endif %} is-large"><i class="fas fa-arrow-down fa-3x"></i></span>
                             </div>
                         </div>
                     </div>
@@ -139,14 +139,14 @@
                         <div class="level-item">
                             <div class="is-widget-label">
                                 <h3 class="subtitle is-spaced">Expenses</h3>
-                                <h1 class="title">
+                                <h1 class="title has-text-{% if out_for_period.amount < 0 %}danger{% else %}grey{% endif %}">
                                     {% money_localize out_for_period %}
                                 </h1>
                             </div>
                         </div>
                         <div class="level-item has-widget-icon">
                             <div class="is-widget-icon">
-                                <span class="icon has-text-danger is-large"><i class="fas fa-arrow-up fa-3x"></i></span>
+                                <span class="icon has-text-{% if out_for_period.amount < 0 %}danger{% else %}grey{% endif %} is-large"><i class="fas fa-arrow-up fa-3x"></i></span>
                             </div>
                         </div>
                     </div>
@@ -168,7 +168,7 @@
                         <div class="level-item">
                             <div class="is-widget-label">
                                 <h3 class="subtitle is-spaced">Balance</h3>
-                                <h1 class="title">
+                                <h1 class="title has-text-{% if balance_for_period.amount > 0 %}success{% elif balance_for_period.amount < 0 %}danger{% else %}grey{% endif %}">
                                     {% if balance_for_period.amount > 0 %}+{% endif %}{% money_localize balance_for_period %}
                                 </h1>
                             </div>
@@ -197,7 +197,7 @@
                 </header>
                 <div class="card-content">
                     {% if charts.income_chart_count == 0 %}
-                        <p>No transaction information available yet.</p>
+                        <h3 class="subtitle is-spaced has-text-centered">No transaction information available yet.</h3>
                     {% else %}
                         <div class="chart-area">
                             <div style="height: 100%;">
@@ -228,7 +228,7 @@
                 </header>
                 <div class="card-content">
                     {% if charts.expense_category_chart_count == 0 %}
-                        <p>No transaction information available yet.</p>
+                        <h3 class="subtitle is-spaced has-text-centered">No transaction information available yet.</h3>
                     {% else %}
                         <div class="chart-area">
                             <div style="height: 100%;">
@@ -259,7 +259,7 @@
                 </header>
                 <div class="card-content">
                     {% if charts.expense_budget_chart_count == 0 %}
-                        <p>No transaction information available yet.</p>
+                        <h3 class="subtitle is-spaced has-text-centered">No transaction information available yet.</h3>
                     {% else %}
                         <div class="chart-area">
                             <div style="height: 100%;">
@@ -296,23 +296,23 @@
                         <thead>
                             <tr>
                                 <th></th>
-                                <th>Transaction</th>
-                                <th>Amount</th>
-                                <th>Date</th>
-                                <th>Category</th>
-                                <th>Budget</th>
-                                <th>Related account</th>
+                                <th><div class="th-wrap">Transaction</div></th>
+                                <th><div class="th-wrap">Amount</div></th>
+                                <th><div class="th-wrap">Date</div></th>
+                                <th><div class="th-wrap">Category</div></th>
+                                <th><div class="th-wrap">Budget</div></th>
+                                <th><div class="th-wrap">Related accounts</div></th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for transaction in account.transactions.all %}
+                            {% for transaction in transactions %}
                                 <tr>
                                     <td>
                                         <span class="icon">
-                                            {% if transaction.journal_entry.transaction_type == "transfer" %}
+                                            {% if transaction.journal.type == "transfer" %}
                                                 <i class="fas fa-exchange-alt"></i>
-                                            {% elif transaction.journal_entry.transaction_type == "withdrawal" %}
+                                            {% elif transaction.journal.type == "withdrawal" %}
                                                 <i class="fas fa-long-arrow-alt-left"></i>
                                             {% else %}
                                                 <i class="fas fa-long-arrow-alt-right"></i>
@@ -324,64 +324,80 @@
                                             </span>
                                         {% endif %}
                                     </td>
-                                    <td data-label="Transaction">{{ transaction.journal_entry.description }}</td>
+                                    <td data-label="Transaction">{{ transaction.journal.short_description }}</td>
                                     <td data-label="Amount">
-                                        <span class="has-text-{% if transaction.negative %}danger{% else %}success{% endif %}">
-                                            {% if not transaction.negative %}+{% endif %}{% money_localize transaction.amount %}
+                                        <span class="has-text-{% if transaction.amount.amount < 0 %}danger{% else %}success{% endif %}">
+                                            {% if not transaction.amount.amount < 0 %}+{% endif %}{% money_localize transaction.amount %}
                                         </span>
                                     </td>
-                                    <td data-label="Date">{{ transaction.journal_entry.date|date:"d b Y" }}</td>
+                                    <td data-label="Date">{{ transaction.journal.date|date:"d b Y" }}</td>
                                     <td data-label="Category">
-                                        {% if transaction.journal_entry.category is not None %}
+                                        {% if transaction.journal.category is not None %}
                                             <span class="tag is-success">
                                                 <span class="icon">
                                                     <i class="fas fa-hashtag"></i>
                                                 </span>
-                                                <span>{{ transaction.journal_entry.category.name }}</span>
+                                                <span>{{ transaction.journal.category.name }}</span>
                                             </span>
                                         {% else %}
                                             -
                                         {% endif %}
                                     </td>
                                     <td data-label="Budget">
-                                        {% if transaction.journal_entry.budget is not None %}
+                                        {% if transaction.journal.budget is not None %}
                                             <span class="tag is-warning">
                                                 <span class="icon">
                                                     <i class="fas fa-chart-pie"></i>
                                                 </span>
-                                                <span>{{ transaction.journal_entry.budget.budget.name }}</span>
+                                                <span>{{ transaction.journal.budget.budget.name }}</span>
                                             </span>
                                         {% else %}
                                             -
                                         {% endif %}
                                     </td>
-                                    <td data-label="Related account">
-                                        {% if not transaction.negative and transaction.journal_entry.from_account is not None %}
-                                            From: <a href="{% url "blackbook:accounts" transaction.journal_entry.from_account.account_type.category transaction.journal_entry.from_account.slug %}">
-                                                {{ transaction.journal_entry.from_account.name }}
-                                            </a>
-                                        {% elif transaction.negative and transaction.journal_entry.to_account is not None %}
-                                            To: <a href="{% url "blackbook:accounts" transaction.journal_entry.to_account.account_type.category transaction.journal_entry.to_account.slug %}">
-                                                {{ transaction.journal_entry.to_account.name }}
-                                            </a>
-                                        {% else %}
+                                    <td data-label="Related accounts">
+                                        {% if transaction.journal.source_accounts|length > 0 %}
+                                            From: 
+                                            {% for account in transaction.journal.source_accounts %}
+                                                <a href="{% url "blackbook:accounts_view" account.type account.slug %}">
+                                                    {{ account.account }}
+                                                </a>
+                                                {% if not forloop.last %}&nbsp;/&nbsp;{% endif %}
+                                            {% endfor %}
+
+                                            {% if transaction.journal.destination_accounts|length > 0 %}
+                                                <br />
+                                            {% endif %}
+                                        {% endif %}
+
+                                        {% if transaction.journal.destination_accounts|length > 0 %}
+                                            To: 
+                                            {% for account in transaction.journal.destination_accounts %}
+                                                <a href="{% url "blackbook:accounts_view" account.type account.slug %}">
+                                                    {{ account.account }}
+                                                </a>
+                                                {% if not forloop.last %}&nbsp;/&nbsp;{% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+
+                                        {% if transaction.journal.destination_accounts|length == 0 and transaction.journal.source_accounts|length == 0 %}
                                             -
                                         {% endif %}
                                     </td>
                                     <td>
                                         <div class="buttons is-right">
-                                            {% if transaction.journal_entry.transaction_type != "start" %}
-                                                <a class="button is-primary is-small" href="{% url "blackbook:transactions_edit" transaction.uuid %}" type="button">
+                                            {% if transaction.journal.type != "start" %}
+                                                <a class="button is-primary is-small" href="{% url "blackbook:transactions_edit" transaction.journal.uuid %}" type="button">
                                                     <span class="icon">
                                                         <i class="fas fa-edit"></i>
                                                     </span>
                                                 </a>
+                                                <a class="button is-danger is-small jb-modal" data-target="modal-transaction-delete-{{ transaction.uuid }}" type="button">
+                                                    <span class="icon">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </span>
+                                                </a>
                                             {% endif %}
-                                            <a class="button is-danger is-small jb-modal" data-target="modal-transaction-delete-{{ transaction.uuid }}" type="button">
-                                                <span class="icon">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </span>
-                                            </a>
                                         </div>                    
                                     </td>
                                 </tr>
@@ -405,12 +421,12 @@
                     <button class="delete jb-modal-close" aria-label="close"></button>
                 </header>
                 <section class="modal-card-body">
-                    <p>This will permanently delete transaction <b>{{ transaction.journal_entry.description }}</b>.</p>
+                    <p>This will permanently delete transaction <b>{{ transaction.journal.short_description }}</b>.</p>
                     <p>Are you sure?</p>
                 </section>
                 <footer class="modal-card-foot">
                     <button class="button jb-modal-close">Cancel</button>
-                    <form method="post" action="{% url "blackbook:transactions_delete" %}">
+                    <form method="post" action="">
                         {% csrf_token %}
                         <input type="hidden" name="transaction_uuid" value="{{ transaction.uuid }}">
                         <button class="button is-danger" type="submit">Delete</button>

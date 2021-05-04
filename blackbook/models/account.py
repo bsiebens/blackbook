@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.functional import cached_property
@@ -7,6 +7,7 @@ from django.utils.functional import cached_property
 from localflavor.generic.models import IBANField
 from djmoney.money import Money
 from djmoney.models.fields import CurrencyField
+from decimal import Decimal
 
 from .base import get_default_currency, get_currency_choices
 from ..utilities import calculate_period, unique_slugify
@@ -37,36 +38,45 @@ class Account(models.Model):
     )
     type = models.CharField(max_length=50, choices=AccountType.choices)
     icon = models.CharField(max_length=50)
+    iban = IBANField("IBAN", null=True, blank=True)
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["name"]
+        constraints = [models.UniqueConstraint(fields=["type", "name"], name="unique_account_name")]
 
     def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
-        unique_slugify(self, self.name)
-        super(Account, self).save(*args, **kwargs)
+        type_to_icon = {
+            "assetaccount": "fa-landmark",
+            "revenueaccount": "fa-donate",
+            "expenseaccount": "fa-file-invoice-dollar",
+            "liabilitiesaccount": "fa-home",
+            "cashaccount": "fa-coins",
+        }
 
-    @property
-    def account(self):
-        return getattr(self, self.type)
+        unique_slugify(self, self.name)
+        self.icon = type_to_icon[self.type]
+
+        super(Account, self).save(*args, **kwargs)
 
     @cached_property
     def starting_balance(self):
+        from .transaction import TransactionJournal
+
         try:
             opening_balance = (
-                self.transactions.select_related("transaction")
-                .filter(transaction__type=Transaction.TransactionType.START)
-                .get(transaction__date=self.created)
+                self.transactions.filter(journal__type=TransactionJournal.TransactionType.START).get(journal__date=self.created.date()).amount
             )
-            return Money(opening_balance, self.currency) - Money(self.virtual_balance, self.currency)
+
+            return opening_balance
 
         except:
-            return Money(0, self.currency) - Money(self.virtual_balance, self.currency)
+            return Money(0, self.currency)
 
     @cached_property
     def balance(self):
@@ -74,67 +84,10 @@ class Account(models.Model):
 
     def balance_until_date(self, date=timezone.localdate()):
         try:
-            total = Money(
-                self.transactions.filter(transaction__date__lte=date)
-                .filter(transaction__amount_currency=self.currency)
-                .aggregate(total=Coalesce(Sum("amount"), 0))["total"],
-                self.currency,
-            ) + Money(
-                self.transactions.filter(transaction__date__lte=date)
-                .filter(transaction__foreign_amount_currency=self.currency)
-                .aggregate(total=Coalesce(Sum("foreign_amount"), 0))["total"],
-                self.currency,
-            )
+            total_amount = self.transactions.filter(journal__date__lte=date).aggregate(total=Coalesce(Sum("amount"), Decimal(0)))["total"]
+            total = Money(total_amount, self.currency)
 
             return total - Money(self.virtual_balance, self.currency)
 
         except:
             return Money(0, self.currency) - Money(self.virtual_balance, self.currency)
-
-
-class AssetAccount(Account):
-    iban = IBANField("IBAN", null=True, blank=True)
-
-    def save(self, *args, **kwargs):
-        self.type = Account.AccountType.ASSET_ACCOUNT
-        self.icon = "fa-landmark"
-
-        super().save(*args, **kwargs)
-
-
-class RevenueAccount(Account):
-    iban = IBANField("IBAN", null=True, blank=True)
-
-    def save(self, *args, **kwargs):
-        self.type = Account.AccountType.REVENUE_ACCOUNT
-        self.icon = "fa-donate"
-
-        super().save(*args, **kwargs)
-
-
-class ExpenseAccount(Account):
-    iban = IBANField("IBAN", null=True, blank=True)
-
-    def save(self, *args, **kwargs):
-        self.type = Account.AccountType.EXPENSE_ACCOUNT
-        self.icon = "fa-file-invoice-dollar"
-
-        super().save(*args, **kwargs)
-
-
-class LiabilitiesAccount(Account):
-    account_number = models.CharField(max_length=100, blank=True, null=True)
-
-    def save(self, *args, **kwargs):
-        self.type = Account.AccountType.LIABILITIES_ACCOUNT
-        self.icon = "fa-home"
-
-        super().save(*args, **kwargs)
-
-
-class CashAccount(Account):
-    def save(self, *args, **kwargs):
-        self.type = Account.AccountType.CASH_ACCOUNT
-        self.icon = "fa-coins"
-
-        super().save(*args, **kwargs)
