@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Sum
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.conf import settings
@@ -7,6 +8,7 @@ from django.conf import settings
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
 from model_utils import FieldTracker
+from decimal import Decimal
 
 from .base import get_default_currency
 
@@ -45,6 +47,35 @@ class Budget(models.Model):
     def __str__(self):
         return self.name
 
+    @cached_property
+    def current_period(self):
+        return self.get_period_for_date(date=timezone.localdate())
+
+    @cached_property
+    def used(self):
+        if self.auto_budget != self.AutoBudget.NO:
+            return self.current_period.used
+
+        from .transaction import TransactionJournal
+
+        return Money(
+            TransactionJournal.objects.filter(budget__budget=self)
+            .filter(type__in=[TransactionJournal.TransactionType.WITHDRAWAL, TransactionJournal.TransactionType.TRANSFER])
+            .filter(transactions__amount_currency=self.amount.currency)
+            .aggregate(total=Coalesce(Sum("amount"), Decimal(0)))["total"],
+            self.amount.currency,
+        )
+
+    @cached_property
+    def available(self):
+        return self.amount - self.used
+
+    def get_period_for_date(self, date):
+        try:
+            return self.periods.get(start_date__lte=date, end_date__gte=date)
+        except BudgetPeriod.DoesNotExist:
+            return None
+
 
 class BudgetPeriod(models.Model):
     budget = models.ForeignKey(Budget, on_delete=models.CASCADE, related_name="periods")
@@ -61,3 +92,18 @@ class BudgetPeriod(models.Model):
 
     def __str__(self):
         return "{i.budget.name}: {i.start_date} <> {i.end_date} ({i.amount})".format(i=self)
+
+    @cached_property
+    def used(self):
+        from .transaction import TransactionJournal
+
+        return Money(
+            self.transactions.filter(type__in=[TransactionJournal.TransactionType.WITHDRAWAL, TransactionJournal.TransactionType.TRANSFER])
+            .filter(transactions__amount_currency=self.amount.currency)
+            .aggregate(total=Coalesce(Sum("amount"), Decimal(0)))["total"],
+            self.amount.currency,
+        )
+
+    @cached_property
+    def available(self):
+        return self.amount - self.used
