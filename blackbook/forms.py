@@ -163,3 +163,9 @@ class TransactionFilterForm(forms.Form):
         self.fields["category"].widget = ListTextWidget(
             data_list=Category.objects.all(), name="category_list", attrs={"placeholder": "Select category"}
         )
+
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ["name"]
