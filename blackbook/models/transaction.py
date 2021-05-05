@@ -7,6 +7,7 @@ from djmoney.money import Money
 
 from .base import get_default_currency
 from .account import Account
+from .category import Category
 
 import uuid
 
@@ -25,7 +26,7 @@ class TransactionJournal(models.Model):
     description = models.TextField(blank=True, null=True)
     uuid = models.UUIDField("UUID", default=uuid.uuid4, editable=False, db_index=True, unique=True)
     budget = models.CharField(null=True, blank=True, max_length=1)
-    category = models.CharField(null=True, blank=True, max_length=1)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, blank=True, null=True)
     source_accounts = models.JSONField(null=True)
     destination_accounts = models.JSONField(null=True)
     amount = MoneyField("amount", max_digits=15, decimal_places=2, default_currency=get_default_currency(), default=0)

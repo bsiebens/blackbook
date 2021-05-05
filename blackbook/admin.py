@@ -36,7 +36,7 @@ class TransactionJournalAdmin(admin.ModelAdmin):
     fieldsets = [
         [
             "General information",
-            {"fields": ["date", "short_description", "description", "type"]},
+            {"fields": ["date", "short_description", "description", "type", "category"]},
         ],
         ["Options", {"fields": ["uuid"]}],
     ]
