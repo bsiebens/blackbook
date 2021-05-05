@@ -81,8 +81,29 @@ class AccountAdmin(admin.ModelAdmin):
 class CategoryAdmin(admin.ModelAdmin):
     ordering = ["name"]
     list_display = ["name", "uuid", "created", "modified"]
-    search_fields = ["name"]
+    search_fields = ["name", "uuid"]
     fieldsets = [
         ["General information", {"fields": ["name", "uuid"]}],
     ]
+    readonly_fields = ["uuid"]
+
+
+class BudgetPeriodInline(admin.TabularInline):
+    model = models.BudgetPeriod
+    extra = 0
+    fields = ["start_date", "end_date", "amount", "created", "modified"]
+    readonly_fields = fields
+
+
+@admin.register(models.Budget)
+class BudgetAdmin(admin.ModelAdmin):
+    ordering = ["name"]
+    list_display = ["name", "active", "amount", "auto_budget", "auto_budget_period", "uuid", "created", "modified"]
+    search_fields = ["name", "uuid"]
+    list_filter = ["active", "auto_budget", "auto_budget_period"]
+    fieldsets = [
+        ["General information", {"fields": ["name"]}],
+        ["Options", {"fields": ["active", "amount", "auto_budget", "auto_budget_period", "uuid"]}],
+    ]
+    inlines = [BudgetPeriodInline]
     readonly_fields = ["uuid"]
