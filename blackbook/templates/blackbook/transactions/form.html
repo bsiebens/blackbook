@@ -60,6 +60,8 @@
                         {% form_field transaction_form.source_account None "fa-landmark" %}
                         {% form_field transaction_form.destination_account None "fa-landmark" %}
                         <hr />
+                        {% form_field transaction_form.category None %}
+                        <hr />
                         {% form_field transaction_form.display "Display after save" %}
                         {% form_field transaction_form.add_new "Return after save" %}
                         <hr />
@@ -109,8 +111,8 @@
                             <div class="field">
                                 <label class="label">Category</label>
                                 <div class="control is-clearfix">
-                                    {% if transaction.id is not None and transaction_journal.category is not None %}
-                                        <span class="tag is-success">
+                                    {% if transaction_journal.id is not None and transaction_journal.category is not None %}
+                                        <span class="tag is-info">
                                             <span class="icon">
                                                 <i class="fas fa-hashtag"></i>
                                             </span>
@@ -143,7 +145,7 @@
                                 <label class="label">Budget</label>
                                 <div class="control is-clearfix">
                                     {% if transaction.id is not None and transaction_journal.budget is not None %}
-                                        <span class="tag is-warning">
+                                        <span class="tag is-info">
                                             <span class="icon">
                                                 <i class="fas fa-chart-pie"></i>
                                             </span>
@@ -198,7 +200,7 @@
                                 <div class="control is-clearfix">
                                     {% if transaction_journal.id is not None and transaction_journal.source_accounts|length > 0 %}
                                         <a href="{% url "blackbook:accounts_view" transaction_journal.source_accounts.0.link_type transaction_journal.source_accounts.0.slug %}">
-                                            <span class="tag is-dark">
+                                            <span class="tag is-info">
                                                 <span class="icon">
                                                     <i class="fas {{ transaction_journal.source_accounts.0.icon }}"></i>
                                                 </span>
@@ -206,7 +208,7 @@
                                             </span>
                                         </a>
                                     {% else %}
-                                        <span class="tag is-dark">
+                                        <span class="tag is-info">
                                             <span class="icon">
                                                 <i class="fas fa-coins"></i>
                                             </span>
@@ -222,7 +224,7 @@
                                 <div class="control is-clearfix">
                                     {% if transaction_journal.id is not None and transaction_journal.destination_accounts|length > 0 %}
                                         <a href="{% url "blackbook:accounts_view" transaction_journal.destination_accounts.0.link_type transaction_journal.destination_accounts.0.slug %}">
-                                            <span class="tag is-dark">
+                                            <span class="tag is-info">
                                                 <span class="icon">
                                                     <i class="fas {{ transaction_journal.destination_accounts.0.icon }}"></i>
                                                 </span>
@@ -230,7 +232,7 @@
                                             </span>
                                         </a>
                                     {% else %}
-                                        <span class="tag is-dark">
+                                        <span class="tag is-info">
                                             <span class="icon">
                                                 <i class="fas fa-coins"></i>
                                             </span>

@@ -4,7 +4,7 @@ from django.utils import timezone, safestring
 from djmoney.forms.fields import MoneyField
 from djmoney.forms.widgets import MoneyWidget
 
-from .models import get_currency_choices, get_default_currency, Account, TransactionJournal
+from .models import get_currency_choices, get_default_currency, Account, TransactionJournal, Category
 from .utilities import validate_iban, format_iban
 
 
@@ -86,6 +86,7 @@ class TransactionForm(forms.Form):
     amount = MoneyField(widget=BulmaMoneyWidget)
     source_account = forms.CharField(required=False)
     destination_account = forms.CharField(required=False)
+    category = forms.CharField(required=False)
     add_new = forms.BooleanField(required=False, initial=False, help_text="After saving, display this form again to add a new transaction.")
     display = forms.BooleanField(required=False, initial=True, help_text="After saving, display this form again to review this transaction.")
 
@@ -100,6 +101,9 @@ class TransactionForm(forms.Form):
         )
         self.fields["destination_account"].widget = ListTextWidget(
             data_list=account_list, name="destination_account_list", attrs={"placeholder": "Select account"}
+        )
+        self.fields["category"].widget = ListTextWidget(
+            data_list=Category.objects.all(), name="category_list", attrs={"placeholder": "Select category"}
         )
         self.fields["amount"].inital = ["0", get_default_currency(user=user)]
 

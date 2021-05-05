@@ -8,7 +8,7 @@ from django.utils import timezone
 from djmoney.money import Money
 from decimal import Decimal
 
-from ..models import Transaction, TransactionJournal, Account, get_default_currency, get_default_value
+from ..models import Transaction, TransactionJournal, Account, Category, get_default_currency, get_default_value
 from ..utilities import set_message_and_redirect, calculate_period, set_message
 from ..charts import TransactionChart
 from ..forms import TransactionForm, TransactionFilterForm
@@ -52,7 +52,10 @@ def transactions(request):
             transaction_journals = transaction_journals.filter(transactions__account=account)
 
     transaction_journals = (
-        transaction_journals.filter(date__range=(period["start_date"], period["end_date"])).prefetch_related("transactions").order_by("-date")
+        transaction_journals.filter(date__range=(period["start_date"], period["end_date"]))
+        .prefetch_related("transactions")
+        .select_related("category")
+        .order_by("-date")
     )
     transactions = Transaction.objects.filter(journal__in=transaction_journals).annotate(total=Coalesce(Sum("amount"), Decimal(0)))
 
@@ -82,7 +85,9 @@ def add_edit(request, transaction_uuid=None):
     initial_data["amount"] = Money(0, get_default_currency(user=request.user))
 
     if transaction_uuid is not None:
-        transaction_journal = TransactionJournal.objects.prefetch_related("transactions", "transactions__account").get(uuid=transaction_uuid)
+        transaction_journal = (
+            TransactionJournal.objects.prefetch_related("transactions", "transactions__account").select_related("category").get(uuid=transaction_uuid)
+        )
 
         initial_data = {
             "amount": abs(transaction_journal.amount),
@@ -90,6 +95,7 @@ def add_edit(request, transaction_uuid=None):
             "description": transaction_journal.description,
             "type": transaction_journal.type,
             "date": transaction_journal.date,
+            "category": transaction_journal.category.name,
             "source_account": None,
             "destination_account": None,
         }
@@ -117,6 +123,7 @@ def add_edit(request, transaction_uuid=None):
             "description": transaction_form.cleaned_data["description"],
             "date": transaction_form.cleaned_data["date"],
             "type": transaction_form.cleaned_data["type"],
+            "category": None,
             "transactions": [],
         }
 
@@ -147,6 +154,13 @@ def add_edit(request, transaction_uuid=None):
                     amount *= -1
 
                 transaction["transactions"].append({"account": account, "amount": amount})
+
+        if transaction_form.cleaned_data["category"] != "":
+            category, created = Category.objects.get_or_create(name=transaction_form.cleaned_data["category"])
+            transaction["category"] = category
+
+            if created:
+                set_message(request, 's|Category "{category.name}" saved succesfully.'.format(category=category))
 
         if transaction_uuid is None:
             transaction_journal = TransactionJournal.create(transactions=transaction)

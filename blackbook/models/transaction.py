@@ -117,7 +117,7 @@ class TransactionJournal(models.Model):
     def create(cls, transactions):
         """Transactions should be in a fixed format
         {
-            "short_description", "description", "date", "type", "transactions" [{
+            "short_description", "description", "date", "type", "category", "transactions" [{
                 "account", "amount", "foreign_amount"
             }]
         }"""
@@ -126,6 +126,7 @@ class TransactionJournal(models.Model):
             short_description=transactions["short_description"],
             type=transactions["type"],
             description=transactions.get("description", None),
+            category=transactions.get("category", None),
         )
 
         journal.type = journal._verify_transaction_type(transactions=transactions["transactions"])

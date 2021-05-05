@@ -197,7 +197,7 @@
                                     <td data-label="Date">{{ entry.date|date:"d b Y" }}</td>
                                     <td data-label="Category">
                                         {% if entry.category is not None %}
-                                            <span class="tag is-success">
+                                            <span class="tag is-info">
                                                 <span class="icon">
                                                     <i class="fas fa-hashtag"></i>
                                                 </span>
@@ -209,7 +209,7 @@
                                     </td>
                                     <td data-label="Budget">
                                         {% if entry.budget is not None %}
-                                            <span class="tag is-warning">
+                                            <span class="tag is-info">
                                                 <span class="icon">
                                                     <i class="fas fa-chart-pie"></i>
                                                 </span>
@@ -223,7 +223,14 @@
                                         {% if entry.source_accounts|length > 0 %}
                                             {% for account in entry.source_accounts %}
                                                 <a href="{% url "blackbook:accounts_view" account.link_type account.slug %}">
-                                                    {{ account.type }} - {{ account.account }}
+                                                    <span class="tag is-info">
+                                                        <span class="icon">
+                                                            <i class="fas {{ account.icon }}"></i>
+                                                        </span>
+                                                        <span>
+                                                            {{ account.type }} - {{ account.account }}
+                                                        </span>
+                                                    </span>
                                                 </a>
                                             {% endfor %}
                                         {% else %}
@@ -234,7 +241,14 @@
                                         {% if entry.destination_accounts|length > 0 %}
                                             {% for account in entry.destination_accounts %}
                                                 <a href="{% url "blackbook:accounts_view" account.link_type account.slug %}">
-                                                    {{ account.type }} - {{ account.account }}
+                                                    <span class="tag is-info">
+                                                        <span class="icon">
+                                                            <i class="fas {{ account.icon }}"></i>
+                                                        </span>
+                                                        <span>
+                                                            {{ account.type }} - {{ account.account }}
+                                                        </span>
+                                                    </span>
                                                 </a>
                                             {% endfor %}
                                         {% else %}

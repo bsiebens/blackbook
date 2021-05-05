@@ -333,7 +333,7 @@
                                     <td data-label="Date">{{ transaction.journal.date|date:"d b Y" }}</td>
                                     <td data-label="Category">
                                         {% if transaction.journal.category is not None %}
-                                            <span class="tag is-success">
+                                            <span class="tag is-info">
                                                 <span class="icon">
                                                     <i class="fas fa-hashtag"></i>
                                                 </span>
@@ -345,7 +345,7 @@
                                     </td>
                                     <td data-label="Budget">
                                         {% if transaction.journal.budget is not None %}
-                                            <span class="tag is-warning">
+                                            <span class="tag is-info">
                                                 <span class="icon">
                                                     <i class="fas fa-chart-pie"></i>
                                                 </span>
@@ -357,10 +357,16 @@
                                     </td>
                                     <td data-label="Related accounts">
                                         {% if transaction.journal.source_accounts|length > 0 %}
-                                            From: 
                                             {% for account in transaction.journal.source_accounts %}
-                                                <a href="{% url "blackbook:accounts_view" account.type account.slug %}">
-                                                    {{ account.account }}
+                                                <a href="{% url "blackbook:accounts_view" account.link_type account.slug %}">
+                                                    <span class="tag is-info">
+                                                        <span class="icon">
+                                                            <i class="fas {{ account.icon }}"></i>
+                                                        </span>
+                                                        <span>
+                                                            {{ account.type }} - {{ account.account }}
+                                                        </span>
+                                                    </span>
                                                 </a>
                                                 {% if not forloop.last %}&nbsp;/&nbsp;{% endif %}
                                             {% endfor %}
@@ -371,10 +377,16 @@
                                         {% endif %}
 
                                         {% if transaction.journal.destination_accounts|length > 0 %}
-                                            To: 
                                             {% for account in transaction.journal.destination_accounts %}
-                                                <a href="{% url "blackbook:accounts_view" account.type account.slug %}">
-                                                    {{ account.account }}
+                                                <a href="{% url "blackbook:accounts_view" account.link_type account.slug %}">
+                                                    <span class="tag is-info">
+                                                        <span class="icon">
+                                                            <i class="fas {{ account.icon }}"></i>
+                                                        </span>
+                                                        <span>
+                                                            {{ account.type }} - {{ account.account }}
+                                                        </span>
+                                                    </span>
                                                 </a>
                                                 {% if not forloop.last %}&nbsp;/&nbsp;{% endif %}
                                             {% endfor %}
