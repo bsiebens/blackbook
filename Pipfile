@@ -14,16 +14,12 @@ django-taggit-helpers = "*"
 python-dateutil = "*"
 django-minio-storage = "*"
 django-money = {extras = ["exchange"],version = "*"}
-django-model-utils = "*"
 django-filter = "*"
-django-cors-headers = "*"
-django-graphql-jwt = "*"
-graphene-django = "==2.13.0"
 django-localflavor = "*"
 babel = "*"
 psycopg2-binary = "*"
 gunicorn = "*"
-django-debug-toolbar = "*"
+django-model-utils = "*"
 
 [requires]
 python_version = "3.8"
