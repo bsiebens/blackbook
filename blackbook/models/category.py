@@ -7,7 +7,6 @@ from djmoney.money import Money
 from decimal import Decimal
 
 from .base import get_default_currency
-from .transaction import Transaction
 
 import uuid
 
@@ -31,6 +30,8 @@ class Category(models.Model):
         return self.total_for_currrency(currency=get_default_currency())
 
     def total_for_currency(self, currency):
+        from .transaction import Transaction
+
         return Money(
             Transaction.objects.filter(journal__category=self)
             .filter(amount_currency=currency)
