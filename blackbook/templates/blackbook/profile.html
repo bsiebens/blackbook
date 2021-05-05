@@ -30,7 +30,7 @@
                         {% form_field profile_form.last_name %}
                         {% form_field profile_form.email %}
                         {% form_field profile_form.default_currency %}
-                        {# {% form_field profile_form.default_period %} #}
+                        {% form_field profile_form.default_period %}
 
                         <hr />
                         
@@ -118,12 +118,12 @@
                                     <input type="text" readonly value="{{ request.user.email }}" class="input is-static">
                                 </div>
                             </div>
-                            <!-- <div class="field">
+                            <div class="field">
                                 <label class="label">Default period</label>
                                 <div class="control is-clearfix">
                                     <input type="text" readonly value="{{ request.user.userprofile.get_default_period_display }}" class="input is-static">
                                 </div>
-                            </div> -->
+                            </div>
                         </div>
                     </div>
                 </div>

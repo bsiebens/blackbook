@@ -4,7 +4,7 @@ from django.utils import timezone, safestring
 from djmoney.forms.fields import MoneyField
 from djmoney.forms.widgets import MoneyWidget
 
-from .models import get_currency_choices, get_default_currency, Account, TransactionJournal, Category
+from .models import get_currency_choices, get_default_currency, Account, TransactionJournal, Category, Budget
 from .utilities import validate_iban, format_iban
 
 
@@ -68,6 +68,7 @@ class UserProfileForm(forms.Form):
     last_name = forms.CharField()
     email = forms.EmailField()
     default_currency = forms.ChoiceField(choices=get_currency_choices())
+    default_period = forms.ChoiceField(choices=Budget.Period.choices)
 
 
 class AccountForm(forms.ModelForm):
