@@ -75,3 +75,14 @@ class AccountAdmin(admin.ModelAdmin):
         ["Options", {"fields": ["active", "net_worth", "dashboard", "virtual_balance", "uuid"]}],
     ]
     readonly_fields = ["slug", "icon", "uuid"]
+
+
+@admin.register(models.Category)
+class CategoryAdmin(admin.ModelAdmin):
+    ordering = ["name"]
+    list_display = ["name", "uuid", "created", "modified"]
+    search_fields = ["name"]
+    fieldsets = [
+        ["General information", {"fields": ["name", "uuid"]}],
+    ]
+    readonly_fields = ["uuid"]
