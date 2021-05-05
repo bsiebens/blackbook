@@ -38,3 +38,23 @@ class Budget(models.Model):
 
     class Meta:
         ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class BudgetPeriod(models.Model):
+    budget = models.ForeignKey(Budget, on_delete=models.CASCADE, related_name="periods")
+    start_date = models.DateField()
+    end_date = models.DateField()
+    amount = MoneyField(max_digits=15, decimal_places=2)
+
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["budget", "start_date"]
+        get_latest_by = "start_date"
+
+    def __str__(self):
+        return "{i.budget.name}: {i.start_date} <> {i.end_date} ({i.amount})".format(i=self)
