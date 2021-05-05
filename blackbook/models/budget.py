@@ -6,6 +6,7 @@ from django.conf import settings
 
 from djmoney.models.fields import MoneyField
 from djmoney.money import Money
+from model_utils import FieldTracker
 
 from .base import get_default_currency
 
@@ -35,6 +36,8 @@ class Budget(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+
+    tracker = FieldTracker()
 
     class Meta:
         ordering = ["name"]
