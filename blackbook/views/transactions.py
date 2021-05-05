@@ -51,6 +51,9 @@ def transactions(request):
             account = Account.objects.get(name=account_name, type=account_type)
             transaction_journals = transaction_journals.filter(transactions__account=account)
 
+        if filter_form.cleaned_data["category"] != "":
+            transaction_journals = transaction_journals.filter(category__name__icontains=filter_form.cleaned_data["category"])
+
     transaction_journals = (
         transaction_journals.filter(date__range=(period["start_date"], period["end_date"]))
         .prefetch_related("transactions")

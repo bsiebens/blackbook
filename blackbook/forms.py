@@ -160,3 +160,6 @@ class TransactionFilterForm(forms.Form):
         self.fields["account"].widget = ListTextWidget(
             data_list=account_list, name="account-list", attrs={"placeholder": "Select account", "size": 40}
         )
+        self.fields["category"].widget = ListTextWidget(
+            data_list=Category.objects.all(), name="category_list", attrs={"placeholder": "Select category"}
+        )
