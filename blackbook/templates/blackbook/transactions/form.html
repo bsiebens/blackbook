@@ -61,6 +61,7 @@
                         {% form_field transaction_form.destination_account None "fa-landmark" %}
                         <hr />
                         {% form_field transaction_form.category None %}
+                        {% form_field transaction_form.budget None %}
                         <hr />
                         {% form_field transaction_form.display "Display after save" %}
                         {% form_field transaction_form.add_new "Return after save" %}
@@ -144,12 +145,12 @@
                             <div class="field">
                                 <label class="label">Budget</label>
                                 <div class="control is-clearfix">
-                                    {% if transaction.id is not None and transaction_journal.budget is not None %}
+                                    {% if transaction_journal.id is not None and transaction_journal.budget is not None %}
                                         <span class="tag is-info">
                                             <span class="icon">
                                                 <i class="fas fa-chart-pie"></i>
                                             </span>
-                                            <span>{{ transaction.journal_entry.budget.budget.name }}</span>
+                                            <span>{{ transaction_journal.budget.budget.name }}</span>
                                         </span>
                                     {% else %}
                                         <input type="text" readonly value="-" class="input is-static">

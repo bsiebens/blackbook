@@ -225,7 +225,7 @@ class TransactionChart(Chart):
 
             else:
                 if self.expenses_budget and transaction.journal.budget is not None:
-                    account_name = transaction.journal.budget.name
+                    account_name = transaction.journal.budget.budget.name
 
                 if self.expenses_category and transaction.journal.category is not None:
                     account_name = transaction.journal.category.name

@@ -123,7 +123,7 @@ def add_edit_account(request, account_slug=None):
 
         return set_message_and_redirect(
             request,
-            "s|Account '{account_name}' ({account_type}) has been saved succesfully.".format(
+            "s|Account '{account_name}' ({account_type}) was saved succesfully.".format(
                 account_name=account.name, account_type=account.get_type_display()
             ),
             reverse("blackbook:dashboard"),

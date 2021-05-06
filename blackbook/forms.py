@@ -88,6 +88,7 @@ class TransactionForm(forms.Form):
     source_account = forms.CharField(required=False)
     destination_account = forms.CharField(required=False)
     category = forms.CharField(required=False)
+    budget = forms.CharField(required=False)
     add_new = forms.BooleanField(required=False, initial=False, help_text="After saving, display this form again to add a new transaction.")
     display = forms.BooleanField(required=False, initial=True, help_text="After saving, display this form again to review this transaction.")
 
@@ -105,6 +106,9 @@ class TransactionForm(forms.Form):
         )
         self.fields["category"].widget = ListTextWidget(
             data_list=Category.objects.all(), name="category_list", attrs={"placeholder": "Select category"}
+        )
+        self.fields["budget"].widget = ListTextWidget(
+            data_list=Budget.objects.filter(active=True).all(), name="budget_list", attrs={"placeholder": "Select budget"}
         )
         self.fields["amount"].inital = ["0", get_default_currency(user=user)]
 
@@ -163,6 +167,9 @@ class TransactionFilterForm(forms.Form):
         )
         self.fields["category"].widget = ListTextWidget(
             data_list=Category.objects.all(), name="category_list", attrs={"placeholder": "Select category"}
+        )
+        self.fields["budget"].widget = ListTextWidget(
+            data_list=Budget.objects.filter(active=True).all(), name="budget_list", attrs={"placeholder": "Select budget"}
         )
 
 
