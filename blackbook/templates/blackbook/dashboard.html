@@ -197,25 +197,41 @@
             <div class="card is-card-widget tile is-child">
                 <header class="card-header">
                     <p class="card-header-title">
+                        <span>Total available</span>
+                        <span class="icon">
+                            <i class="fas fa-arrow-right"></i>
+                        </span>
+                        <span>{% money_localize data.budget.total %}
+                    </p>
+
+                    <p class="card-header-title">
+                        <span>Total used</span>
+                        <span class="icon">
+                            <i class="fas fa-arrow-right"></i>
+                        </span>
+                        <span>{% money_localize data.budget.used %}
+                    </p>
+
+                    <p class="card-header-title">
                         <span>Used per day</span>
                         <span class="icon">
                             <i class="fas fa-arrow-right"></i>
                         </span>
-                        <span></span>
+                        <span>{% money_localize data.budget.per_day %}</span>
                     </p>
-                    <button type="button" class="button is-small">
+                    <a href="{% url "blackbook:budgets" %}" class="button is-small">
                         <span class="icon">
                             <i class="fas fa-info"></i>
                         </span>
-                    </button>
+                    </a>
                 </header>
                 <div class="card-content">
                     <div class="level is-mobile">
                         <div class="level-item">
                             <div class="is-widget-label">
                                 <h3 class="subtitle is-spaced">Budget available</h3>
-                                <h1 class="title">
-                                    
+                                <h1 class="title has-text-{% if data.budget.available.amount > 0 %}success{% elif data.budget.available.amount < 0 %}danger{% else %}grey{% endif %}">
+                                    {% money_localize data.budget.available %}
                                 </h1>
                             </div>
                         </div>

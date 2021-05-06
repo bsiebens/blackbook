@@ -53,22 +53,11 @@ class Budget(models.Model):
 
     @cached_property
     def used(self):
-        if self.auto_budget != self.AutoBudget.NO:
-            return self.current_period.used
-
-        from .transaction import TransactionJournal
-
-        return Money(
-            TransactionJournal.objects.filter(budget__budget=self)
-            .filter(type__in=[TransactionJournal.TransactionType.WITHDRAWAL, TransactionJournal.TransactionType.TRANSFER])
-            .filter(transactions__amount_currency=self.amount.currency)
-            .aggregate(total=Coalesce(Sum("amount"), Decimal(0)))["total"],
-            self.amount.currency,
-        )
+        return self.current_period.used
 
     @cached_property
     def available(self):
-        return self.amount - self.used
+        return self.current_period.available
 
     def get_period_for_date(self, date):
         try:
@@ -106,4 +95,4 @@ class BudgetPeriod(models.Model):
 
     @cached_property
     def available(self):
-        return self.amount - self.used
+        return self.amount + self.used
