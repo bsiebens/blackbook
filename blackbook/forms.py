@@ -170,3 +170,10 @@ class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = ["name"]
+
+
+class BudgetForm(forms.ModelForm):
+    class Meta:
+        model = Budget
+        fields = ["name", "active", "amount", "auto_budget", "auto_budget_period"]
+        widgets = {"amount": BulmaMoneyWidget()}

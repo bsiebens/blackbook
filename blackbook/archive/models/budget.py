@@ -52,23 +52,11 @@ class Budget(models.Model):
 
     @cached_property
     def used(self):
-        if self.auto_budget != self.AutoBudget.NO:
-            return self.current_period.used
-
-        from .transaction import TransactionJournalEntry
-
-        total = Money(0, self.amount.currency)
-
-        for transaction in TransactionJournalEntry.objects.filter(budget__budget=self).filter(
-            transaction_type__in=[TransactionJournalEntry.TransactionType.WITHDRAWAL, TransactionJournalEntry.TransactionType.TRANSFER]
-        ):
-            total += convert_money(transaction.amount, self.amount.currency)
-
-        return total
+        return self.current_period.used
 
     @cached_property
     def available(self):
-        return self.amount - self.used
+        return self.current_period.available
 
     def get_period_for_date(self, date):
         try:
