@@ -1,0 +1,318 @@
+{% extends 'blackbook/base.html' %}
+
+{% load djmoney %}
+{% load formtags %}
+
+{% block title %}
+    Transactions
+{% endblock title %}
+
+{% block breadcrumbs %}
+    <li>Transactions</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+    <div class="tile is-ancestor">
+        <div class="tile is-parent">
+            <div class="card is-card-widget tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </span>
+                        <span>Current period - income</span>
+                    </p>
+                </header>
+                <div class="card-content">
+                    {% if charts.income_chart_count == 0 %}
+                        <h3 class="subtitle is-spaced has-text-centered">No transaction information available yet.</h3>
+                    {% else %}
+                        <div class="chart-area">
+                            <div style="height: 100%;">
+                                <div class="chartjs-size-monitor">
+                                    <div class="chartjs-size-monitor-expand">
+                                        <div></div>
+                                    </div>
+                                    <div class="chartjs-size-monitor-shrink">
+                                        <div></div>
+                                    </div>
+                                </div>
+                                <canvas id="transaction-income-chart" width="2992" height="1000" class="chartjs-render-monitor" style="display: block; height: 250px; width: 250px;"></canvas>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="tile is-parent">
+            <div class="card is-card-widget tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </span>
+                        <span>Current period - expenses by category</span>
+                    </p>
+                </header>
+                <div class="card-content">
+                    {% if charts.expense_category_chart_count == 0 %}
+                        <h3 class="subtitle is-spaced has-text-centered">No transaction information available yet.</h3>
+                    {% else %}
+                        <div class="chart-area">
+                            <div style="height: 100%;">
+                                <div class="chartjs-size-monitor">
+                                    <div class="chartjs-size-monitor-expand">
+                                        <div></div>
+                                    </div>
+                                    <div class="chartjs-size-monitor-shrink">
+                                        <div></div>
+                                    </div>
+                                </div>
+                                <canvas id="transaction-expense-category-chart" width="2992" height="1000" class="chartjs-render-monitor" style="display: block; height: 250px; width: 250px;"></canvas>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="tile is-parent">
+            <div class="card is-card-widget tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </span>
+                        <span>Current period - expenses by budget</span>
+                    </p>
+                </header>
+                <div class="card-content">
+                    {% if charts.expense_budget_chart_count == 0 %}
+                        <h3 class="subtitle is-spaced has-text-centered">No transaction information available yet.</h3>
+                    {% else %}
+                        <div class="chart-area">
+                            <div style="height: 100%;">
+                                <div class="chartjs-size-monitor">
+                                    <div class="chartjs-size-monitor-expand">
+                                        <div></div>
+                                    </div>
+                                    <div class="chartjs-size-monitor-shrink">
+                                        <div></div>
+                                    </div>
+                                </div>
+                                <canvas id="transaction-expense-budget-chart" width="2992" height="1000" class="chartjs-render-monitor" style="display: block; height: 250px; width: 250px;"></canvas>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </span>
+                <span>Transactions - {{ period.start_date|date:"d b Y" }} until {{ period.end_date|date:"d b Y" }}</span>
+            </p>
+        </header>
+        <div class="notification is-card-toolbar">
+            <div class="level">
+                <div class="level-left">
+                    <div class="level-item is-hidden-mobile">
+                        <form method="{% url "blackbook:transactions" %}">
+                            {% csrf_token %}
+
+                            <div class="field is-horizontal">
+                                <div class="field-body">
+                                    <div class="field is-grouped is-grouped-right">
+                                        {% form_field filter_form.start_date "" "fa-calendar-alt" True %}
+                                        {% form_field filter_form.end_date "" "fa-calendar-alt" True %}
+                                        {% form_field filter_form.description "" "fa-search" True %}
+
+                                        {% form_field filter_form.account "" "fa-landmark" True %}
+                                        {% form_field filter_form.category "" "fa-hashtag" True %}
+                                        {% form_field filter_form.budget "" "fa-chart-pie" True %}
+
+                                        <div class="control">
+                                            <button class="button is-primary" type="submit">
+                                                <span class="icon">
+                                                    <i class="fas fa-filter"></i>
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="level-right">
+                    <div class="level-item">
+                        <a class="button is-primary" href="{% url "blackbook:transactions_add" %}">
+                            Add transaction
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-content">
+            <div class="b-table">
+                <div class="table-wrapper has-mobile-cards">
+                    <table class="table is-fullwidth is-striped is-hoverable is-fullwidth">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th><div class="th-wrap">Transaction</div></th>
+                                <th><div class="th-wrap">Amount</div></th>
+                                <th><div class="th-wrap">Date</div></th>
+                                <th><div class="th-wrap">Category</div></th>
+                                <th><div class="th-wrap">Budget</div></th>
+                                <th><div class="th-wrap">Source account</div></th>
+                                <th><div class="th-wrap">Destination account</div></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in transaction_journals %}
+                                <tr>
+                                    <td>
+                                        <span class="icon">
+                                            {% if entry.type == "transfer" %}
+                                                <i class="fas fa-exchange-alt"></i>
+                                            {% elif entry.type == "withdrawal" %}
+                                                <i class="fas fa-long-arrow-alt-left"></i>
+                                            {% else %}
+                                                <i class="fas fa-long-arrow-alt-right"></i>
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td data-label="Transaction">{{ entry.short_description }}</td>
+                                    <td data-label="Amount">
+                                        <span class="{% if entry.type != "transfer" %}has-text-{% if entry.amount.amount < 0 %}danger{% else %}success{% endif %}{% endif %}">
+                                            {% if entry.type != "transfer" and entry.amount.amount > 0 %}+{% endif %}{% money_localize entry.amount %}
+                                        </span>
+                                    </td>
+                                    <td data-label="Date">{{ entry.date|date:"d b Y" }}</td>
+                                    <td data-label="Category">
+                                        {% if entry.category is not None %}
+                                            <span class="tag is-info">
+                                                <span class="icon">
+                                                    <i class="fas fa-hashtag"></i>
+                                                </span>
+                                                <span>{{ entry.category.name }}</span>
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td data-label="Budget">
+                                        {% if entry.budget is not None %}
+                                            <span class="tag is-info">
+                                                <span class="icon">
+                                                    <i class="fas fa-chart-pie"></i>
+                                                </span>
+                                                <span>{{ entry.budget.budget.name }}</span>
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td data-label="Source account">
+                                        {% if entry.source_accounts|length > 0 %}
+                                            {% for account in entry.source_accounts %}
+                                                <a href="{% url "blackbook:accounts_view" account.link_type account.slug %}">
+                                                    <span class="tag is-info">
+                                                        <span class="icon">
+                                                            <i class="fas {{ account.icon }}"></i>
+                                                        </span>
+                                                        <span>
+                                                            {{ account.type }} - {{ account.account }}
+                                                        </span>
+                                                    </span>
+                                                </a>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </td>
+                                    <td data-label="Destination account">
+                                        {% if entry.destination_accounts|length > 0 %}
+                                            {% for account in entry.destination_accounts %}
+                                                <a href="{% url "blackbook:accounts_view" account.link_type account.slug %}">
+                                                    <span class="tag is-info">
+                                                        <span class="icon">
+                                                            <i class="fas {{ account.icon }}"></i>
+                                                        </span>
+                                                        <span>
+                                                            {{ account.type }} - {{ account.account }}
+                                                        </span>
+                                                    </span>
+                                                </a>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="buttons is-right">
+                                            {% if entry.type != "start" %}
+                                                <a class="button is-primary is-small" href="{% url "blackbook:transactions_edit" entry.uuid %}" type="button">
+                                                    <span class="icon">
+                                                        <i class="fas fa-edit"></i>
+                                                    </span>
+                                                </a>
+                                                <a class="button is-danger is-small jb-modal" data-target="modal-journal-entry-delete-{{ entry.uuid }}" type="button">
+                                                    <span class="icon">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </span>
+                                                </a>
+                                            {% endif %}
+                                        </div>                    
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block modals %}
+    {% for entry in transaction_journals %}
+        <div id="modal-journal-entry-delete-{{ entry.uuid }}" class="modal">
+            <div class="modal-background jb-modal-close"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Confirm action</p>
+                    <button class="delete jb-modal-close" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <p>This will permanently delete transaction <b>{{ entry.short_description }}</b>.</p>
+                    <p>Are you sure?</p>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button jb-modal-close">Cancel</button>
+                    <form method="post" action="{% url "blackbook:transactions_delete" %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="transaction_uuid" value="{{ entry.uuid }}">
+                        <button class="button is-danger" type="submit">Delete</button>
+                    </form>
+                </footer>
+            </div>
+            <button class="modal-close is-large jb-modal-close" aria-label="close"></button>
+        </div>
+    {% endfor %}
+{% endblock modals %}
+
+{% block javascript %}
+    {% if charts.income_chart_count != 0 %}
+        let transactionIncomeChartCTX = document.getElementById("transaction-income-chart").getContext("2d");
+        new Chart(transactionIncomeChartCTX, {{ charts.income_chart|safe }});
+    {% endif %}
+
+    {% if charts.expense_category_chart_count != 0%}   
+        let expenseCategoryChartCTX = document.getElementById("transaction-expense-category-chart").getContext("2d");
+        new Chart(expenseCategoryChartCTX, {{ charts.expense_category_chart|safe }});
+    {% endif %}
+
+    {% if charts.expense_budget_chart_count != 0 %}
+        let expenseBudgetChartCTX = document.getElementById("transaction-expense-budget-chart").getContext("2d");
+        new Chart(expenseBudgetChartCTX, {{ charts.expense_budget_chart|safe }});
+    {% endif %}
+{% endblock javascript %}

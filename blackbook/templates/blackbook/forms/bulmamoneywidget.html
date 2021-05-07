@@ -1,0 +1,33 @@
+{% spaceless %}
+    <div class="control is-expanded">
+        <input class="input" type="number" step=".01" name="{{ widget.subwidgets.0.name }}"{% if widget.subwidgets.0.value != None %} value="{{ widget.subwidgets.0.value|stringformat:'s' }}"{% else %} value="0"{% endif %}{% for name, value in widget.subwidgets.0.attrs.items %}{% if value is not False %} {{ name }}{% if value is not True %}="{{ value|stringformat:'s' }}"{% endif %}{% endif %}{% endfor %}>
+        
+        <p class="help">Required.</p>
+    </div>
+    <div class="control">
+        <div class="select">
+            <select name="{{ widget.subwidgets.1.name }}"
+                {% for name, value in widget.subwidgets.1.attrs.items %}
+                    {% if value is not False %} {{ name }}
+                        {% if value is not True %}
+                            ="{{ value|stringformat:'s' }}"
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}>
+
+                {% for group_name, group_choices, group_index in widget.subwidgets.1.optgroups %}
+                    {% if group_name %}
+                        <optgroup label="{{ group_name }}">
+                    {% endif %}
+                    {% for option in group_choices %}
+                        <option value="{{ option.value|stringformat:'s' }}"{% for name, value in option.attrs.items %}{% if value is not False %} {{ name }}{% if value is not True %}="{{ value|stringformat:'s' }}"{% endif %}{% endif %}{% endfor %}
+>{{ option.label }}</option>
+                    {% endfor %}
+                    {% if group_name %}
+                        </optgroup>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+{% endspaceless %}

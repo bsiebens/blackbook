@@ -1,0 +1,30 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+black = "*"
+django-debug-toolbar = "*"
+
+[packages]
+django = "*"
+django-taggit = "*"
+django-taggit-helpers = "*"
+python-dateutil = "*"
+django-minio-storage = "*"
+django-money = {extras = ["exchange"],version = "*"}
+django-filter = "*"
+django-localflavor = "*"
+babel = "*"
+psycopg2-binary = "*"
+gunicorn = "*"
+django-model-utils = "*"
+django-cors-headers = "*"
+django-totalsum-admin = "*"
+
+[requires]
+python_version = "3.8"
+
+[pipenv]
+allow_prereleases = true

@@ -1,0 +1,56 @@
+{% load formtags %}
+
+{% if not short %}
+    <div class="field is-horizontal">
+        {% if field.label != "" %}
+            <div class="field-label{% if field.widget_type != "checkbox" %} is-normal{% endif %}">
+                <label class="label{% if field.errors %} has-text-danger{% endif %}">{{ field.label|capfirst }}</label>
+            </div>
+        {% endif %}
+        <div class="field-body">
+            <div class="field">
+{% endif %}
+                <div class="control {% if field.label == "Date" or field.label == "Category" or field.label == "Budget" or icon is not None %}has-icons-left{% endif %}">
+                    {% if field.widget_type == "checkbox" %}
+                        <label class="switch is-rounded">
+                            {{ field }}
+                            <span class="check"></span>
+                        </label>
+                    {% else %}
+                        {% if field.widget_type == "select" %}
+                            <div class="select is-fullwidth{% if field.errors %} is-danger{% endif %}">
+                        {% endif %}
+                            {{ field|add_class }}
+                        {% if field.widget_type == "select" %}
+                            </div>
+                        {% endif %}
+                        {% if field.label == "Date" or field.label == "Category" or field.label == "Budget" or icon is not None %}
+                            <div class="icon is-left">
+                                {% if field.label == "Date" %}
+                                    <i class="fas fa-calendar-alt"></i>
+                                {% elif field.label == "Category" %}
+                                    <i class="fas fa-hashtag"></i>
+                                {% elif field.label == "Budget" %}
+                                    <i class="fas fa-chart-pie"></i>
+                                {% else %}
+                                    <i class="fas {{ icon }}"></i>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                {% if field.help_text or field.field.required or field.errors %}
+                    <p class="help{% if field.errors %} is-danger{% endif %}">
+                        {% if field.errors %}
+                            {{ field.errors.as_text|cut:"* " }}&nbsp;
+                        {% endif %}
+
+                        {% if field.field.required and not field.errors %}Required. {% endif %}
+                        {% if field.help_text and field.widget_type != "password" %}{{ field.help_text }}{% endif %}
+                    </p>
+                {% endif %}
+{% if not short %}
+        </div>
+    </div>
+</div>
+{% endif %}

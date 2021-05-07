@@ -1,0 +1,115 @@
+{% extends 'blackbook/base.html' %}
+
+{% load formtags %}
+
+{% block title %}
+    Tags
+{% endblock title %}
+
+{% block breadcrumbs %}
+    <li>Tags</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+    <div class="card">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon">
+                    <i class="fas fa-hashtag"></i>
+                </span>
+                <span>Tags</span>
+            </p>
+        </header>
+        <div class="card-content">
+            <div class="b-table">
+                <div class="table-wrapper has-mobile-cards">
+                    <table class="table is-fullwidth is-striped is-hoverable is-fullwidth">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Name</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tag in tags %}
+                                <tr>
+                                    <td>
+                                        <span class="icon">
+                                            <i class="fas fa-tag"></i>
+                                        </span>
+                                    </td>
+                                    <td data-label="Name">{{ tag.name }}</td>
+                                    <td>
+                                        <a class="button is-primary is-small jb-modal" data-target="modal-tag-edit-{{ tag.id }}" type="button">
+                                            <span class="icon">
+                                                <i class="fas fa-edit"></i>
+                                            </span>
+                                        </a>
+                                        <a class="button is-danger is-small jb-modal" data-target="modal-tag-delete-{{ tag.id }}" type="button">
+                                            <span class="icon">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block modals %}
+    {% for form in forms %}
+        <div id="modal-tag-edit-{{ form.instance.id }}" class="modal{% if form.instance.id == tag_id %} is-active{% endif %}">
+            <div class="modal-background jb-modal-close"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Edit tag</p>
+                    <button class="delete jb-modal-close" aria-label="close"></button>
+                </header>
+                <form method="post" action="{% url "blackbook:tags_edit" %}">
+                    <section class="modal-card-body">
+                        {% csrf_token %}
+                        <input type="hidden" name="tag_id" value="{{ form.instance.id }}">
+
+                        {% form_field form.name %}
+                    </section>
+                    <footer class="modal-card-foot">
+                        <button class="button is-primary" type="submit">Submit</button>
+                    </footer>
+                </form>
+            </div>
+            <button class="modal-close is-large jb-modal-close" aria-label="close"></button>
+        </div>
+    {% endfor %}
+
+
+    {% for tag in tags %}
+        <div id="modal-tag-delete-{{ tag.id }}" class="modal">
+            <div class="modal-background jb-modal-close"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Confirm action</p>
+                    <button class="delete jb-modal-close" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    <p>This will permanently delete tag <b>{{ tag.name }}</b>.</p>
+                    <p>Are you sure?</p>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button jb-modal-close">Cancel</button>
+                    <form method="post" action="{% url "blackbook:tags_delete" %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="tag_id" value="{{ tag.id }}">
+                        <button class="button is-danger" type="submit">Delete</button>
+                    </form>
+                </footer>
+            </div>
+            <button class="modal-close is-large jb-modal-close" aria-label="close"></button>
+        </div>
+    {% endfor %}
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends 'blackbook/base.html' %}
+
+{% load formtags %}
+
+{% block title %}
+    Profile
+{% endblock title %}
+
+{% block breadcrumbs %}
+    <li>Profile</li>
+{% endblock breadcrumbs %}
+
+{% block content %}
+    <div class="tile is-ancestor">
+        <div class="tile is-parent">
+            <div class="card tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon">
+                            <i class="fas fa-user-circle"></i>
+                        </span>
+                        <span>Edit profile</span>
+                    </p>
+                </header>
+                <div class="card-content">
+                    <form method="post" action="{% url "blackbook:profile" %}">
+                        {% csrf_token %} 
+
+                        {% form_field profile_form.first_name %}
+                        {% form_field profile_form.last_name %}
+                        {% form_field profile_form.email %}
+                        {% form_field profile_form.default_currency %}
+                        {% form_field profile_form.default_period %}
+
+                        <hr />
+                        
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                            </div>
+                            <div class="field-body">
+                                <div class="field">
+                                    <div class="control">
+                                        <button type="submit" name="profile_submit" class="button is-primary">
+                                            Update profile
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="tile is-parent">
+            <div class="card tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <span>Profile</span>
+                    </p>
+                </header>
+                <div class="card-content">
+                    <div class="is-user-avatar image has-max-width is-aligned-center">
+                        {% if request.user.get_full_name != "" %}
+                            <img src="https://avatars.dicebear.com/api/initials/{{ request.user.get_full_name|slugify }}.svg">
+                        {% else %}
+                            <img src="https://avatars.dicebear.com/api/initials/{{ request.user.get_username }}.svg">
+                        {% endif %}
+                    </div>
+
+                    <hr />
+
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Name</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ request.user.get_full_name }}" class="input is-static">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Default currency</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ request.user.userprofile.get_default_currency_display }}" class="input is-static">
+                                </div>
+                            </div>
+                            {% if request.user.is_staff or request.user.is_superuser %}
+                                <div class="field">
+                                    <label class="label">Tags</label>
+                                    <div class="tags">
+                                        {% if request.user.is_superuser %}
+                                            <span class="tag is-primary">
+                                                <span class="icon">
+                                                    <i class="fas fa-user-astronaut"></i>
+                                                </span>
+                                                <span>superuser</span>
+                                            </span>
+                                        {% endif %}
+                                        {% if request.user.is_staff %}
+                                            <span class="tag is-primary">
+                                                <span class="icon">
+                                                    <i class="fas fa-user-check"></i>
+                                                </span>
+                                                <span>staff</span>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Email</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ request.user.email }}" class="input is-static">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Default period</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ request.user.userprofile.get_default_period_display }}" class="input is-static">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon">
+                    <i class="fas fa-lock"></i>
+                </span>
+                <span>Change your password</span>
+            </p>
+        </header>
+        <div class="card-content">
+            <form method="post" action="{% url "blackbook:profile" %}">
+                {% csrf_token %} 
+
+                {% form_field password_form.old_password "Current password" %}
+
+                <hr />
+
+                {% form_field password_form.new_password1 %}
+                {% form_field password_form.new_password2 "Confirm password" %}
+
+                <hr />
+                
+                <div class="field is-horizontal">
+                    <div class="field-label is-normal">
+                    </div>
+                    <div class="field-body">
+                        <div class="field">
+                            <div class="control">
+                                <button type="submit" name="password_submit" class="button is-primary">
+                                    Change password
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div> 
+{% endblock content %}

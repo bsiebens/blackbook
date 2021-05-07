@@ -1,0 +1,304 @@
+{% extends 'blackbook/base.html' %}
+
+{% load formtags %}
+{% load iban %}
+{% load djmoney %}
+{% load humanize %}
+
+{% block title %}
+    Transactions
+{% endblock title %}
+
+{% block breadcrumbs %}
+    <li>Transactions</li>
+    {% if transaction.id is not None %}
+        <li>Edit transaction</li>
+    {% else %}
+        <li>Add transaction</li>
+    {% endif %}
+{% endblock breadcrumbs %}
+
+{% block content %}
+    <div class="tile is-ancestor">
+        <div class="tile is-parent">
+            <div class="card tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon">
+                            <i class="fas fa-file-invoice"></i>
+                        </span>
+                        <span>
+                            {% if transaction.id is not None %}
+                                Edit transaction
+                            {% else %}
+                                Add transaction
+                            {% endif %}
+                        </span>
+                    </p>
+                </header>
+                <div class="card-content">
+                    <form method="post" action="">
+                        {% csrf_token %} 
+
+                        {% form_field transaction_form.short_description "Title" %}
+                        {% form_field transaction_form.description %}
+                        {% form_field transaction_form.date %}
+                        {% form_field transaction_form.type %}
+
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                                <label class="label">Amount</label>
+                            </div>
+                            <div class="field-body">
+                                <div class="field has-addons">
+                                    {{ transaction_form.amount }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr />
+                        {% form_field transaction_form.source_account None "fa-landmark" %}
+                        {% form_field transaction_form.destination_account None "fa-landmark" %}
+                        <hr />
+                        {% form_field transaction_form.category None %}
+                        {% form_field transaction_form.budget None %}
+                        <hr />
+                        {% form_field transaction_form.display "Display after save" %}
+                        {% form_field transaction_form.add_new "Return after save" %}
+                        <hr />
+                        <div class="field is-horizontal">
+                            <div class="field-label is-normal">
+                            </div>
+                            <div class="field-body">
+                                <div class="field">
+                                    <div class="control">
+                                        <button type="submit" name="profile_submit" class="button is-primary">
+                                            Submit
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="tile is-parent">
+            <div class="card tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon">
+                            <i class="fas fa-file-invoice"></i>
+                        </span>
+                        <span>Transaction information</span>
+                    </p>
+                </header>
+                <div class="card-content"> 
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Description</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ transaction_journal.short_description|default:"-" }}" class="input is-static">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Date</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ transaction_journal.date|date:"d b Y"|default:"-" }}" class="input is-static">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Category</label>
+                                <div class="control is-clearfix">
+                                    {% if transaction_journal.id is not None and transaction_journal.category is not None %}
+                                        <span class="tag is-info">
+                                            <span class="icon">
+                                                <i class="fas fa-hashtag"></i>
+                                            </span>
+                                            <span>{{ transaction_journal.category.name }}</span>
+                                        </span>
+                                    {% else %}
+                                        <input type="text" readonly value="-" class="input is-static">
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Amount</label>
+                                <div class="control is-clearfix">
+                                    {% if transaction_journal.id is not None %}
+                                        <input type="text" readonly value="{% money_localize amount %}" class="input is-static">
+                                    {% else %}
+                                        <input type="text" readonly value="-" class="input is-static">
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Transaction type</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ transaction_journal.get_type_display|default:"-" }}" class="input is-static">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Budget</label>
+                                <div class="control is-clearfix">
+                                    {% if transaction_journal.id is not None and transaction_journal.budget is not None %}
+                                        <span class="tag is-info">
+                                            <span class="icon">
+                                                <i class="fas fa-chart-pie"></i>
+                                            </span>
+                                            <span>{{ transaction_journal.budget.budget.name }}</span>
+                                        </span>
+                                    {% else %}
+                                        <input type="text" readonly value="-" class="input is-static">
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <!-- <div class="field">
+                                <label class="label">Tags</label>
+                                <div class="control is-clearfix">
+                                    <span class="tags">
+                                        {% if transaction.id is not None and transaction.journal_entry.tags.count != 0 %}
+                                            {% for tag in transaction.journal_entry.tags.all %}
+                                                <span class="tag is-info">
+                                                    <span class="icon">
+                                                        <i class="fas fa-tag"></i>
+                                                    </span>
+                                                    <span>{{ tag.name }}</span>
+                                                </span>
+                                            {% endfor %}
+                                        {% else %}
+                                            <input type="text" readonly value="-" class="input is-static">
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div> -->
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Description</label>
+                                <div class="control is-clearfix">
+                                    {% if transaction_journal.description %}
+                                        {{ transaction_journal.description }}
+                                    {% else %}
+                                        <input type="text" readonly value="-" class="input is-static">
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Source account</label>
+                                <div class="control is-clearfix">
+                                    {% if transaction_journal.id is not None and transaction_journal.source_accounts|length > 0 %}
+                                        <a href="{% url "blackbook:accounts_view" transaction_journal.source_accounts.0.link_type transaction_journal.source_accounts.0.slug %}">
+                                            <span class="tag is-info">
+                                                <span class="icon">
+                                                    <i class="fas {{ transaction_journal.source_accounts.0.icon }}"></i>
+                                                </span>
+                                                <span>{{ transaction_journal.source_accounts.0.account }}</span>
+                                            </span>
+                                        </a>
+                                    {% else %}
+                                        <span class="tag is-info">
+                                            <span class="icon">
+                                                <i class="fas fa-coins"></i>
+                                            </span>
+                                            <span>External account (untracked)</span>
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Destination account</label>
+                                <div class="control is-clearfix">
+                                    {% if transaction_journal.id is not None and transaction_journal.destination_accounts|length > 0 %}
+                                        <a href="{% url "blackbook:accounts_view" transaction_journal.destination_accounts.0.link_type transaction_journal.destination_accounts.0.slug %}">
+                                            <span class="tag is-info">
+                                                <span class="icon">
+                                                    <i class="fas {{ transaction_journal.destination_accounts.0.icon }}"></i>
+                                                </span>
+                                                <span>{{ transaction_journal.destination_accounts.0.account }}</span>
+                                            </span>
+                                        </a>
+                                    {% else %}
+                                        <span class="tag is-info">
+                                            <span class="icon">
+                                                <i class="fas fa-coins"></i>
+                                            </span>
+                                            <span>External account (untracked)</span>
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Transaction ID</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ transaction_journal.uuid|default:"-" }}" class="input is-static">
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Created</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ transaction_journal.created|naturaltime|default:"-" }}" class="input is-static">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Child transaction ID</label>
+                                <div class="control is-clearfix">
+                                    {% if transaction_journal.id is not None %}
+                                        <input type="text" readonly value="{% for child_transaction in transaction_journal.transactions.all %}{{ child_transaction.uuid }}{% if not forloop.last %}, {% endif %}{% endfor %}" class="input is-static">
+                                    {% else %}
+                                        <input type="text" readonly value="-" class="input is-static">
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label class="label">Modified</label>
+                                <div class="control is-clearfix">
+                                    <input type="text" readonly value="{{ transaction_journal.modified|naturaltime|default:"-" }}" class="input is-static">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var cbs = document.querySelectorAll(".switch input");
+
+        for (var i = 0; i < cbs.length; i++) {
+            cbs[i].addEventListener("click", function(e) {
+                var instante = e.target.checked;
+
+                var checkboxes = document.querySelectorAll(".switch input");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    checkboxes[i].checked = false;
+                }
+
+                if (instante) e.target.checked = true;
+            });
+        }
+    </script>
+{% endblock content %}
+

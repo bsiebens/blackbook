@@ -1,0 +1,281 @@
+{% extends 'blackbook/base.html' %}
+
+{% load djmoney %}
+{% load l10n %}
+{% load humanize %}
+
+{% block title %}
+    Dashboard
+{% endblock title %}
+
+{% block breadcrumbs %}
+    <li>Dashboard</li>
+{% endblock breadcrumbs %}
+
+{% block hero-section %}
+    <div class="hero-body">
+        <div class="level">
+            <div class="level-left">
+                <div class="level-item is-hero-avatar-item">
+                    <div class="image is-user-avatar">
+                        {% if request.user.get_full_name != "" %}
+                            <img src="https://avatars.dicebear.com/api/initials/{{ request.user.get_full_name|slugify }}.svg">
+                        {% else %}
+                            <img src="https://avatars.dicebear.com/api/initials/{{ request.user.username }}.svg">
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="level-item is-hero-content-item">
+                    <div>
+                        <h1 class="title is-spaced">
+                            {% now "H" as current_time %}
+                            Good 
+                                {% if current_time|add:"0" < 12 %}
+                                    morning,
+                                {% elif current_time|add:"0" < 18 %}
+                                    afternoon,
+                                {% else %}
+                                    evening,
+                                {% endif %}
+                            {% if request.user.get_full_name != "" %}{{ request.user.first_name }}{% else %}{{ request.user.username }}{% endif %}
+                        </h1>
+                        <h3 class="subtitle">
+                            Last login <b>{{ request.user.last_login|naturaltime }}</b> (joined <b>{{ request.user.date_joined|naturalday }}</b>)
+                        </h3>
+                        {% if request.user.is_staff or request.user.is_superuser %}
+                            <p>
+                                {% if request.user.is_superuser %}
+                                    <span class="tag is-primary">
+                                        <span class="icon">
+                                            <i class="fas fa-user-astronaut"></i>
+                                        </span>
+                                        <span>superuser</span>
+                                    </span>
+                                {% endif %}
+                                {% if request.user.is_staff %}
+                                    <span class="tag is-primary">
+                                        <span class="icon">
+                                            <i class="fas fa-user-check"></i>
+                                        </span>
+                                        <span>staff</span>
+                                    </span>
+                                {% endif %}
+                            </p>
+                        {% endif %}
+                        <!-- <p>You have <b>6</b> tasks and <b>84</b> messages.</p> -->
+                    </div>
+                </div>
+            </div>
+            <div class="level-right">
+                <div class="level-item">
+                    <a href="{% url "blackbook:profile" %}" class="button is-light" title="Profile">
+                        <span class="icon"><i class="fas fa-user"></i></span>
+                        <span>View profile</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock hero-section %}
+
+{% block content %}
+    <div class="tile is-ancestor">
+        <div class="tile is-parent">
+            <div class="card is-card-widget tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        {{ data.period|unlocalize }}
+                    </p>
+                    <p class="card-header-title has-text-success">
+                        <span class="icon">
+                            <i class="fas fa-arrow-down"></i>
+                        </span>
+                        <span>+{% money_localize data.totals.period.in %}</span>
+                    </p>
+                    <p class="card-header-title has-text-danger">
+                        <span class="icon">
+                            <i class="fas fa-arrow-up"></i>
+                        </span>
+                        <span>{% if data.totals.period.out.amount == 0 %}-{% endif %}{% money_localize data.totals.period.out %}</span>
+                    </p>
+                </header>
+                <div class="card-content">
+                    <div class="level is-mobile">
+                        <div class="level-item">
+                            <div class="is-widget-label">
+                                <h3 class="subtitle is-spaced">Balance</h3>
+                                <h1 class="title has-text-{% if data.totals.period.total.amount > 0 %}success{% elif data.totals.period.total.amount < 0 %}danger{% else %}grey{% endif %}">
+                                    {% if data.totals.period.total.amount >= 0 %}+{% endif %}{% money_localize data.totals.period.total %}
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="level-item has-widget-icon">
+                            <div class="is-widget-icon">
+                                <span class="icon is-large has-text-{% if data.totals.period.total.amount > 0 %}success{% elif data.totals.period.total.amount < 0 %}danger{% else %}grey{% endif %}">
+                                    <i class="fas fa-balance-scale fa-3x"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tile is-parent">
+            <div class="card is-card-widget tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span class="icon"></span>
+                    </p>
+                    <button type="button" class="button is-small">
+                        <span class="icon">
+                            <i class="fas fa-info"></i>
+                        </span>
+                    </button>
+                </header>
+                <div class="card-content">
+                    <div class="level is-mobile">
+                        <div class="level-item">
+                            <div class="is-widget-label">
+                                <h3 class="subtitle is-spaced">Net worth</h3>
+                                <h1 class="title">
+                                    {% money_localize data.totals.net_worth %}
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="level-item has-widget-icon">
+                            <div class="is-widget-icon">
+                                <span class="icon is-large has-text-grey">
+                                    <i class="fas fa-coins fa-3x"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tile is-parent">
+            <div class="card is-card-widget tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span>Paid</span>
+                        <span class="icon">
+                            <i class="fas fa-arrow-right"></i>
+                        </span>
+                        <span>XXX &euro;</span>
+                    </p>
+                    <button type="button" class="button is-small">
+                        <span class="icon">
+                            <i class="fas fa-info"></i>
+                        </span>
+                    </button>
+                </header>
+                <div class="card-content">
+                    <div class="level is-mobile">
+                        <div class="level-item">
+                            <div class="is-widget-label">
+                                <h3 class="subtitle is-spaced">Bills to pay</h3>
+                                <h1 class="title">
+                                    &euro; XXX
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="level-item has-widget-icon">
+                            <div class="is-widget-icon">
+                                <span class="icon is-large has-text-{% if data.totals.period.total.amount > 0 %}success{% elif data.totals.period.total.amount < 0 %}danger{% else %}grey{% endif %}">
+                                    <i class="fas fa-receipt fa-3x"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tile is-parent">
+            <div class="card is-card-widget tile is-child">
+                <header class="card-header">
+                    <p class="card-header-title">
+                        <span>Total available</span>
+                        <span class="icon">
+                            <i class="fas fa-arrow-right"></i>
+                        </span>
+                        <span>{% money_localize data.budget.total %}
+                    </p>
+
+                    <p class="card-header-title">
+                        <span>Total used</span>
+                        <span class="icon">
+                            <i class="fas fa-arrow-right"></i>
+                        </span>
+                        <span>{% money_localize data.budget.used %}
+                    </p>
+
+                    <p class="card-header-title">
+                        <span>Used per day</span>
+                        <span class="icon">
+                            <i class="fas fa-arrow-right"></i>
+                        </span>
+                        <span>{% money_localize data.budget.per_day %}</span>
+                    </p>
+                    <a href="{% url "blackbook:budgets" %}" class="button is-small">
+                        <span class="icon">
+                            <i class="fas fa-info"></i>
+                        </span>
+                    </a>
+                </header>
+                <div class="card-content">
+                    <div class="level is-mobile">
+                        <div class="level-item">
+                            <div class="is-widget-label">
+                                <h3 class="subtitle is-spaced">Budget available</h3>
+                                <h1 class="title has-text-{% if data.budget.available.amount > 0 %}success{% elif data.budget.available.amount < 0 %}danger{% else %}grey{% endif %}">
+                                    {% money_localize data.budget.available %}
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="level-item has-widget-icon">
+                            <div class="is-widget-icon">
+                                <span class="icon is-large has-text-{% if data.budget.available.amount > 0 %}success{% elif data.budget.available.amount < 0 %}danger{% else %}grey{% endif %}">
+                                    <i class="fas fa-chart-pie fa-3x"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <header class="card-header">
+            <p class="card-header-title">
+                <span class="icon">
+                    <i class="fas fa-chart-line"></i>
+                </span>
+                <span>Account overview</span>
+            </p>
+        </header>
+        <div class="card-content">
+            <div class="chart-area">
+                <div style="height: 100%;">
+                    <div class="chartjs-size-monitor">
+                        <div class="chartjs-size-monitor-expand">
+                            <div></div>
+                        </div>
+                        <div class="chartjs-size-monitor-shrink">
+                            <div></div>
+                        </div>
+                    </div>
+                    <canvas id="account-line-chart" width="2992" height="1000" class="chartjs-render-monitor" style="display: block; height: 400px; width: 1197px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block javascript %}
+    let accountChartLineCTX = document.getElementById("account-line-chart").getContext("2d");
+    new Chart(accountChartLineCTX, {{ data.charts.account_chart|safe }});
+{% endblock javascript %}
