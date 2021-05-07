@@ -22,10 +22,10 @@ steps:
     - name: git pull
       commands:
           - git -C /home/bernard/BlackBook/ pull --all
+          - git -C /home/bernard/BlackBook/ fetch --tags
 
     - name: update version tag
       commands:
-          - git -C /home/bernard/BlackBook/ fetch --tags
           - /usr/bin/autotag -v --branch=$DRONE_COMMIT_BRANCH
           - git -C /home/bernard/BlackBook/ push origin --tags
       when:
@@ -43,7 +43,7 @@ steps:
 
     - name: update packages
       commands:
-          - cd /home/bernard/BlackBook/ && pipenv install --dev
+          - cd /home/bernard/BlackBook/ && pipenv sync --dev
 
     - name: update database, collect static files & clear cache
       commands:
