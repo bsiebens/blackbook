@@ -26,7 +26,6 @@ def accounts(request, account_type=None, account_slug=None):
             .filter(journal__date__range=(period["start_date"], period["end_date"]))
             .select_related("journal", "account")
             .order_by("-journal__date")
-            .annotate(total=Coalesce(Sum("amount"), Decimal(0)))
         )
 
         period_in = Money(transactions.filter(amount__gte=0).aggregate(total=Coalesce(Sum("amount"), Decimal(0)))["total"], account.currency)

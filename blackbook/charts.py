@@ -114,12 +114,12 @@ class AccountChart(Chart):
 
                 if account_key in accounts.keys():
                     date_entry = accounts[account_key].get(item.journal.date, Money(0, self.currency))
-                    date_entry += Money(item.total, self.currency)
+                    date_entry += item.amount
 
                     accounts[account_key][item.journal.date] = date_entry
 
                 else:
-                    accounts[account_key] = {item.journal.date: Money(item.total, self.currency)}
+                    accounts[account_key] = {item.journal.date: item.amount}
                     accounts_virtual_balance[account_key] = item.account.virtual_balance
 
         for account in self.accounts:
@@ -231,7 +231,7 @@ class TransactionChart(Chart):
                     account_name = transaction.journal.category.name
 
             amount = amounts.get(account_name, 0.0)
-            amount += float(transaction.total)
+            amount += float(transaction.amount.amount)
             amounts[account_name] = amount
 
         if not self.income:
