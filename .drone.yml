@@ -26,7 +26,8 @@ steps:
 
     - name: update version tag
       commands:
-          - /usr/bin/autotag -v --branch=$DRONE_COMMIT_BRANCH
+          - git -C /home/bernard/BlackBook/ fetch --tags
+          - /usr/bin/autotag -v
           - git -C /home/bernard/BlackBook/ push origin --tags
       when:
           branch:
