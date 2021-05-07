@@ -42,7 +42,7 @@ class TransactionJournal(models.Model):
     def __str__(self):
         return self.short_description
 
-    def _verify_transaction_type(self, transactions):
+    def _verify_transaction_type(self, type, transactions):
         if type in [self.TransactionType.START, self.TransactionType.RECONCILIATION]:
             return type
 
@@ -131,7 +131,7 @@ class TransactionJournal(models.Model):
             budget=transactions.get("budget", None),
         )
 
-        journal.type = journal._verify_transaction_type(transactions=transactions["transactions"])
+        journal.type = journal._verify_transaction_type(type=transactions["type"], transactions=transactions["transactions"])
         journal._create_transactions(transactions=transactions["transactions"])
         journal.update_accounts()
 
