@@ -144,7 +144,7 @@ USE_THOUSAND_SEPARATOR = True
 STATIC_URL = "/static/"
 STATIC_ROOT = "/static/"
 
-AUTHENTICATION_BACKENDS = ["graphql_jwt.backends.JSONWebTokenBackend", "django.contrib.auth.backends.ModelBackend"]
+AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
 
 OPEN_EXCHANGE_RATES_APP_ID = os.getenv("OPEN_EXCHANGE_RATES_APP_ID", None)
 BASE_CURRENCY = "EUR"
