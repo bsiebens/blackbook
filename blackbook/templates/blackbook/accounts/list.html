@@ -93,7 +93,7 @@
                                         </a>
                                     </td>
                                     <td data-label="Currency">{{ account.get_currency_display }}</td>
-                                    <td data-label="IBAN">{{ account.iban|iban|default:"-" }}</td>
+                                    <td data-label="IBAN">{{ account.iban|iban }}</td>
                                     <td data-label="Active?">
                                         <span class="icon">
                                             {% if account.active %}

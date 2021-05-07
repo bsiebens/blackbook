@@ -339,8 +339,6 @@
                                                 </span>
                                                 <span>{{ transaction.journal.category.name }}</span>
                                             </span>
-                                        {% else %}
-                                            -
                                         {% endif %}
                                     </td>
                                     <td data-label="Budget">
@@ -351,25 +349,26 @@
                                                 </span>
                                                 <span>{{ transaction.journal.budget.budget.name }}</span>
                                             </span>
-                                        {% else %}
-                                            -
                                         {% endif %}
                                     </td>
                                     <td data-label="Related accounts">
                                         {% if transaction.journal.source_accounts|length > 0 %}
-                                            {% for account in transaction.journal.source_accounts %}
-                                                <a href="{% url "blackbook:accounts_view" account.link_type account.slug %}">
-                                                    <span class="tag is-info">
-                                                        <span class="icon">
-                                                            <i class="fas {{ account.icon }}"></i>
-                                                        </span>
-                                                        <span>
-                                                            {{ account.type }} - {{ account.account }}
-                                                        </span>
-                                                    </span>
-                                                </a>
-                                                {% if not forloop.last %}&nbsp;/&nbsp;{% endif %}
-                                            {% endfor %}
+                                            <span class="tags">
+                                                {% for source in transaction.journal.source_accounts %}
+                                                    {% if source.account != account.name and source.link_type != account.type %}
+                                                        <a href="{% url "blackbook:accounts_view" source.link_type source.slug %}">
+                                                            <span class="tag is-info">
+                                                                <span class="icon">
+                                                                    <i class="fas {{ source.icon }}"></i>
+                                                                </span>
+                                                                <span>
+                                                                    {{ source.type }} - {{ source.account }}
+                                                                </span>
+                                                            </span>
+                                                        </a>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </span<
 
                                             {% if transaction.journal.destination_accounts|length > 0 %}
                                                 <br />
@@ -377,23 +376,22 @@
                                         {% endif %}
 
                                         {% if transaction.journal.destination_accounts|length > 0 %}
-                                            {% for account in transaction.journal.destination_accounts %}
-                                                <a href="{% url "blackbook:accounts_view" account.link_type account.slug %}">
-                                                    <span class="tag is-info">
-                                                        <span class="icon">
-                                                            <i class="fas {{ account.icon }}"></i>
-                                                        </span>
-                                                        <span>
-                                                            {{ account.type }} - {{ account.account }}
-                                                        </span>
-                                                    </span>
-                                                </a>
-                                                {% if not forloop.last %}&nbsp;/&nbsp;{% endif %}
-                                            {% endfor %}
-                                        {% endif %}
-
-                                        {% if transaction.journal.destination_accounts|length == 0 and transaction.journal.source_accounts|length == 0 %}
-                                            -
+                                            <span class="tags">
+                                                {% for destination in transaction.journal.destination_accounts %}
+                                                    {% if destination.account != account.name and destination.link_type != account.type %}
+                                                        <a href="{% url "blackbook:accounts_view" destination.link_type destination.slug %}">
+                                                            <span class="tag is-info">
+                                                                <span class="icon">
+                                                                    <i class="fas {{ destination.icon }}"></i>
+                                                                </span>
+                                                                <span>
+                                                                    {{ destination.type }} - {{ destination.account }}
+                                                                </span>
+                                                            </span>
+                                                        </a>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </span>
                                         {% endif %}
                                     </td>
                                     <td>
