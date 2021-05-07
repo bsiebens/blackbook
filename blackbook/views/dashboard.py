@@ -21,7 +21,6 @@ def dashboard(request):
     net_worth_transactions = (
         Transaction.objects.filter(account__active=True)
         .filter(account__net_worth=True)
-        .filter(account__dashboard=True)
         .filter(journal__date__range=calculate_period(periodicity=period, start_date=timezone.localdate(), as_tuple=True))
         .filter(amount_currency=currency)
         .select_related("journal")
@@ -37,8 +36,6 @@ def dashboard(request):
         .aggregate(total=Coalesce(Sum("amount"), Decimal(0)), used=Coalesce(Sum("transactions__amount"), Decimal(0)))
     )
 
-    print(budgets)
-
     accounts = Account.objects.filter(active=True).filter(net_worth=True).filter(dashboard=True).prefetch_related("transactions")
 
     data = {
@@ -48,7 +45,13 @@ def dashboard(request):
                 "out": Money(0, currency),
                 "total": Money(0, currency),
             },
-            "net_worth": Money(0, currency),
+            "net_worth": Money(
+                Transaction.objects.filter(account__active=True)
+                .filter(account__net_worth=True)
+                .filter(amount_currency=currency)
+                .aggregate(total=Coalesce(Sum("amount"), Decimal(0)))["total"],
+                currency,
+            ),
         },
         "budget": {
             "total": Money(budgets["total"], currency),
@@ -59,7 +62,7 @@ def dashboard(request):
         "period": display_period(periodicty=period, start_date=timezone.localdate()),
         "charts": {
             "account_chart": AccountChart(
-                data=net_worth_transactions,
+                data=net_worth_transactions.filter(account__dashboard=True),
                 accounts=accounts,
                 start_date=calculate_period(periodicity=period, start_date=timezone.localdate())["start_date"],
                 end_date=calculate_period(periodicity=period, start_date=timezone.localdate())["end_date"],
@@ -73,8 +76,6 @@ def dashboard(request):
             data["totals"]["period"]["out"] += transaction.amount
         else:
             data["totals"]["period"]["in"] += transaction.amount
-
-        data["totals"]["net_worth"] += transaction.amount
 
     data["totals"]["period"]["total"] = data["totals"]["period"]["in"] + data["totals"]["period"]["out"]
     data["budget"]["available"] = data["budget"]["total"] - data["budget"]["used"]
