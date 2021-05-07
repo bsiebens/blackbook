@@ -49,8 +49,6 @@ INSTALLED_APPS = [
     "djmoney",
     "djmoney.contrib.exchange",
     "django_filters",
-    "corsheaders",
-    "graphene_django",
 ]
 
 if DEBUG:
