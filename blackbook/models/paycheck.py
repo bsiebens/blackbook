@@ -18,7 +18,7 @@ class Paycheck(models.Model):
     def __str__(self):
         return "Paycheck {date}".format(date=self.date.strftime("%b %Y"))
 
-    def update_amount(self, currency=get_default_currency):
+    def update_amount(self, currency=get_default_currency()):
         self.amount = Money(self.items.aggregate(amount=models.Sum("real_amount"))["amount"], currency)
         self.save()
 

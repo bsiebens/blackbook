@@ -6,8 +6,14 @@ from django.contrib.auth import get_user_model
 
 from datetime import timedelta, date
 
-from .models import UserProfile, Budget, BudgetPeriod
+from .models import UserProfile, Budget, BudgetPeriod, PayCheckItem
 from .utilities import calculate_period
+
+
+@receiver(post_save, sender=PayCheckItem)
+def update_paycheck_amounts(sender, instance, **kwargs):
+    paycheck = instance.paycheck
+    paycheck.update_amount()
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)

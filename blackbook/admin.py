@@ -1,4 +1,7 @@
 from django.contrib import admin
+from django.utils.html import format_html
+
+from totalsum.admin import TotalsumAdmin
 
 from . import models
 from .utilities import format_iban
@@ -107,3 +110,76 @@ class BudgetAdmin(admin.ModelAdmin):
     ]
     inlines = [BudgetPeriodInline]
     readonly_fields = ["uuid"]
+
+
+class PaycheckItemInline(admin.TabularInline):
+    def item_type(self, obj):
+        return obj.category.type
+
+    def percentage(self, obj):
+        return format_html("{obj.category.counterbalance_percentage}&nbsp;&percnt;".format(obj=obj))
+
+    def counterbalance(self, obj):
+        return obj.category.counterbalance
+
+    counterbalance.boolean = True
+
+    model = models.PayCheckItem
+    extra = 0
+    raw_id_fields = ["paycheck"]
+    fields = ["paycheck", "category", "item_type", "amount", "counterbalance", "percentage", "created", "modified"]
+    readonly_fields = ["item_type", "counterbalance", "percentage", "created", "modified"]
+
+
+@admin.register(models.PayCheckItemCategory)
+class PaycheckItemCategoryAdmin(admin.ModelAdmin):
+    def percentage(self, obj):
+        return format_html("{obj.counterbalance_percentage}&nbsp;&percnt;".format(obj=obj))
+
+    ordering = ["name"]
+    list_display = ["name", "type", "default_amount", "counterbalance", "percentage", "default"]
+    search_fields = ["name"]
+    list_filter = ["type", "counterbalance", "default"]
+
+
+@admin.register(models.Paycheck)
+class PaycheckAdmin(TotalsumAdmin):
+    def format_date(self, obj):
+        return obj.date.strftime("%b %Y")
+
+    format_date.admin_order_field = "date"
+    format_date.short_description = "date"
+
+    ordering = ["date"]
+    date_hierarchy = "date"
+    list_display = ["format_date", "amount", "created", "modified"]
+    readonly_fields = ["amount", "created", "modified"]
+    inlines = [PaycheckItemInline]
+    fieldsets = [[None, {"fields": ("date", "amount")}], ["General information", {"fields": ("created", "modified")}]]
+    totalsum_list = ["amount"]
+    unit_of_measure = "&euro;"
+
+
+@admin.register(models.Bonus)
+class BonusAdmin(TotalsumAdmin):
+    def format_date(self, obj):
+        return obj.date.strftime("%b %Y")
+
+    format_date.admin_order_field = "date"
+    format_date.short_description = "date"
+
+    def show_percentage(self, obj):
+        return format_html("{obj.tax_percentage}&nbsp;&percnt;".format(obj=obj))
+
+    show_percentage.short_description = "tax percentage"
+
+    ordering = ["date"]
+    date_hierarchy = "date"
+    list_display = ["format_date", "gross_amount", "net_amount", "taxes", "show_percentage", "created", "modified"]
+    readonly_fields = ["taxes", "show_percentage", "created", "modified"]
+    fieldsets = [
+        [None, {"fields": ("date", "gross_amount", "net_amount", "taxes", "show_percentage")}],
+        ["General information", {"fields": ("created", "modified")}],
+    ]
+    totalsum_list = ["gross_amount", "net_amount", "taxes"]
+    unit_of_measure = "&euro;"

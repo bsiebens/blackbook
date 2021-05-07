@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d601914cf97cfe2811bca59ef7fc8a2bfd497c691cbef4a33673a477d643c486"
+            "sha256": "ee0cbebd42a55c208ebe944e4864b00ec408ba01743aa3156cc3e3de0ecffb24"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -118,6 +118,13 @@
             ],
             "index": "pypi",
             "version": "==0.1.4"
+        },
+        "django-totalsum-admin": {
+            "hashes": [
+                "sha256:c28b0b310b1b5f25cd98cb5ce7cb2e864656177dc0f26bf740679b00d87696fd"
+            ],
+            "index": "pypi",
+            "version": "==2.0.1"
         },
         "gunicorn": {
             "hashes": [

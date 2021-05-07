@@ -21,6 +21,7 @@ psycopg2-binary = "*"
 gunicorn = "*"
 django-model-utils = "*"
 django-cors-headers = "*"
+django-totalsum-admin = "*"
 
 [requires]
 python_version = "3.8"

@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "minio_storage",
+    "totalsum",
     "taggit",
     "taggit_helpers",
     "djmoney",
